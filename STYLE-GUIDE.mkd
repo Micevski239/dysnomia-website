@@ -1,0 +1,42 @@
+# Dysnomia Project Style Reference
+
+Use this doc whenever writing new UI/UX so the code matches the rest of the repo.
+
+## General Philosophy
+- Two worlds: **Shop (public)** and **Admin**. Each has its own styling approach.
+- Favor calm neutrals (white, off-white, soft beige) with #0A0A0A / #151310 for copy and #FBBE63 as the accent.
+- Typography: uppercase tracking for labels, Playfair Display for elegant headings, Inter for body text.
+- Layout sizing: generous white space, rounded cards (24–40px), subtle borders/shadows, no harsh lines.
+- Animations minimal: hover lifts, soft scale on images, transitions around 200ms.
+
+## Shop (Public) Style
+- **Tooling**: inline styles (existing pages such as `Home.tsx`, `ShopHome.tsx`, `GalleryTour.tsx`). Tailwind is not used in these files.
+- **Structure**: large hero sections, editorial grids, masonry/columns with overlapping content. Maintain high letter-spacing in section labels.
+- **Image Treatments**: object-fit `cover`, gradients on top overlays, hover scale to ~1.05–1.08.
+- **Palette**
+  - Backgrounds: #FFFFFF, #FAFAFA, #F5F5F5, #f6f3ed.
+  - Text: #0A0A0A primary, #666666 / #6d6459 for supporting copy.
+  - Accent: #FBBE63 for callouts, linear gradient gold optional for lines.
+- **Buttons/Links**: uppercase, tracking 0.1–0.3em, use gold/black or black/white combos. Inline anchors with small icon/chevron.
+- **Responsive**: grid templates defined in inline CSS with `repeat(auto-fit, minmax(...))`, no Tailwind. Keep sections within 1100–1400px width.
+
+## Admin Style
+- **Tooling**: mix of inline style tokens and Tailwind classes (legacy). Keep existing approach: `AdminLayout.tsx` uses inline/utility combos; forms use Tailwind classes (e.g., `ProductForm.tsx`).
+- **Layout**: premium workspace vibe—dark sidebar (#121012) and light content (#f3f1eb). Use uppercase label chips, pill buttons, heavy whitespace.
+- **Components**:
+  - Buttons: `Button` component handles variants. Pass className for palette tweaks.
+  - Inputs/Selects: Use `Input`, `Textarea`, `Select` from `components/ui/Input.tsx`.
+  - Tables: maintain `bg-white border border-border` wrappers, uppercase headers, `divide-y` for rows.
+- **Routing**: Admin limited to /admin/products(new|edit) and /admin/collections(new|edit); keep navigation labels in uppercase tone.
+
+## Data/Interactions
+- When fetching from Supabase, prefer hooks (`useProducts`, `useCollections`). Resuable mapping: `collection_products` join table for linking products to collections.
+- For new features referencing Supabase, ensure selective fetch: `.select('product:products(*)')` pattern to use typed results.
+- In admin forms, navigate back to `/admin/products` or `/admin/collections` after success (no dashboard route).
+
+## Misc
+- All new UI files should default to inline styles unless they live under `src/pages/admin` (where Tailwind utility classes exist).
+- Avoid introducing Tailwind to shop pages; conversely, avoid pure inline styles in admin tables/forms.
+- Use `FALLBACK_IMAGE` pattern (Unsplash) when data lacks imagery, to keep layout consistent.
+
+_Update this file whenever the visual language evolves so future work stays cohesive._
