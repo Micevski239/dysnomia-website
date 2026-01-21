@@ -179,7 +179,7 @@ export default function Header({ cartCount = 0, wishlistCount = 0 }: HeaderProps
             </Link>
 
             <Link
-              to="/account"
+              to="/admin"
               style={{
                 color: textColor,
                 textDecoration: 'none',
