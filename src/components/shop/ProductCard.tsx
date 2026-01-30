@@ -48,7 +48,7 @@ const ProductCard = memo(function ProductCard({
     <div
       style={{
         flexShrink: 0,
-        width: '260px',
+        width: '100%',
         transition: 'transform 0.3s'
       }}
       onMouseEnter={() => setIsHovered(true)}

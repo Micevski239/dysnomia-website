@@ -86,18 +86,45 @@ export function useOrders() {
 
   const updateOrderStatus = async (
     id: string,
-    status: OrderStatus
+    status: OrderStatus,
+    trackingNumber?: string
   ): Promise<{ error: string | null }> => {
     try {
+      const updateData: Record<string, unknown> = {
+        status,
+        updated_at: new Date().toISOString(),
+      };
+      if (trackingNumber !== undefined) {
+        updateData.tracking_number = trackingNumber;
+      }
+
       const { error } = await supabase
         .from('orders')
-        .update({ status, updated_at: new Date().toISOString() })
+        .update(updateData)
         .eq('id', id);
 
       if (error) throw error;
       return { error: null };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update order status';
+      return { error: errorMessage };
+    }
+  };
+
+  const updateTrackingNumber = async (
+    id: string,
+    trackingNumber: string
+  ): Promise<{ error: string | null }> => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ tracking_number: trackingNumber, updated_at: new Date().toISOString() })
+        .eq('id', id);
+
+      if (error) throw error;
+      return { error: null };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update tracking number';
       return { error: errorMessage };
     }
   };
@@ -125,6 +152,7 @@ export function useOrders() {
     getOrder,
     getOrderByNumber,
     updateOrderStatus,
+    updateTrackingNumber,
     addOrderNote,
     loading,
     error,

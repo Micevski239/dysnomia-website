@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 export default function Hero() {
+  const { isMobile } = useBreakpoint();
+
   return (
     <section
       style={{
@@ -31,18 +34,20 @@ export default function Hero() {
         }}
       />
 
-      {/* Gold accent line - left side */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '50%',
-          left: '48px',
-          width: '2px',
-          height: '150px',
-          background: 'linear-gradient(to bottom, transparent, #FBBE63, transparent)',
-          transform: 'translateY(-50%)'
-        }}
-      />
+      {/* Gold accent line - left side - hidden on mobile */}
+      {!isMobile && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '48px',
+            width: '2px',
+            height: '150px',
+            background: 'linear-gradient(to bottom, transparent, #FBBE63, transparent)',
+            transform: 'translateY(-50%)'
+          }}
+        />
+      )}
 
       {/* Content */}
       <div
@@ -51,7 +56,7 @@ export default function Hero() {
           bottom: 0,
           left: 0,
           right: 0,
-          padding: '0 120px 100px',
+          padding: `0 clamp(24px, 8vw, 120px) clamp(60px, 10vw, 100px)`,
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'flex-end'
@@ -63,10 +68,10 @@ export default function Hero() {
           <h1
             style={{
               fontFamily: "'Playfair Display', Georgia, serif",
-              fontSize: '64px',
+              fontSize: 'clamp(32px, 8vw, 64px)',
               fontWeight: 600,
               color: '#FBBE63',
-              letterSpacing: '10px',
+              letterSpacing: 'clamp(4px, 1.5vw, 10px)',
               textTransform: 'uppercase',
               marginBottom: '16px',
               textShadow: '0 2px 20px rgba(0,0,0,0.3)'
@@ -79,11 +84,11 @@ export default function Hero() {
           <p
             style={{
               fontFamily: "'Playfair Display', Georgia, serif",
-              fontSize: '20px',
+              fontSize: 'clamp(14px, 3vw, 20px)',
               color: 'rgba(255,255,255,0.8)',
-              letterSpacing: '5px',
+              letterSpacing: 'clamp(2px, 0.8vw, 5px)',
               textTransform: 'uppercase',
-              marginBottom: '28px'
+              marginBottom: 'clamp(16px, 3vw, 28px)'
             }}
           >
             Art • Design • Lifestyle
@@ -92,10 +97,10 @@ export default function Hero() {
           {/* Description */}
           <p
             style={{
-              fontSize: '17px',
+              fontSize: 'clamp(14px, 2vw, 17px)',
               color: 'rgba(255,255,255,0.75)',
               lineHeight: 1.8,
-              marginBottom: '40px',
+              marginBottom: 'clamp(24px, 4vw, 40px)',
               maxWidth: '500px'
             }}
           >
@@ -104,14 +109,14 @@ export default function Hero() {
           </p>
 
           {/* CTA Buttons */}
-          <div style={{ display: 'flex', gap: '16px' }}>
+          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
             <Link
               to="/collections"
               style={{
                 display: 'inline-block',
                 backgroundColor: '#FBBE63',
                 color: '#0A0A0A',
-                padding: '18px 44px',
+                padding: 'clamp(14px, 2vw, 18px) clamp(28px, 4vw, 44px)',
                 fontSize: '12px',
                 fontWeight: 700,
                 letterSpacing: '2px',
@@ -138,7 +143,7 @@ export default function Hero() {
                 display: 'inline-block',
                 backgroundColor: 'transparent',
                 color: '#FFFFFF',
-                padding: '18px 44px',
+                padding: 'clamp(14px, 2vw, 18px) clamp(28px, 4vw, 44px)',
                 fontSize: '12px',
                 fontWeight: 700,
                 letterSpacing: '2px',
@@ -195,31 +200,35 @@ export default function Hero() {
         />
       </div>
 
-      {/* Corner accents */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '100px',
-          right: '48px',
-          width: '50px',
-          height: '50px',
-          borderTop: '2px solid #FBBE63',
-          borderRight: '2px solid #FBBE63',
-          opacity: 0.6
-        }}
-      />
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '40px',
-          right: '120px',
-          width: '50px',
-          height: '50px',
-          borderBottom: '2px solid #FBBE63',
-          borderRight: '2px solid #FBBE63',
-          opacity: 0.6
-        }}
-      />
+      {/* Corner accents - hidden on mobile */}
+      {!isMobile && (
+        <>
+          <div
+            style={{
+              position: 'absolute',
+              top: '100px',
+              right: '48px',
+              width: '50px',
+              height: '50px',
+              borderTop: '2px solid #FBBE63',
+              borderRight: '2px solid #FBBE63',
+              opacity: 0.6
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '40px',
+              right: '120px',
+              width: '50px',
+              height: '50px',
+              borderBottom: '2px solid #FBBE63',
+              borderRight: '2px solid #FBBE63',
+              opacity: 0.6
+            }}
+          />
+        </>
+      )}
     </section>
   );
 }

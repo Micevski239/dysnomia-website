@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ChevronLeftIcon, ChevronRightIcon } from './Icons';
 import ProductCard from './ProductCard';
 import type { ProductCardProps } from './ProductCard';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 interface ProductCarouselProps {
   title: string;
@@ -15,6 +16,7 @@ export default function ProductCarousel({ title, viewAllLink, products }: Produc
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
+  const { isMobile } = useBreakpoint();
 
   const itemsPerPage = 5;
   const totalPages = Math.ceil(products.length / itemsPerPage);
@@ -39,8 +41,8 @@ export default function ProductCarousel({ title, viewAllLink, products }: Produc
   };
 
   return (
-    <section style={{ padding: '60px 0', backgroundColor: '#FFFFFF' }}>
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 48px' }}>
+    <section style={{ padding: 'clamp(32px, 6vw, 60px) 0', backgroundColor: '#FFFFFF' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 clamp(16px, 4vw, 48px)' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}>
           <h2

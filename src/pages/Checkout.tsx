@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
 import { useLanguage } from '../hooks/useLanguage';
 import { useOrders } from '../hooks/useOrders';
+import { sendOrderEmail } from '../lib/sendOrderEmail';
 import CheckoutForm from '../components/shop/CheckoutForm';
 import OrderSummary from '../components/shop/OrderSummary';
 import type { CheckoutFormData } from '../lib/checkoutValidation';
@@ -53,6 +54,11 @@ export default function Checkout() {
         setError(result.error);
         setIsSubmitting(false);
         return;
+      }
+
+      // Fire-and-forget: send confirmation email (never blocks order flow)
+      if (result.data) {
+        sendOrderEmail(result.data, 'order_placed');
       }
 
       // Clear cart and redirect to confirmation

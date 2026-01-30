@@ -101,6 +101,7 @@ export interface Order {
   total_amount: number;
   currency: string;
   status: OrderStatus;
+  tracking_number: string | null;
   notes: string | null;
   created_at: string;
   updated_at: string;

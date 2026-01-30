@@ -1,8 +1,16 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useOrderDetail, useOrders } from '../../hooks/useOrders';
+import { sendOrderEmail } from '../../lib/sendOrderEmail';
 import { printTypes } from '../../config/printOptions';
 import type { OrderStatus } from '../../types';
+
+const statusToEmailType: Partial<Record<OrderStatus, Parameters<typeof sendOrderEmail>[1]>> = {
+  confirmed: 'order_confirmed',
+  shipped: 'order_shipped',
+  delivered: 'order_delivered',
+  cancelled: 'order_cancelled',
+};
 
 const statusColors: Record<OrderStatus, { bg: string; text: string }> = {
   pending: { bg: '#fef3c7', text: '#92400e' },
@@ -25,11 +33,19 @@ const statusFlow: OrderStatus[] = ['pending', 'confirmed', 'shipped', 'delivered
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
   const { order, loading, error, refetch } = useOrderDetail(id);
-  const { updateOrderStatus, addOrderNote } = useOrders();
+  const { updateOrderStatus, updateTrackingNumber, addOrderNote } = useOrders();
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [notes, setNotes] = useState('');
   const [showNotesForm, setShowNotesForm] = useState(false);
+  const [trackingNumber, setTrackingNumber] = useState('');
+  const [trackingInitialized, setTrackingInitialized] = useState(false);
+
+  // Initialize tracking number from order data once loaded
+  if (order && !trackingInitialized) {
+    setTrackingNumber(order.tracking_number || '');
+    setTrackingInitialized(true);
+  }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-GB', {
@@ -51,7 +67,30 @@ export default function OrderDetail() {
     setIsUpdating(true);
     setUpdateError(null);
 
-    const { error } = await updateOrderStatus(order.id, newStatus);
+    const tracking = newStatus === 'shipped' ? trackingNumber || undefined : undefined;
+    const { error } = await updateOrderStatus(order.id, newStatus, tracking);
+
+    if (error) {
+      setUpdateError(error);
+    } else {
+      // Fire-and-forget: send status email
+      const emailType = statusToEmailType[newStatus];
+      if (emailType) {
+        sendOrderEmail(order, emailType, tracking);
+      }
+      refetch();
+    }
+
+    setIsUpdating(false);
+  };
+
+  const handleSaveTracking = async () => {
+    if (!order) return;
+
+    setIsUpdating(true);
+    setUpdateError(null);
+
+    const { error } = await updateTrackingNumber(order.id, trackingNumber);
 
     if (error) {
       setUpdateError(error);
@@ -495,6 +534,64 @@ export default function OrderDetail() {
               </p>
             </div>
           </div>
+
+          {/* Tracking Number */}
+          {order.status !== 'pending' && order.status !== 'cancelled' && (
+            <div
+              style={{
+                backgroundColor: '#ffffff',
+                border: '1px solid #e5e5e5',
+                borderRadius: '8px',
+                marginBottom: '24px',
+              }}
+            >
+              <div
+                style={{
+                  padding: '20px',
+                  borderBottom: '1px solid #e5e5e5',
+                }}
+              >
+                <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#1a1a1a' }}>
+                  Tracking Number
+                </h2>
+              </div>
+              <div style={{ padding: '20px' }}>
+                <input
+                  type="text"
+                  value={trackingNumber}
+                  onChange={(e) => setTrackingNumber(e.target.value)}
+                  placeholder="Enter tracking number"
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    fontSize: '14px',
+                    border: '1px solid #e5e5e5',
+                    borderRadius: '4px',
+                    marginBottom: '12px',
+                    boxSizing: 'border-box',
+                  }}
+                />
+                <button
+                  onClick={handleSaveTracking}
+                  disabled={isUpdating}
+                  style={{
+                    width: '100%',
+                    padding: '10px 16px',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    backgroundColor: '#B8860B',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: isUpdating ? 'not-allowed' : 'pointer',
+                    opacity: isUpdating ? 0.7 : 1,
+                  }}
+                >
+                  {isUpdating ? 'Saving...' : 'Save Tracking Number'}
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Status Update */}
           <div

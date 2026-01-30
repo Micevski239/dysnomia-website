@@ -65,7 +65,7 @@ export default function Header({ cartCount = 0, wishlistCount = 0 }: HeaderProps
         style={{
           maxWidth: '1400px',
           margin: '0 auto',
-          padding: '0 48px',
+          padding: '0 clamp(16px, 4vw, 48px)',
           height: '100%'
         }}
       >
@@ -95,8 +95,8 @@ export default function Header({ cartCount = 0, wishlistCount = 0 }: HeaderProps
 
           {/* Desktop Navigation */}
           <nav
+            className="desktop-only"
             style={{
-              display: 'flex',
               alignItems: 'center',
               gap: '28px'
             }}
@@ -141,6 +141,7 @@ export default function Header({ cartCount = 0, wishlistCount = 0 }: HeaderProps
             >
               <SearchIcon className="w-4 h-4" />
               <span
+                className="desktop-only"
                 style={{
                   fontSize: '11px',
                   fontWeight: 700,
@@ -236,7 +237,7 @@ export default function Header({ cartCount = 0, wishlistCount = 0 }: HeaderProps
             </Link>
 
             {/* Language/Currency Selector */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '8px' }}>
+            <div className="desktop-only" style={{ alignItems: 'center', gap: '4px', marginLeft: '8px' }}>
               <button
                 onClick={() => setLanguage(language === 'en' ? 'mk' : 'en')}
                 style={{
@@ -273,14 +274,20 @@ export default function Header({ cartCount = 0, wishlistCount = 0 }: HeaderProps
 
             {/* Mobile Menu Button */}
             <button
+              className="mobile-only"
               style={{
-                display: 'none',
                 color: textColor,
                 background: 'none',
                 border: 'none',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                padding: '8px',
+                minWidth: '44px',
+                minHeight: '44px',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
             >
               {mobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
             </button>

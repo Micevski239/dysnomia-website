@@ -245,3 +245,24 @@ body {
   transform: scaleX(1);
   transform-origin: bottom left;
 }
+
+/* Responsive utility classes */
+.desktop-only {
+  display: flex;
+}
+
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .desktop-only {
+    display: none !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .mobile-only {
+    display: flex !important;
+  }
+}

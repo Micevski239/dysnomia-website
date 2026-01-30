@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { InstagramIcon, FacebookIcon, PinterestIcon } from './Icons';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 const footerLinks = {
   gallery: [
@@ -32,6 +33,7 @@ const footerLinks = {
 
 export default function Footer() {
   const [email, setEmail] = useState('');
+  const { isMobile, isTablet } = useBreakpoint();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,13 +61,13 @@ export default function Footer() {
 
   return (
     <footer style={{ backgroundColor: '#0A0A0A', borderTop: '1px solid #1A1A1A' }}>
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '64px 48px' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: `clamp(32px, 6vw, 64px) clamp(16px, 4vw, 48px)` }}>
         {/* Main Footer Grid */}
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(5, 1fr)',
-            gap: '48px'
+            gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(3, 1fr)' : 'repeat(5, 1fr)',
+            gap: 'clamp(24px, 4vw, 48px)'
           }}
         >
           {/* Gallery */}
