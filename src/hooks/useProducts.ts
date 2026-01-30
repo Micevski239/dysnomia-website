@@ -1,40 +1,62 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { validateImageFile } from '../lib/fileValidation';
 import type { Product, ProductFormData } from '../types';
 
-export function useProducts(includeUnpublished = false) {
+interface UseProductsOptions {
+  includeUnpublished?: boolean;
+  limit?: number;
+  offset?: number;
+}
+
+export function useProducts(includeUnpublished = false, options?: Omit<UseProductsOptions, 'includeUnpublished'>) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
 
-  const fetchProducts = useCallback(async () => {
+  const limit = options?.limit;
+  const offset = options?.offset ?? 0;
+
+  const fetchProducts = useCallback(async (append = false) => {
     setLoading(true);
     setError(null);
 
     let query = supabase
       .from('products')
-      .select('*')
+      .select('*', { count: 'exact' })
       .order('created_at', { ascending: false });
 
     if (!includeUnpublished) {
       query = query.in('status', ['published', 'sold']);
     }
 
-    const { data, error } = await query;
+    if (limit) {
+      query = query.range(offset, offset + limit - 1);
+    }
+
+    const { data, error, count } = await query;
 
     if (error) {
       setError(error.message);
     } else {
-      setProducts(data || []);
+      if (append) {
+        setProducts((prev) => [...prev, ...(data || [])]);
+      } else {
+        setProducts(data || []);
+      }
+      setTotalCount(count || 0);
+      setHasMore(limit ? (data?.length || 0) === limit : false);
     }
     setLoading(false);
-  }, [includeUnpublished]);
+  }, [includeUnpublished, limit, offset]);
 
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
 
-  return { products, loading, error, refetch: fetchProducts };
+  return { products, loading, error, refetch: fetchProducts, hasMore, totalCount };
 }
 
 export function useProduct(slug: string) {
@@ -43,6 +65,9 @@ export function useProduct(slug: string) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
+    const abortController = new AbortController();
+
     async function fetchProduct() {
       setLoading(true);
       setError(null);
@@ -51,10 +76,15 @@ export function useProduct(slug: string) {
         .from('products')
         .select('*')
         .eq('slug', slug)
+        .abortSignal(abortController.signal)
         .single();
 
+      if (!isMounted) return;
+
       if (error) {
-        setError(error.message);
+        if (error.message !== 'AbortError') {
+          setError(error.message);
+        }
       } else {
         setProduct(data);
       }
@@ -64,6 +94,11 @@ export function useProduct(slug: string) {
     if (slug) {
       fetchProduct();
     }
+
+    return () => {
+      isMounted = false;
+      abortController.abort();
+    };
   }, [slug]);
 
   return { product, loading, error };
@@ -75,12 +110,15 @@ export function useProductById(id: string | undefined) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchProduct() {
-      if (!id) {
-        setLoading(false);
-        return;
-      }
+    if (!id) {
+      setLoading(false);
+      return;
+    }
 
+    let isMounted = true;
+    const abortController = new AbortController();
+
+    async function fetchProduct() {
       setLoading(true);
       setError(null);
 
@@ -88,10 +126,15 @@ export function useProductById(id: string | undefined) {
         .from('products')
         .select('*')
         .eq('id', id)
+        .abortSignal(abortController.signal)
         .single();
 
+      if (!isMounted) return;
+
       if (error) {
-        setError(error.message);
+        if (error.message !== 'AbortError') {
+          setError(error.message);
+        }
       } else {
         setProduct(data);
       }
@@ -99,9 +142,21 @@ export function useProductById(id: string | undefined) {
     }
 
     fetchProduct();
+
+    return () => {
+      isMounted = false;
+      abortController.abort();
+    };
   }, [id]);
 
   return { product, loading, error };
+}
+
+interface CurrentImages {
+  image_url: string | null;
+  image_url_canvas: string | null;
+  image_url_roll: string | null;
+  image_url_framed: string | null;
 }
 
 export function useProductMutations() {
@@ -109,13 +164,21 @@ export function useProductMutations() {
   const [error, setError] = useState<string | null>(null);
 
   const uploadImage = async (file: File): Promise<string | null> => {
-    const fileExt = file.name.split('.').pop();
+    // Validate file before upload
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      throw new Error(validation.error);
+    }
+
+    const fileExt = file.name.split('.').pop()?.toLowerCase();
     const fileName = `${crypto.randomUUID()}.${fileExt}`;
     const filePath = fileName;
 
     const { error: uploadError } = await supabase.storage
       .from('product-images')
-      .upload(filePath, file);
+      .upload(filePath, file, {
+        contentType: file.type,
+      });
 
     if (uploadError) {
       throw uploadError;
@@ -133,10 +196,25 @@ export function useProductMutations() {
     setError(null);
 
     try {
+      // Upload main image
       let imageUrl: string | null = null;
-
       if (formData.image) {
         imageUrl = await uploadImage(formData.image);
+      }
+
+      // Upload category images
+      let imageUrlCanvas: string | null = null;
+      let imageUrlRoll: string | null = null;
+      let imageUrlFramed: string | null = null;
+
+      if (formData.image_canvas) {
+        imageUrlCanvas = await uploadImage(formData.image_canvas);
+      }
+      if (formData.image_roll) {
+        imageUrlRoll = await uploadImage(formData.image_roll);
+      }
+      if (formData.image_framed) {
+        imageUrlFramed = await uploadImage(formData.image_framed);
       }
 
       const { data, error } = await supabase
@@ -147,7 +225,12 @@ export function useProductMutations() {
           description: formData.description || null,
           price: parseFloat(formData.price),
           image_url: imageUrl,
+          image_url_canvas: imageUrlCanvas,
+          image_url_roll: imageUrlRoll,
+          image_url_framed: imageUrlFramed,
           status: formData.status,
+          product_code: formData.product_code || null,
+          details: formData.details || null,
         })
         .select()
         .single();
@@ -164,15 +247,45 @@ export function useProductMutations() {
     }
   };
 
-  const updateProduct = async (id: string, formData: ProductFormData, currentImageUrl: string | null) => {
+  const updateProduct = async (
+    id: string,
+    formData: ProductFormData,
+    currentImages: CurrentImages | string | null
+  ) => {
     setLoading(true);
     setError(null);
 
     try {
-      let imageUrl = currentImageUrl;
+      // Handle backwards compatibility - if currentImages is a string, it's the old image_url
+      const images: CurrentImages =
+        typeof currentImages === 'string' || currentImages === null
+          ? {
+              image_url: currentImages,
+              image_url_canvas: null,
+              image_url_roll: null,
+              image_url_framed: null,
+            }
+          : currentImages;
 
+      // Upload main image if new one provided
+      let imageUrl = images.image_url;
       if (formData.image) {
         imageUrl = await uploadImage(formData.image);
+      }
+
+      // Upload category images if new ones provided
+      let imageUrlCanvas = images.image_url_canvas;
+      let imageUrlRoll = images.image_url_roll;
+      let imageUrlFramed = images.image_url_framed;
+
+      if (formData.image_canvas) {
+        imageUrlCanvas = await uploadImage(formData.image_canvas);
+      }
+      if (formData.image_roll) {
+        imageUrlRoll = await uploadImage(formData.image_roll);
+      }
+      if (formData.image_framed) {
+        imageUrlFramed = await uploadImage(formData.image_framed);
       }
 
       const { data, error } = await supabase
@@ -183,7 +296,12 @@ export function useProductMutations() {
           description: formData.description || null,
           price: parseFloat(formData.price),
           image_url: imageUrl,
+          image_url_canvas: imageUrlCanvas,
+          image_url_roll: imageUrlRoll,
+          image_url_framed: imageUrlFramed,
           status: formData.status,
+          product_code: formData.product_code || null,
+          details: formData.details || null,
         })
         .eq('id', id)
         .select()

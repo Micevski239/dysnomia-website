@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { SearchIcon, HeartIcon, UserIcon, BagIcon, MenuIcon, CloseIcon } from './Icons';
+import SearchModal from './SearchModal';
+import { useLanguage } from '../../hooks/useLanguage';
+import { useCurrency } from '../../hooks/useCurrency';
+import { useAuthContext } from '../../context/AuthContext';
 
 const navItems = [
   { label: 'HOME', href: '/' },
@@ -18,8 +22,12 @@ interface HeaderProps {
 export default function Header({ cartCount = 0, wishlistCount = 0 }: HeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const location = useLocation();
   const isHome = location.pathname === '/';
+  const { language, setLanguage } = useLanguage();
+  const { currency, setCurrency } = useCurrency();
+  const { user } = useAuthContext();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -117,6 +125,7 @@ export default function Header({ cartCount = 0, wishlistCount = 0 }: HeaderProps
           {/* Right Side Icons */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             <button
+              onClick={() => setIsSearchOpen(true)}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -179,7 +188,7 @@ export default function Header({ cartCount = 0, wishlistCount = 0 }: HeaderProps
             </Link>
 
             <Link
-              to="/admin"
+              to={user ? '/account' : '/login'}
               style={{
                 color: textColor,
                 textDecoration: 'none',
@@ -226,17 +235,41 @@ export default function Header({ cartCount = 0, wishlistCount = 0 }: HeaderProps
               )}
             </Link>
 
-            <span
-              style={{
-                fontSize: '11px',
-                fontWeight: 700,
-                letterSpacing: '1px',
-                color: isHome && !isScrolled ? 'rgba(255,255,255,0.7)' : '#666666',
-                marginLeft: '8px'
-              }}
-            >
-              EU | EUR
-            </span>
+            {/* Language/Currency Selector */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '8px' }}>
+              <button
+                onClick={() => setLanguage(language === 'en' ? 'mk' : 'en')}
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  letterSpacing: '1px',
+                  color: isHome && !isScrolled ? 'rgba(255,255,255,0.7)' : '#666666',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {language}
+              </button>
+              <span style={{ color: isHome && !isScrolled ? 'rgba(255,255,255,0.4)' : '#cccccc' }}>|</span>
+              <button
+                onClick={() => setCurrency(currency === 'EUR' ? 'MKD' : 'EUR')}
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  letterSpacing: '1px',
+                  color: isHome && !isScrolled ? 'rgba(255,255,255,0.7)' : '#666666',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '4px',
+                }}
+              >
+                {currency}
+              </button>
+            </div>
 
             {/* Mobile Menu Button */}
             <button
@@ -301,6 +334,9 @@ export default function Header({ cartCount = 0, wishlistCount = 0 }: HeaderProps
           </nav>
         </div>
       )}
+
+      {/* Search Modal */}
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </header>
   );
 }

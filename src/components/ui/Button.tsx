@@ -11,11 +11,13 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       display: 'inline-flex',
       alignItems: 'center',
       justifyContent: 'center',
-      fontWeight: 500,
+      fontWeight: 600,
       transition: 'all 0.2s',
       cursor: disabled ? 'not-allowed' : 'pointer',
       opacity: disabled ? 0.5 : 1,
       border: 'none',
+      borderRadius: '12px',
+      gap: '8px',
     };
 
     const variants: Record<string, CSSProperties> = {
@@ -24,14 +26,14 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         color: '#ffffff',
       },
       secondary: {
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#F5F5F5',
         color: '#1a1a1a',
-        border: '1px solid #e5e5e5',
+        border: '2px solid #E5E5E5',
       },
       outline: {
         backgroundColor: 'transparent',
         color: '#B8860B',
-        border: '1px solid #B8860B',
+        border: '2px solid #B8860B',
       },
       ghost: {
         backgroundColor: 'transparent',
@@ -44,9 +46,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const sizes: Record<string, CSSProperties> = {
-      sm: { padding: '6px 12px', fontSize: '14px' },
-      md: { padding: '8px 16px', fontSize: '14px' },
-      lg: { padding: '12px 24px', fontSize: '16px' },
+      sm: { padding: '8px 16px', fontSize: '13px' },
+      md: { padding: '14px 24px', fontSize: '15px' },
+      lg: { padding: '16px 32px', fontSize: '16px' },
     };
 
     const combinedStyle: CSSProperties = {

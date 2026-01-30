@@ -12,6 +12,34 @@ interface ShopLayoutProps {
 export default function ShopLayout({ cartCount = 0, wishlistCount = 0 }: ShopLayoutProps) {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* Skip to main content link for accessibility */}
+      <a
+        href="#main-content"
+        style={{
+          position: 'absolute',
+          left: '-9999px',
+          zIndex: 999,
+          padding: '14px 24px',
+          backgroundColor: '#0A0A0A',
+          color: '#FFFFFF',
+          textDecoration: 'none',
+          fontSize: '14px',
+          fontWeight: 500,
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.left = '50%';
+          e.currentTarget.style.transform = 'translateX(-50%)';
+          e.currentTarget.style.top = '10px';
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.left = '-9999px';
+          e.currentTarget.style.transform = 'none';
+          e.currentTarget.style.top = 'auto';
+        }}
+      >
+        Skip to main content
+      </a>
+
       {/* Sticky Announcement Bar */}
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50 }}>
         <AnnouncementBar />
@@ -21,7 +49,7 @@ export default function ShopLayout({ cartCount = 0, wishlistCount = 0 }: ShopLay
       <Header cartCount={cartCount} wishlistCount={wishlistCount} />
 
       {/* Main Content */}
-      <main style={{ flex: 1 }}>
+      <main id="main-content" style={{ flex: 1 }} tabIndex={-1}>
         <Outlet />
       </main>
 

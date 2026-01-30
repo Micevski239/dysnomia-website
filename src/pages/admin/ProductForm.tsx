@@ -4,6 +4,7 @@ import { useProductById, useProductMutations } from '../../hooks/useProducts';
 import { useCollections } from '../../hooks/useCollections';
 import { supabase } from '../../lib/supabase';
 import { generateSlug } from '../../lib/utils';
+import { validateProduct, type ProductFormErrors } from '../../lib/validation';
 import type { ProductFormData, ProductStatus } from '../../types';
 import { ArrowLeft, Upload, Package } from 'lucide-react';
 
@@ -12,6 +13,59 @@ const statusOptions = [
   { value: 'published', label: 'Published' },
   { value: 'sold', label: 'Sold' },
 ];
+
+const imageTypes = [
+  { key: 'image_canvas', label: 'Canvas Print', dbField: 'image_url_canvas' },
+  { key: 'image_roll', label: 'Roll Print', dbField: 'image_url_roll' },
+  { key: 'image_framed', label: 'Framed Print', dbField: 'image_url_framed' },
+] as const;
+
+const cardStyle: React.CSSProperties = {
+  backgroundColor: '#FFFFFF',
+  borderRadius: '16px',
+  border: '1px solid #E8E8E8',
+  boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)',
+  padding: '32px',
+};
+
+const labelStyle: React.CSSProperties = {
+  display: 'block',
+  fontSize: '14px',
+  fontWeight: 600,
+  color: '#0A0A0A',
+  marginBottom: '10px',
+};
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '14px 18px',
+  borderRadius: '12px',
+  border: '2px solid #E5E5E5',
+  fontSize: '15px',
+  color: '#0A0A0A',
+  outline: 'none',
+  transition: 'border-color 0.2s, box-shadow 0.2s',
+  backgroundColor: '#FFFFFF',
+};
+
+const hintStyle: React.CSSProperties = {
+  fontSize: '13px',
+  color: '#999999',
+  marginTop: '8px',
+};
+
+const errorTextStyle: React.CSSProperties = {
+  fontSize: '13px',
+  color: '#DC2626',
+  marginTop: '8px',
+};
+
+const sectionTitleStyle: React.CSSProperties = {
+  fontSize: '18px',
+  fontWeight: 600,
+  color: '#0A0A0A',
+  marginBottom: '8px',
+};
 
 export default function ProductForm() {
   const { id } = useParams<{ id: string }>();
@@ -29,10 +83,25 @@ export default function ProductForm() {
     price: '',
     status: 'draft',
     image: null,
+    image_canvas: null,
+    image_roll: null,
+    image_framed: null,
+    product_code: '',
+    details: '',
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreviews, setImagePreviews] = useState<{
+    image_canvas: string | null;
+    image_roll: string | null;
+    image_framed: string | null;
+  }>({
+    image_canvas: null,
+    image_roll: null,
+    image_framed: null,
+  });
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [selectedCollectionId, setSelectedCollectionId] = useState<string>('');
+  const [fieldErrors, setFieldErrors] = useState<ProductFormErrors>({});
 
   useEffect(() => {
     if (product && isEditing) {
@@ -43,8 +112,18 @@ export default function ProductForm() {
         price: product.price.toString(),
         status: product.status,
         image: null,
+        image_canvas: null,
+        image_roll: null,
+        image_framed: null,
+        product_code: product.product_code || '',
+        details: product.details || '',
       });
       setImagePreview(product.image_url);
+      setImagePreviews({
+        image_canvas: product.image_url_canvas || null,
+        image_roll: product.image_url_roll || null,
+        image_framed: product.image_url_framed || null,
+      });
       setSlugManuallyEdited(true);
     }
   }, [product, isEditing]);
@@ -105,12 +184,57 @@ export default function ProductForm() {
     }
   };
 
+  const handleCategoryImageChange = (
+    e: ChangeEvent<HTMLInputElement>,
+    imageKey: 'image_canvas' | 'image_roll' | 'image_framed'
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData((prev) => ({ ...prev, [imageKey]: file }));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreviews((prev) => ({ ...prev, [imageKey]: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setFieldErrors({});
+
+    const validationResult = validateProduct({
+      title: formData.title,
+      slug: formData.slug,
+      description: formData.description,
+      price: formData.price,
+      status: formData.status,
+      product_code: formData.product_code,
+      details: formData.details,
+    });
+
+    if (!validationResult.success) {
+      setFieldErrors(validationResult.errors);
+      return;
+    }
+
+    const currentImages = product
+      ? {
+          image_url: product.image_url || null,
+          image_url_canvas: product.image_url_canvas || null,
+          image_url_roll: product.image_url_roll || null,
+          image_url_framed: product.image_url_framed || null,
+        }
+      : {
+          image_url: null,
+          image_url_canvas: null,
+          image_url_roll: null,
+          image_url_framed: null,
+        };
 
     let result;
     if (isEditing && id) {
-      result = await updateProduct(id, formData, product?.image_url || null);
+      result = await updateProduct(id, formData, currentImages);
       if (!result.error) {
         await syncCollectionLink(id);
         navigate('/admin/products');
@@ -137,10 +261,18 @@ export default function ProductForm() {
 
   if (productLoading && isEditing) {
     return (
-      <div className="max-w-3xl">
-        <div className="space-y-6">
+      <div style={{ maxWidth: '780px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-16 bg-white rounded-xl animate-pulse border border-[#E5E5E5]" />
+            <div
+              key={i}
+              style={{
+                height: '64px',
+                backgroundColor: '#F5F5F5',
+                borderRadius: '12px',
+              }}
+              className="animate-pulse"
+            />
           ))}
         </div>
       </div>
@@ -148,84 +280,169 @@ export default function ProductForm() {
   }
 
   return (
-    <div className="max-w-3xl">
+    <div style={{ maxWidth: '780px' }}>
       {/* Back Link */}
       <Link
         to="/admin/products"
-        className="inline-flex items-center gap-2 text-[14px] text-[#666666] hover:text-[#0A0A0A] transition-colors mb-8"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '8px',
+          fontSize: '14px',
+          color: '#666666',
+          textDecoration: 'none',
+          marginBottom: '32px',
+        }}
       >
-        <ArrowLeft className="h-4 w-4" />
+        <ArrowLeft style={{ width: '16px', height: '16px' }} />
         Back to Products
       </Link>
 
       {/* Header */}
-      <div className="mb-8">
-        <p className="text-[12px] uppercase tracking-[0.2em] text-[#999999] mb-2">
+      <div style={{ marginBottom: '32px' }}>
+        <p style={{
+          fontSize: '12px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.2em',
+          color: '#999999',
+          marginBottom: '8px',
+          fontWeight: 600,
+        }}>
           {isEditing ? 'Edit' : 'Create'}
         </p>
-        <h1
-          style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-          className="text-[36px] font-medium text-[#0A0A0A]"
-        >
+        <h1 style={{
+          fontFamily: "'Playfair Display', Georgia, serif",
+          fontSize: '36px',
+          fontWeight: 500,
+          color: '#0A0A0A',
+        }}>
           {isEditing ? 'Edit Product' : 'New Product'}
         </h1>
       </div>
 
       {error && (
-        <div className="rounded-2xl bg-red-50 border border-red-200 px-6 py-4 text-[15px] text-red-700 mb-8">
+        <div style={{
+          backgroundColor: '#FEF2F2',
+          border: '1px solid #FECACA',
+          borderRadius: '12px',
+          padding: '16px 20px',
+          color: '#DC2626',
+          fontSize: '14px',
+          marginBottom: '32px',
+        }}>
           {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Image Upload */}
-        <div className="bg-white rounded-2xl border border-[#E5E5E5] p-8">
-          <label className="block text-[14px] font-medium text-[#0A0A0A] mb-4">
-            Product Image
-          </label>
-          <div className="flex items-start gap-6">
-            <div className="w-40 h-40 rounded-xl bg-[#F5F5F5] overflow-hidden flex-shrink-0">
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+        {/* Main Image Upload */}
+        <div style={cardStyle}>
+          <p style={labelStyle}>Main Product Image</p>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '24px' }}>
+            <div style={{
+              width: '160px',
+              height: '160px',
+              borderRadius: '12px',
+              backgroundColor: '#F5F5F5',
+              overflow: 'hidden',
+              flexShrink: 0,
+              border: '2px solid #E5E5E5',
+            }}>
               {imagePreview ? (
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                />
+                <img src={imagePreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Package className="h-10 w-10 text-[#CCCCCC]" />
+                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Package style={{ width: '40px', height: '40px', color: '#CCCCCC' }} />
                 </div>
               )}
             </div>
-            <div className="flex-1">
-              <label className="cursor-pointer">
-                <div className="inline-flex items-center gap-3 px-6 py-4 bg-[#F5F5F5] text-[#0A0A0A] rounded-xl text-[15px] font-medium hover:bg-[#E5E5E5] transition-colors">
-                  <Upload className="h-5 w-5" />
+            <div style={{ flex: 1 }}>
+              <label style={{ cursor: 'pointer' }}>
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '14px 24px',
+                  backgroundColor: '#F5F5F5',
+                  border: '2px solid #E5E5E5',
+                  borderRadius: '12px',
+                  color: '#0A0A0A',
+                  fontSize: '15px',
+                  fontWeight: 600,
+                }}>
+                  <Upload style={{ width: '18px', height: '18px' }} />
                   {imagePreview ? 'Change Image' : 'Upload Image'}
-                </div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
+                </span>
+                <input type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
               </label>
-              <p className="text-[13px] text-[#999999] mt-3">
-                Recommended: 800x1000px or larger, JPG or PNG
+              <p style={{ ...hintStyle, marginTop: '12px' }}>
+                Default image shown in listings. 800x1000px or larger, JPG or PNG
               </p>
             </div>
           </div>
         </div>
 
+        {/* Category Images */}
+        <div style={cardStyle}>
+          <p style={sectionTitleStyle}>Category Images</p>
+          <p style={{ ...hintStyle, marginBottom: '24px', marginTop: '0' }}>
+            Upload separate images for each print type. These will be shown when customers select different options.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
+            {imageTypes.map((imgType) => {
+              const preview = imagePreviews[imgType.key];
+              return (
+                <div key={imgType.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <div style={{
+                    width: '100%',
+                    aspectRatio: '1',
+                    borderRadius: '12px',
+                    backgroundColor: '#F5F5F5',
+                    overflow: 'hidden',
+                    marginBottom: '12px',
+                    border: '2px solid #E5E5E5',
+                  }}>
+                    {preview ? (
+                      <img src={preview} alt={imgType.label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Package style={{ width: '32px', height: '32px', color: '#CCCCCC' }} />
+                      </div>
+                    )}
+                  </div>
+                  <label style={{ cursor: 'pointer', width: '100%' }}>
+                    <span style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      padding: '10px 16px',
+                      backgroundColor: '#F5F5F5',
+                      border: '2px solid #E5E5E5',
+                      borderRadius: '10px',
+                      color: '#0A0A0A',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                    }}>
+                      <Upload style={{ width: '14px', height: '14px' }} />
+                      {preview ? 'Change' : 'Upload'}
+                    </span>
+                    <input type="file" accept="image/*" onChange={(e) => handleCategoryImageChange(e, imgType.key)} style={{ display: 'none' }} />
+                  </label>
+                  <p style={{ fontSize: '12px', color: '#666666', marginTop: '8px', textAlign: 'center' }}>{imgType.label}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Basic Info */}
-        <div className="bg-white rounded-2xl border border-[#E5E5E5] p-8 space-y-6">
-          <h2 className="text-[18px] font-medium text-[#0A0A0A] mb-2">Basic Information</h2>
+        <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <p style={sectionTitleStyle}>Basic Information</p>
 
           {/* Title */}
           <div>
-            <label htmlFor="title" className="block text-[14px] font-medium text-[#0A0A0A] mb-2">
-              Title
-            </label>
+            <label htmlFor="title" style={labelStyle}>Title</label>
             <input
               id="title"
               type="text"
@@ -233,15 +450,19 @@ export default function ProductForm() {
               value={formData.title}
               onChange={handleTitleChange}
               required
-              className="w-full px-5 py-4 rounded-xl border border-[#E5E5E5] text-[16px] text-[#0A0A0A] placeholder:text-[#999999] focus:outline-none focus:border-[#FBBE63] transition-colors"
+              style={{
+                ...inputStyle,
+                borderColor: fieldErrors.title ? '#DC2626' : '#E5E5E5',
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = '#B8860B'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(184,134,11,0.1)'; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = fieldErrors.title ? '#DC2626' : '#E5E5E5'; e.currentTarget.style.boxShadow = 'none'; }}
             />
+            {fieldErrors.title && <p style={errorTextStyle}>{fieldErrors.title}</p>}
           </div>
 
           {/* Slug */}
           <div>
-            <label htmlFor="slug" className="block text-[14px] font-medium text-[#0A0A0A] mb-2">
-              URL Slug
-            </label>
+            <label htmlFor="slug" style={labelStyle}>URL Slug</label>
             <input
               id="slug"
               type="text"
@@ -249,39 +470,83 @@ export default function ProductForm() {
               value={formData.slug}
               onChange={handleSlugChange}
               required
-              className="w-full px-5 py-4 rounded-xl border border-[#E5E5E5] text-[16px] text-[#0A0A0A] placeholder:text-[#999999] focus:outline-none focus:border-[#FBBE63] transition-colors"
+              style={{
+                ...inputStyle,
+                borderColor: fieldErrors.slug ? '#DC2626' : '#E5E5E5',
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = '#B8860B'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(184,134,11,0.1)'; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = fieldErrors.slug ? '#DC2626' : '#E5E5E5'; e.currentTarget.style.boxShadow = 'none'; }}
             />
-            <p className="text-[13px] text-[#999999] mt-2">
-              URL: /artwork/{formData.slug || 'your-slug'}
-            </p>
+            {fieldErrors.slug ? (
+              <p style={errorTextStyle}>{fieldErrors.slug}</p>
+            ) : (
+              <p style={hintStyle}>URL: /artwork/{formData.slug || 'your-slug'}</p>
+            )}
           </div>
 
           {/* Description */}
           <div>
-            <label htmlFor="description" className="block text-[14px] font-medium text-[#0A0A0A] mb-2">
-              Description
-            </label>
+            <label htmlFor="description" style={labelStyle}>Description</label>
             <textarea
               id="description"
               placeholder="Describe the artwork..."
               value={formData.description}
               onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
               rows={5}
-              className="w-full px-5 py-4 rounded-xl border border-[#E5E5E5] text-[16px] text-[#0A0A0A] placeholder:text-[#999999] focus:outline-none focus:border-[#FBBE63] transition-colors resize-none"
+              style={{
+                ...inputStyle,
+                minHeight: '140px',
+                resize: 'vertical' as const,
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = '#B8860B'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(184,134,11,0.1)'; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = '#E5E5E5'; e.currentTarget.style.boxShadow = 'none'; }}
+            />
+          </div>
+
+          {/* Product Code */}
+          <div>
+            <label htmlFor="product_code" style={labelStyle}>Product Code</label>
+            <input
+              id="product_code"
+              type="text"
+              placeholder="e.g., 4322"
+              value={formData.product_code || ''}
+              onChange={(e) => setFormData((prev) => ({ ...prev, product_code: e.target.value }))}
+              style={inputStyle}
+              onFocus={(e) => { e.currentTarget.style.borderColor = '#B8860B'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(184,134,11,0.1)'; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = '#E5E5E5'; e.currentTarget.style.boxShadow = 'none'; }}
+            />
+            <p style={hintStyle}>Custom product identifier displayed on the product page</p>
+          </div>
+
+          {/* Details */}
+          <div>
+            <label htmlFor="details" style={labelStyle}>Details</label>
+            <textarea
+              id="details"
+              placeholder="Additional product details (materials, dimensions, care instructions...)"
+              value={formData.details || ''}
+              onChange={(e) => setFormData((prev) => ({ ...prev, details: e.target.value }))}
+              rows={4}
+              style={{
+                ...inputStyle,
+                minHeight: '120px',
+                resize: 'vertical' as const,
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = '#B8860B'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(184,134,11,0.1)'; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = '#E5E5E5'; e.currentTarget.style.boxShadow = 'none'; }}
             />
           </div>
         </div>
 
         {/* Pricing & Status */}
-        <div className="bg-white rounded-2xl border border-[#E5E5E5] p-8 space-y-6">
-          <h2 className="text-[18px] font-medium text-[#0A0A0A] mb-2">Pricing & Status</h2>
+        <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <p style={sectionTitleStyle}>Pricing & Status</p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
             {/* Price */}
             <div>
-              <label htmlFor="price" className="block text-[14px] font-medium text-[#0A0A0A] mb-2">
-                Price (USD)
-              </label>
+              <label htmlFor="price" style={labelStyle}>Price (USD)</label>
               <input
                 id="price"
                 type="number"
@@ -291,20 +556,30 @@ export default function ProductForm() {
                 value={formData.price}
                 onChange={(e) => setFormData((prev) => ({ ...prev, price: e.target.value }))}
                 required
-                className="w-full px-5 py-4 rounded-xl border border-[#E5E5E5] text-[16px] text-[#0A0A0A] placeholder:text-[#999999] focus:outline-none focus:border-[#FBBE63] transition-colors"
+                style={{
+                  ...inputStyle,
+                  borderColor: fieldErrors.price ? '#DC2626' : '#E5E5E5',
+                }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = '#B8860B'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(184,134,11,0.1)'; }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = fieldErrors.price ? '#DC2626' : '#E5E5E5'; e.currentTarget.style.boxShadow = 'none'; }}
               />
+              {fieldErrors.price && <p style={errorTextStyle}>{fieldErrors.price}</p>}
             </div>
 
             {/* Status */}
             <div>
-              <label htmlFor="status" className="block text-[14px] font-medium text-[#0A0A0A] mb-2">
-                Status
-              </label>
+              <label htmlFor="status" style={labelStyle}>Status</label>
               <select
                 id="status"
                 value={formData.status}
                 onChange={(e) => setFormData((prev) => ({ ...prev, status: e.target.value as ProductStatus }))}
-                className="w-full px-5 py-4 rounded-xl border border-[#E5E5E5] text-[16px] text-[#0A0A0A] focus:outline-none focus:border-[#FBBE63] transition-colors appearance-none bg-white"
+                style={{
+                  ...inputStyle,
+                  cursor: 'pointer',
+                  appearance: 'none' as const,
+                }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = '#B8860B'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(184,134,11,0.1)'; }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = '#E5E5E5'; e.currentTarget.style.boxShadow = 'none'; }}
               >
                 {statusOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -317,14 +592,18 @@ export default function ProductForm() {
 
           {/* Collection */}
           <div>
-            <label htmlFor="collection" className="block text-[14px] font-medium text-[#0A0A0A] mb-2">
-              Collection
-            </label>
+            <label htmlFor="collection" style={labelStyle}>Collection</label>
             <select
               id="collection"
               value={selectedCollectionId}
               onChange={(e) => setSelectedCollectionId(e.target.value)}
-              className="w-full px-5 py-4 rounded-xl border border-[#E5E5E5] text-[16px] text-[#0A0A0A] focus:outline-none focus:border-[#FBBE63] transition-colors appearance-none bg-white"
+              style={{
+                ...inputStyle,
+                cursor: 'pointer',
+                appearance: 'none' as const,
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = '#B8860B'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(184,134,11,0.1)'; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = '#E5E5E5'; e.currentTarget.style.boxShadow = 'none'; }}
             >
               <option value="">No collection</option>
               {collections.map((collection) => (
@@ -337,11 +616,24 @@ export default function ProductForm() {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-4 pt-4">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', paddingTop: '8px' }}>
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex items-center gap-3 px-8 py-4 bg-[#0A0A0A] text-white rounded-xl text-[15px] font-medium hover:bg-[#1a1a1a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '16px 32px',
+              backgroundColor: '#0A0A0A',
+              color: '#FFFFFF',
+              borderRadius: '12px',
+              fontSize: '15px',
+              fontWeight: 600,
+              border: 'none',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.5 : 1,
+            }}
           >
             {loading
               ? isEditing
@@ -354,7 +646,19 @@ export default function ProductForm() {
           <button
             type="button"
             onClick={() => navigate('/admin/products')}
-            className="inline-flex items-center gap-3 px-8 py-4 bg-white text-[#666666] rounded-xl text-[15px] font-medium border border-[#E5E5E5] hover:bg-[#F5F5F5] transition-colors"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '16px 32px',
+              backgroundColor: '#FFFFFF',
+              color: '#666666',
+              borderRadius: '12px',
+              fontSize: '15px',
+              fontWeight: 600,
+              border: '2px solid #E5E5E5',
+              cursor: 'pointer',
+            }}
           >
             Cancel
           </button>

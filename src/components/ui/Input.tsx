@@ -1,4 +1,4 @@
-import { forwardRef, type InputHTMLAttributes, type TextareaHTMLAttributes, type CSSProperties } from 'react';
+import { forwardRef, useState, type InputHTMLAttributes, type TextareaHTMLAttributes, type CSSProperties } from 'react';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -12,31 +12,36 @@ interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
 
 const baseInputStyles: CSSProperties = {
   width: '100%',
-  padding: '10px 16px',
+  padding: '14px 18px',
   backgroundColor: '#ffffff',
-  border: '1px solid #e5e5e5',
+  border: '2px solid #E5E5E5',
+  borderRadius: '12px',
   color: '#1a1a1a',
-  fontSize: '14px',
+  fontSize: '15px',
   outline: 'none',
-  transition: 'all 0.2s',
+  transition: 'border-color 0.2s, box-shadow 0.2s',
 };
+
+const focusedBorder = '#B8860B';
+const focusShadow = '0 0 0 3px rgba(184, 134, 11, 0.1)';
 
 const labelStyles: CSSProperties = {
   display: 'block',
   fontSize: '14px',
-  fontWeight: 500,
+  fontWeight: 600,
   color: '#1a1a1a',
-  marginBottom: '6px',
+  marginBottom: '8px',
 };
 
 const errorStyles: CSSProperties = {
-  marginTop: '4px',
-  fontSize: '14px',
+  marginTop: '6px',
+  fontSize: '13px',
   color: '#dc2626',
 };
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, id, style, ...props }, ref) => {
+    const [focused, setFocused] = useState(false);
     return (
       <div style={{ width: '100%' }}>
         {label && (
@@ -47,9 +52,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={ref}
           id={id}
+          onFocus={(e) => { setFocused(true); props.onFocus?.(e); }}
+          onBlur={(e) => { setFocused(false); props.onBlur?.(e); }}
           style={{
             ...baseInputStyles,
-            borderColor: error ? '#dc2626' : '#e5e5e5',
+            borderColor: error ? '#dc2626' : focused ? focusedBorder : '#E5E5E5',
+            boxShadow: focused ? focusShadow : 'none',
             ...style,
           }}
           {...props}
@@ -64,6 +72,7 @@ Input.displayName = 'Input';
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ label, error, id, style, ...props }, ref) => {
+    const [focused, setFocused] = useState(false);
     return (
       <div style={{ width: '100%' }}>
         {label && (
@@ -74,11 +83,14 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         <textarea
           ref={ref}
           id={id}
+          onFocus={(e) => { setFocused(true); props.onFocus?.(e); }}
+          onBlur={(e) => { setFocused(false); props.onBlur?.(e); }}
           style={{
             ...baseInputStyles,
-            minHeight: '120px',
+            minHeight: '140px',
             resize: 'vertical',
-            borderColor: error ? '#dc2626' : '#e5e5e5',
+            borderColor: error ? '#dc2626' : focused ? focusedBorder : '#E5E5E5',
+            boxShadow: focused ? focusShadow : 'none',
             ...style,
           }}
           {...props}
@@ -99,6 +111,7 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ label, error, id, options, style, ...props }, ref) => {
+    const [focused, setFocused] = useState(false);
     return (
       <div style={{ width: '100%' }}>
         {label && (
@@ -109,10 +122,13 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         <select
           ref={ref}
           id={id}
+          onFocus={(e) => { setFocused(true); props.onFocus?.(e); }}
+          onBlur={(e) => { setFocused(false); props.onBlur?.(e); }}
           style={{
             ...baseInputStyles,
             cursor: 'pointer',
-            borderColor: error ? '#dc2626' : '#e5e5e5',
+            borderColor: error ? '#dc2626' : focused ? focusedBorder : '#E5E5E5',
+            boxShadow: focused ? focusShadow : 'none',
             ...style,
           }}
           {...props}

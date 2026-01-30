@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { HeartIcon } from './Icons';
 
@@ -18,7 +18,7 @@ export interface ProductCardProps {
   onWishlistToggle?: (id: string) => void;
 }
 
-export default function ProductCard({
+const ProductCard = memo(function ProductCard({
   id,
   title,
   slug,
@@ -162,6 +162,8 @@ export default function ProductCard({
             e.preventDefault();
             onWishlistToggle?.(id);
           }}
+          aria-label={isWishlisted ? `Remove ${title} from wishlist` : `Add ${title} to wishlist`}
+          aria-pressed={isWishlisted}
           style={{
             position: 'absolute',
             top: '12px',
@@ -230,11 +232,12 @@ export default function ProductCard({
         </div>
 
         {/* Size Options */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }} role="group" aria-label="Size options">
           {sizes.map((size) => (
             <button
               key={size}
               onClick={() => setSelectedSize(size)}
+              aria-pressed={selectedSize === size}
               style={{
                 fontSize: '10px',
                 padding: '4px 8px',
@@ -252,4 +255,6 @@ export default function ProductCard({
       </div>
     </div>
   );
-}
+});
+
+export default ProductCard;

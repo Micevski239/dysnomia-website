@@ -1,156 +1,278 @@
+import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { useProducts } from '../../hooks/useProducts';
+import { useProducts, useProductMutations } from '../../hooks/useProducts';
 import { formatPrice } from '../../lib/utils';
-import { Plus, Package, ExternalLink, Edit2 } from 'lucide-react';
+import { AdminCard, DataTable, SearchInput, StatusBadge, EmptyState } from '../../components/admin';
+import type { Column } from '../../components/admin';
+import type { Product, ProductStatus } from '../../types';
+import { Plus, Package, ExternalLink, Edit2, Trash2 } from 'lucide-react';
+
+const statusOptions: { value: ProductStatus | 'all'; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'published', label: 'Published' },
+  { value: 'draft', label: 'Draft' },
+  { value: 'sold', label: 'Sold' },
+];
+
+const filterBtn = (active: boolean): React.CSSProperties => ({
+  padding: '10px 20px',
+  fontSize: '13px',
+  fontWeight: 600,
+  borderRadius: '8px',
+  border: 'none',
+  cursor: 'pointer',
+  backgroundColor: active ? '#1a1a1a' : '#F0F0F0',
+  color: active ? '#FFFFFF' : '#555555',
+  transition: 'all 0.15s',
+});
+
+const iconBtn: React.CSSProperties = {
+  padding: '8px',
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+  borderRadius: '8px',
+  color: '#888888',
+  display: 'flex',
+  transition: 'all 0.15s',
+};
 
 const placeholderImage = 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=600&h=800&fit=crop';
 
 export default function ProductsList() {
-  const { products, loading, error } = useProducts(true);
+  const { products, loading, error, refetch } = useProducts(true);
+  const { deleteProduct, updateProduct } = useProductMutations();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<ProductStatus | 'all'>('all');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
-  if (loading) {
-    return (
-      <div className="space-y-8">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <div className="h-4 w-20 bg-[#F5F5F5] rounded animate-pulse mb-2" />
-            <div className="h-10 w-48 bg-[#F5F5F5] rounded animate-pulse" />
-          </div>
-          <div className="h-14 w-40 bg-[#F5F5F5] rounded-xl animate-pulse" />
+  const filteredProducts = useMemo(() => {
+    let filtered = products;
+    if (statusFilter !== 'all') filtered = filtered.filter((p) => p.status === statusFilter);
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (p) =>
+          p.title.toLowerCase().includes(q) ||
+          p.slug.toLowerCase().includes(q) ||
+          (p.description && p.description.toLowerCase().includes(q))
+      );
+    }
+    return filtered;
+  }, [products, statusFilter, searchQuery]);
+
+  const handleDeleteClick = (product: Product) => {
+    setProductToDelete(product);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!productToDelete) return;
+    setActionLoading(true);
+    await deleteProduct(productToDelete.id);
+    refetch();
+    setActionLoading(false);
+    setDeleteModalOpen(false);
+    setProductToDelete(null);
+  };
+
+  const handleBulkStatusChange = async (newStatus: ProductStatus) => {
+    if (selectedIds.size === 0) return;
+    setActionLoading(true);
+    const selected = products.filter((p) => selectedIds.has(p.id));
+    for (const product of selected) {
+      await updateProduct(product.id, {
+        title: product.title, slug: product.slug, description: product.description || '',
+        price: product.price.toString(), status: newStatus,
+        image: null, image_canvas: null, image_roll: null, image_framed: null,
+      }, {
+        image_url: product.image_url, image_url_canvas: product.image_url_canvas || null,
+        image_url_roll: product.image_url_roll || null, image_url_framed: product.image_url_framed || null,
+      });
+    }
+    refetch();
+    setSelectedIds(new Set());
+    setActionLoading(false);
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    if (!window.confirm(`Delete ${selectedIds.size} products?`)) return;
+    setActionLoading(true);
+    for (const id of selectedIds) await deleteProduct(id);
+    refetch();
+    setSelectedIds(new Set());
+    setActionLoading(false);
+  };
+
+  const columns: Column<Product>[] = [
+    {
+      key: 'image',
+      header: '',
+      width: '72px',
+      render: (p) => (
+        <div style={{ width: '56px', height: '56px', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#F5F5F5' }}>
+          <img src={p.image_url || placeholderImage} alt={p.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="bg-white rounded-2xl border border-[#E5E5E5] overflow-hidden">
-              <div className="aspect-[4/3] bg-[#F5F5F5] animate-pulse" />
-              <div className="p-6 space-y-3">
-                <div className="h-5 bg-[#F5F5F5] rounded w-3/4 animate-pulse" />
-                <div className="h-4 bg-[#F5F5F5] rounded w-1/2 animate-pulse" />
-              </div>
-            </div>
-          ))}
+      ),
+    },
+    {
+      key: 'title',
+      header: 'Title',
+      sortable: true,
+      sortKey: 'title',
+      render: (p) => (
+        <div>
+          <p style={{ fontWeight: 600, color: '#1a1a1a', fontSize: '14px' }}>{p.title}</p>
+          <p style={{ fontSize: '12px', color: '#AAAAAA', marginTop: '2px' }}>/artwork/{p.slug}</p>
         </div>
-      </div>
-    );
-  }
+      ),
+    },
+    {
+      key: 'price',
+      header: 'Price',
+      sortable: true,
+      sortKey: 'price',
+      render: (p) => <span style={{ fontWeight: 600, color: '#1a1a1a', fontSize: '14px' }}>{formatPrice(p.price)}</span>,
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (p) => <StatusBadge type="product" status={p.status} />,
+    },
+    {
+      key: 'actions',
+      header: '',
+      align: 'right',
+      render: (p) => (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
+          <Link to={`/admin/products/${p.id}/edit`} style={{ ...iconBtn, textDecoration: 'none' }}>
+            <Edit2 style={{ width: '16px', height: '16px' }} />
+          </Link>
+          <Link to={`/artwork/${p.slug}`} target="_blank" style={{ ...iconBtn, textDecoration: 'none' }}>
+            <ExternalLink style={{ width: '16px', height: '16px' }} />
+          </Link>
+          <button onClick={() => handleDeleteClick(p)} style={iconBtn}>
+            <Trash2 style={{ width: '16px', height: '16px' }} />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  const bulkBtn = (bg: string, color: string): React.CSSProperties => ({
+    padding: '8px 16px', fontSize: '13px', fontWeight: 600, backgroundColor: bg, color,
+    border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: actionLoading ? 0.5 : 1,
+  });
 
   return (
-    <div className="space-y-8">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
       {/* Header */}
-      <div className="flex flex-wrap items-end justify-between gap-4">
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '20px' }}>
         <div>
-          <p className="text-[12px] uppercase tracking-[0.2em] text-[#999999] mb-2">
-            Manage
-          </p>
-          <h1
-            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-            className="text-[36px] font-medium text-[#0A0A0A]"
-          >
-            Products
-          </h1>
-          <p className="text-[15px] text-[#666666] mt-2">
-            {products.length} {products.length === 1 ? 'product' : 'products'} in your gallery
+          <p style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.2em', color: '#999999', marginBottom: '8px', fontWeight: 600 }}>Manage</p>
+          <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '36px', fontWeight: 500, color: '#0A0A0A' }}>Products</h1>
+          <p style={{ fontSize: '15px', color: '#888888', marginTop: '8px' }}>
+            {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
+            {statusFilter !== 'all' ? ` (${statusFilter})` : ''}
           </p>
         </div>
         <Link
           to="/admin/products/new"
-          className="inline-flex items-center gap-3 px-6 py-4 bg-[#0A0A0A] text-white rounded-xl text-[15px] font-medium hover:bg-[#1a1a1a] transition-colors"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: '10px', padding: '16px 32px',
+            backgroundColor: '#0A0A0A', color: '#FFFFFF', borderRadius: '12px',
+            fontSize: '15px', fontWeight: 600, textDecoration: 'none',
+          }}
         >
-          <Plus className="h-5 w-5" />
+          <Plus style={{ width: '18px', height: '18px' }} />
           Add Product
         </Link>
       </div>
 
+      {/* Filters */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '20px' }}>
+        <SearchInput value={searchQuery} onChange={setSearchQuery} placeholder="Search products..." style={{ width: '320px' }} />
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+          {statusOptions.map((opt) => (
+            <button key={opt.value} onClick={() => setStatusFilter(opt.value)} style={filterBtn(statusFilter === opt.value)}>
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Bulk Actions */}
+      {selectedIds.size > 0 && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '20px', padding: '20px 24px',
+          backgroundColor: 'rgba(184,134,11,0.08)', border: '1px solid rgba(184,134,11,0.2)', borderRadius: '12px',
+        }}>
+          <span style={{ fontSize: '14px', fontWeight: 600, color: '#B8860B' }}>{selectedIds.size} selected</span>
+          <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto' }}>
+            <button onClick={() => handleBulkStatusChange('published')} disabled={actionLoading} style={bulkBtn('#DCFCE7', '#166534')}>Publish</button>
+            <button onClick={() => handleBulkStatusChange('draft')} disabled={actionLoading} style={bulkBtn('#F0F0F0', '#555555')}>Set Draft</button>
+            <button onClick={handleBulkDelete} disabled={actionLoading} style={bulkBtn('#FEE2E2', '#991B1B')}>Delete</button>
+            <button onClick={() => setSelectedIds(new Set())} style={{ ...bulkBtn('transparent', '#888888'), textDecoration: 'underline' }}>Clear</button>
+          </div>
+        </div>
+      )}
+
       {error && (
-        <div className="rounded-2xl bg-red-50 border border-red-200 px-6 py-4 text-[15px] text-red-700">
+        <div style={{ backgroundColor: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '12px', padding: '16px', color: '#DC2626', fontSize: '14px' }}>
           {error}
         </div>
       )}
 
-      {products.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-[#E5E5E5] py-20 text-center">
-          <div className="w-20 h-20 mx-auto rounded-2xl bg-[#F5F5F5] flex items-center justify-center mb-6">
-            <Package className="h-10 w-10 text-[#CCCCCC]" />
-          </div>
-          <h3
-            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-            className="text-[24px] font-medium text-[#0A0A0A] mb-2"
-          >
-            No products yet
-          </h3>
-          <p className="text-[15px] text-[#666666] mb-8">
-            Start building your gallery by adding your first product.
-          </p>
-          <Link
-            to="/admin/products/new"
-            className="inline-flex items-center gap-3 px-6 py-4 bg-[#FBBE63] text-[#0A0A0A] rounded-xl text-[15px] font-medium hover:bg-[#f0b050] transition-colors"
-          >
-            <Plus className="h-5 w-5" />
-            Create your first product
-          </Link>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map((product) => (
-            <div
-              key={product.id}
-              className="bg-white rounded-2xl border border-[#E5E5E5] overflow-hidden group hover:border-[#FBBE63]/50 transition-colors"
-            >
-              {/* Image */}
-              <div className="aspect-[4/3] bg-[#F5F5F5] relative overflow-hidden">
-                <img
-                  src={product.image_url || placeholderImage}
-                  alt={product.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                {/* Status Badge */}
-                <span
-                  className={`absolute top-4 left-4 px-3 py-1.5 rounded-full text-[12px] font-medium ${
-                    product.status === 'published'
-                      ? 'bg-green-100 text-green-700'
-                      : product.status === 'sold'
-                      ? 'bg-[#FBBE63] text-[#0A0A0A]'
-                      : 'bg-white text-[#666666]'
-                  }`}
-                >
-                  {product.status}
-                </span>
-              </div>
+      <AdminCard noPadding>
+        <DataTable
+          columns={columns}
+          data={filteredProducts}
+          keyExtractor={(p) => p.id}
+          loading={loading}
+          selectable
+          selectedIds={selectedIds}
+          onSelectionChange={setSelectedIds}
+          emptyState={
+            <EmptyState
+              icon={<Package style={{ width: '32px', height: '32px' }} />}
+              title="No products found"
+              description={
+                searchQuery || statusFilter !== 'all'
+                  ? 'Try adjusting your search or filters'
+                  : 'Start building your gallery by adding your first product'
+              }
+              actionLabel={!searchQuery && statusFilter === 'all' ? 'Add Product' : undefined}
+              actionTo={!searchQuery && statusFilter === 'all' ? '/admin/products/new' : undefined}
+            />
+          }
+        />
+      </AdminCard>
 
-              {/* Content */}
-              <div className="p-6">
-                <h3 className="text-[18px] font-medium text-[#0A0A0A] mb-1 truncate">
-                  {product.title}
-                </h3>
-                <p className="text-[13px] text-[#999999] mb-4">
-                  /artwork/{product.slug}
-                </p>
-                <p
-                  style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-                  className="text-[24px] font-medium text-[#0A0A0A] mb-5"
-                >
-                  {formatPrice(product.price)}
-                </p>
-
-                {/* Actions */}
-                <div className="flex gap-3">
-                  <Link
-                    to={`/admin/products/${product.id}/edit`}
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-[#0A0A0A] text-white rounded-xl text-[14px] font-medium hover:bg-[#1a1a1a] transition-colors"
-                  >
-                    <Edit2 className="h-4 w-4" />
-                    Edit
-                  </Link>
-                  <Link
-                    to={`/artwork/${product.slug}`}
-                    target="_blank"
-                    className="inline-flex items-center justify-center px-4 py-3 bg-[#F5F5F5] text-[#666666] rounded-xl text-[14px] font-medium hover:bg-[#E5E5E5] transition-colors"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                  </Link>
-                </div>
-              </div>
+      {/* Delete Modal */}
+      {deleteModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={() => setDeleteModalOpen(false)} />
+          <div style={{ position: 'relative', backgroundColor: '#FFF', borderRadius: '20px', padding: '36px', maxWidth: '440px', width: '100%', margin: '0 16px', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+            <h3 style={{ fontSize: '20px', fontWeight: 600, color: '#0A0A0A', marginBottom: '16px' }}>Delete Product</h3>
+            <p style={{ color: '#888888', fontSize: '15px', marginBottom: '32px', lineHeight: 1.6 }}>
+              Are you sure you want to delete "{productToDelete?.title}"? This action cannot be undone.
+            </p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => setDeleteModalOpen(false)}
+                style={{ flex: 1, padding: '14px', border: '1px solid #E5E5E5', backgroundColor: '#FFF', color: '#888888', borderRadius: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}
+              >Cancel</button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={actionLoading}
+                style={{ flex: 1, padding: '14px', border: 'none', backgroundColor: '#DC2626', color: '#FFF', borderRadius: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', opacity: actionLoading ? 0.5 : 1 }}
+              >{actionLoading ? 'Deleting...' : 'Delete'}</button>
             </div>
-          ))}
+          </div>
         </div>
       )}
     </div>

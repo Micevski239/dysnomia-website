@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { PostgrestError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { validateImageFile } from '../lib/fileValidation';
 import type { Collection, CollectionFormData } from '../types';
 
 const LEGACY_COVER_FIELD_KEY = 'collections:useLegacyCoverField';
@@ -105,13 +106,21 @@ export function useCollectionMutations() {
   const COLLECTION_BUCKET = 'product-images';
 
   const uploadImage = async (file: File): Promise<string | null> => {
-    const fileExt = file.name.split('.').pop();
+    // Validate file before upload
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      throw new Error(validation.error);
+    }
+
+    const fileExt = file.name.split('.').pop()?.toLowerCase();
     const fileName = `${crypto.randomUUID()}.${fileExt}`;
     const filePath = fileName;
 
     const { error } = await supabase.storage
       .from(COLLECTION_BUCKET)
-      .upload(filePath, file);
+      .upload(filePath, file, {
+        contentType: file.type,
+      });
 
     if (error) {
       throw error;

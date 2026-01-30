@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/shop/ProductCard';
 import type { ProductCardProps } from '../components/shop/ProductCard';
 import { useProducts } from '../hooks/useProducts';
@@ -7,13 +8,41 @@ type SortOption = 'newest' | 'price-low' | 'price-high' | 'name';
 type CategoryFilter = 'all' | 'dysnomia' | 'artist' | 'limited';
 type PriceFilter = 'all' | 'under-100' | '100-200' | '200-300' | 'over-300';
 
+const VALID_SORT_OPTIONS: SortOption[] = ['newest', 'price-low', 'price-high', 'name'];
+const VALID_CATEGORY_FILTERS: CategoryFilter[] = ['all', 'dysnomia', 'artist', 'limited'];
+const VALID_PRICE_FILTERS: PriceFilter[] = ['all', 'under-100', '100-200', '200-300', 'over-300'];
+
 export default function Shop() {
-  const [sortBy, setSortBy] = useState<SortOption>('newest');
-  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
-  const [priceFilter, setPriceFilter] = useState<PriceFilter>('all');
-  const [showOnSale, setShowOnSale] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Initialize state from URL params
+  const initialSort = (searchParams.get('sort') as SortOption) || 'newest';
+  const initialCategory = (searchParams.get('category') as CategoryFilter) || 'all';
+  const initialPrice = (searchParams.get('price') as PriceFilter) || 'all';
+  const initialSale = searchParams.get('sale') === 'true';
+
+  const [sortBy, setSortBy] = useState<SortOption>(
+    VALID_SORT_OPTIONS.includes(initialSort) ? initialSort : 'newest'
+  );
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>(
+    VALID_CATEGORY_FILTERS.includes(initialCategory) ? initialCategory : 'all'
+  );
+  const [priceFilter, setPriceFilter] = useState<PriceFilter>(
+    VALID_PRICE_FILTERS.includes(initialPrice) ? initialPrice : 'all'
+  );
+  const [showOnSale, setShowOnSale] = useState(initialSale);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const { products } = useProducts();
+  const { products, loading, error, refetch } = useProducts();
+
+  // Sync URL params when filters change
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (sortBy !== 'newest') params.set('sort', sortBy);
+    if (categoryFilter !== 'all') params.set('category', categoryFilter);
+    if (priceFilter !== 'all') params.set('price', priceFilter);
+    if (showOnSale) params.set('sale', 'true');
+    setSearchParams(params, { replace: true });
+  }, [sortBy, categoryFilter, priceFilter, showOnSale, setSearchParams]);
 
   // Map backend products to ProductCardProps used by this view
   const allProducts: ProductCardProps[] = useMemo(
@@ -364,7 +393,118 @@ export default function Shop() {
 
           {/* Product Grid */}
           <div style={{ flex: 1 }}>
-            {filteredAndSortedProducts.length === 0 ? (
+            {loading ? (
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+                  gap: '32px'
+                }}
+              >
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} style={{ width: '260px' }}>
+                    <div
+                      style={{
+                        aspectRatio: '3/4',
+                        backgroundColor: '#F5F5F5',
+                        marginBottom: '12px',
+                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                      }}
+                    />
+                    <div
+                      style={{
+                        height: '12px',
+                        backgroundColor: '#F5F5F5',
+                        marginBottom: '8px',
+                        width: '60%',
+                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                      }}
+                    />
+                    <div
+                      style={{
+                        height: '16px',
+                        backgroundColor: '#F5F5F5',
+                        marginBottom: '8px',
+                        width: '80%',
+                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                      }}
+                    />
+                    <div
+                      style={{
+                        height: '14px',
+                        backgroundColor: '#F5F5F5',
+                        width: '40%',
+                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : error ? (
+              <div
+                style={{
+                  textAlign: 'center',
+                  padding: '80px 20px',
+                  backgroundColor: '#FEF2F2',
+                  border: '1px solid #FCA5A5'
+                }}
+              >
+                <div
+                  style={{
+                    width: '48px',
+                    height: '48px',
+                    margin: '0 auto 16px',
+                    backgroundColor: '#FCA5A5',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                </div>
+                <p
+                  style={{
+                    fontFamily: "'Playfair Display', Georgia, serif",
+                    fontSize: '20px',
+                    color: '#DC2626',
+                    marginBottom: '12px'
+                  }}
+                >
+                  Failed to load artworks
+                </p>
+                <p style={{ fontSize: '14px', color: '#7F1D1D', marginBottom: '24px' }}>
+                  {error}
+                </p>
+                <button
+                  onClick={() => refetch()}
+                  style={{
+                    padding: '12px 32px',
+                    backgroundColor: '#DC2626',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    letterSpacing: '1px',
+                    textTransform: 'uppercase',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#B91C1C';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#DC2626';
+                  }}
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : filteredAndSortedProducts.length === 0 ? (
               <div
                 style={{
                   textAlign: 'center',
