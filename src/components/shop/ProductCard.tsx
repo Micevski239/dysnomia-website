@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { HeartIcon } from './Icons';
 import RoomMockup from './RoomMockup';
 import { useCurrency } from '../../hooks/useCurrency';
-import { priceMatrix, printSizes } from '../../config/printOptions';
+import { priceMatrix } from '../../config/printOptions';
 
 export interface ProductCardProps {
   id: string;
@@ -36,10 +36,10 @@ const ProductCard = memo(function ProductCard({
   title,
   slug,
   brand = 'dysnomia',
-  price,
-  originalPrice,
+  price: _price,
+  originalPrice: _originalPrice,
   image,
-  hoverImage,
+  hoverImage: _hoverImage,
   badge,
   discount,
   sizes = ['50x70 cm', '70x100 cm', '100x150 cm'],

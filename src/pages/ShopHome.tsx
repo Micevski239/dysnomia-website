@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Hero, ProductCarousel, USPSection, GalleryTour, BrandStory, ImageMarquee } from '../components/shop';
+import { Hero, ProductCarousel, USPSection, GalleryTour, BrandStory } from '../components/shop';
 import type { ProductCardProps } from '../components/shop';
 import { useProducts } from '../hooks/useProducts';
 import { useLanguage } from '../hooks/useLanguage';
@@ -7,69 +7,6 @@ import type { Product } from '../types';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=533&fit=crop';
 
-// Sample limited edition products
-const limitedEditionProducts: ProductCardProps[] = [
-  {
-    id: 'le1',
-    title: 'Golden Hour Series #1',
-    slug: 'golden-hour-1',
-    brand: 'Limited Edition',
-    price: 299.99,
-    image: 'https://images.unsplash.com/photo-1513519245088-0e12902e35a6?w=400&h=533&fit=crop',
-    badge: 'limited',
-    sizes: ['50x70 cm', '70x100 cm']
-  },
-  {
-    id: 'le2',
-    title: 'Midnight Collection',
-    slug: 'midnight-collection',
-    brand: 'Limited Edition',
-    price: 349.99,
-    image: 'https://images.unsplash.com/photo-1582053433976-25c00369fc93?w=400&h=533&fit=crop',
-    badge: 'limited',
-    sizes: ['50x70 cm', '70x100 cm']
-  },
-  {
-    id: 'le3',
-    title: 'Abstract Gold',
-    slug: 'abstract-gold',
-    brand: 'Limited Edition',
-    price: 399.99,
-    image: 'https://images.unsplash.com/photo-1544967082-d9d25d867d66?w=400&h=533&fit=crop',
-    badge: 'limited',
-    sizes: ['70x100 cm']
-  },
-  {
-    id: 'le4',
-    title: 'Contemporary Vision',
-    slug: 'contemporary-vision',
-    brand: 'Limited Edition',
-    price: 279.99,
-    image: 'https://images.unsplash.com/photo-1513519245088-0e12902e35a6?w=400&h=533&fit=crop',
-    badge: 'limited',
-    sizes: ['50x70 cm', '70x100 cm']
-  },
-  {
-    id: 'le5',
-    title: 'Ethereal Dreams',
-    slug: 'ethereal-dreams',
-    brand: 'Limited Edition',
-    price: 329.99,
-    image: 'https://images.unsplash.com/photo-1582053433976-25c00369fc93?w=400&h=533&fit=crop',
-    badge: 'limited',
-    sizes: ['50x70 cm']
-  },
-  {
-    id: 'le6',
-    title: 'Sculptural Form',
-    slug: 'sculptural-form',
-    brand: 'Limited Edition',
-    price: 449.99,
-    image: 'https://images.unsplash.com/photo-1544967082-d9d25d867d66?w=400&h=533&fit=crop',
-    badge: 'limited',
-    sizes: ['70x100 cm']
-  }
-];
 
 const mapProductToCard = (product: Product): ProductCardProps => ({
   id: product.id,
@@ -92,13 +29,6 @@ export default function ShopHome() {
     return source.slice(0, 10).map(mapProductToCard);
   }, [products]);
 
-  const marqueeImages = useMemo(() => {
-    return products.slice(0, 12).map((product) => ({
-      src: product.image_url || FALLBACK_IMAGE,
-      slug: product.slug,
-      title: product.title
-    }));
-  }, [products]);
 
   return (
     <>

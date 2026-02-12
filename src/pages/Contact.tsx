@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useLanguage } from '../hooks/useLanguage';
 
 export default function Contact() {
-  const { t } = useLanguage();
+  const { t: _t } = useLanguage();
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
 
