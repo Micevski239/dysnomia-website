@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { Search } from 'lucide-react';
+import { useBreakpoint } from '../hooks/useBreakpoint';
+import { Search, Menu, X } from 'lucide-react';
 import GlobalSearch from './admin/GlobalSearch';
 
 export default function AdminLayout() {
@@ -9,6 +10,8 @@ export default function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { isMobileOrTablet } = useBreakpoint();
 
   const handleSignOut = async () => {
     await signOut();
@@ -45,13 +48,38 @@ export default function AdminLayout() {
     return location.pathname.startsWith(path);
   };
 
+  // Close sidebar when navigating on mobile
+  useEffect(() => {
+    if (isMobileOrTablet) {
+      setSidebarOpen(false);
+    }
+  }, [location.pathname, isMobileOrTablet]);
+
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#F2F2F2' }}>
       {/* Header */}
       <header style={{ backgroundColor: '#0A0A0A', color: '#FFFFFF' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 32px' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: `0 clamp(16px, 3vw, 32px)` }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '72px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              {isMobileOrTablet && (
+                <button
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '44px',
+                    height: '44px',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    color: '#FFFFFF',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <Menu style={{ width: '24px', height: '24px' }} />
+                </button>
+              )}
               <Link
                 to="/"
                 style={{
@@ -65,17 +93,22 @@ export default function AdminLayout() {
               >
                 DYSNOMIA
               </Link>
-              <span style={{ color: 'rgba(255,255,255,0.3)' }}>|</span>
-              <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)' }}>Admin Panel</span>
+              {!isMobileOrTablet && (
+                <>
+                  <span style={{ color: 'rgba(255,255,255,0.3)' }}>|</span>
+                  <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)' }}>Admin Panel</span>
+                </>
+              )}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: isMobileOrTablet ? '8px' : '16px' }}>
               <button
                 onClick={() => setSearchOpen(true)}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
+                  justifyContent: 'center',
                   gap: '10px',
-                  padding: '8px 16px',
+                  padding: isMobileOrTablet ? '10px' : '8px 16px',
                   backgroundColor: 'rgba(255,255,255,0.1)',
                   border: '1px solid rgba(255,255,255,0.15)',
                   borderRadius: '10px',
@@ -83,22 +116,30 @@ export default function AdminLayout() {
                   color: 'rgba(255,255,255,0.7)',
                   cursor: 'pointer',
                   transition: 'background-color 0.15s',
+                  minWidth: '44px',
+                  minHeight: '44px',
                 }}
               >
                 <Search style={{ width: '16px', height: '16px' }} />
-                Search
-                <kbd style={{
-                  padding: '2px 8px',
-                  backgroundColor: 'rgba(255,255,255,0.1)',
-                  borderRadius: '4px',
-                  fontSize: '11px',
-                  fontFamily: 'monospace',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                }}>
-                  ⌘K
-                </kbd>
+                {!isMobileOrTablet && (
+                  <>
+                    Search
+                    <kbd style={{
+                      padding: '2px 8px',
+                      backgroundColor: 'rgba(255,255,255,0.1)',
+                      borderRadius: '4px',
+                      fontSize: '11px',
+                      fontFamily: 'monospace',
+                      border: '1px solid rgba(255,255,255,0.15)',
+                    }}>
+                      ⌘K
+                    </kbd>
+                  </>
+                )}
               </button>
-              <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)' }}>{user?.email}</span>
+              {!isMobileOrTablet && (
+                <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)' }}>{user?.email}</span>
+              )}
               <button
                 onClick={handleSignOut}
                 style={{
@@ -107,19 +148,68 @@ export default function AdminLayout() {
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
+                  padding: isMobileOrTablet ? '10px' : '0',
+                  minWidth: isMobileOrTablet ? '44px' : 'auto',
+                  minHeight: isMobileOrTablet ? '44px' : 'auto',
                 }}
               >
-                Sign Out
+                {isMobileOrTablet ? 'Out' : 'Sign Out'}
               </button>
             </div>
           </div>
         </div>
       </header>
 
-      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '40px 32px' }}>
-        <div style={{ display: 'flex', gap: '40px' }}>
+      {/* Mobile Sidebar Overlay */}
+      {isMobileOrTablet && sidebarOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 40,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+          }}
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: `clamp(24px, 4vw, 40px) clamp(16px, 3vw, 32px)` }}>
+        <div style={{ display: 'flex', gap: 'clamp(24px, 4vw, 40px)' }}>
           {/* Sidebar */}
-          <aside style={{ width: '260px', flexShrink: 0 }}>
+          <aside style={{
+            width: '260px',
+            flexShrink: 0,
+            ...(isMobileOrTablet ? {
+              position: 'fixed',
+              top: 0,
+              left: sidebarOpen ? 0 : '-280px',
+              bottom: 0,
+              zIndex: 50,
+              backgroundColor: '#F2F2F2',
+              padding: '24px 16px',
+              transition: 'left 0.3s ease',
+              overflowY: 'auto',
+            } : {}),
+          }}>
+            {isMobileOrTablet && (
+              <button
+                onClick={() => setSidebarOpen(false)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '44px',
+                  height: '44px',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  marginBottom: '16px',
+                  marginLeft: 'auto',
+                }}
+              >
+                <X style={{ width: '24px', height: '24px' }} />
+              </button>
+            )}
             <nav style={{
               backgroundColor: '#FFFFFF',
               borderRadius: '16px',

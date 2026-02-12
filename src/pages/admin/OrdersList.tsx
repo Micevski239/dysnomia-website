@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useOrdersList } from '../../hooks/useOrders';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
 import { AdminCard, DataTable, SearchInput, StatusBadge, EmptyState } from '../../components/admin';
 import type { Column } from '../../components/admin';
 import type { Order, OrderStatus } from '../../types';
@@ -31,6 +32,7 @@ export default function OrdersList() {
   const [statusFilter, setStatusFilter] = useState<OrderStatus | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState('');
   const { orders, loading, error } = useOrdersList(statusFilter);
+  const { isMobile } = useBreakpoint();
 
   const formatDate = (dateString: string) =>
     new Date(dateString).toLocaleDateString('en-GB', {
@@ -145,7 +147,7 @@ export default function OrdersList() {
           value={searchQuery}
           onChange={setSearchQuery}
           placeholder="Search orders, customers..."
-          style={{ width: '320px' }}
+          style={{ width: isMobile ? '100%' : 'clamp(200px, 40vw, 320px)' }}
         />
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
           {statusOptions.map((opt) => (

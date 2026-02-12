@@ -1,9 +1,9 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeftIcon, ChevronRightIcon } from './Icons';
 import ProductCard from './ProductCard';
 import type { ProductCardProps } from './ProductCard';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
+import { useLanguage } from '../../hooks/useLanguage';
 
 interface ProductCarouselProps {
   title: string;
@@ -11,47 +11,105 @@ interface ProductCarouselProps {
   products: ProductCardProps[];
 }
 
-export default function ProductCarousel({ title, viewAllLink, products }: ProductCarouselProps) {
+export default function ProductCarousel({
+  title,
+  viewAllLink,
+  products
+}: ProductCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
-  const [currentPage, setCurrentPage] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const { isMobile } = useBreakpoint();
+  const { t } = useLanguage();
 
-  const itemsPerPage = 5;
-  const totalPages = Math.ceil(products.length / itemsPerPage);
+  const gap = isMobile ? 8 : 12;
+  const itemsPerView = isMobile ? 2 : 5;
+  const totalItems = products.length;
+  const totalPages = Math.ceil(totalItems / itemsPerView);
 
-  const checkScroll = () => {
+  // Create extended products array for infinite loop effect
+  const extendedProducts = [...products, ...products, ...products];
+
+  // Calculate card width dynamically from container
+  const getCardWidth = useCallback(() => {
+    if (!scrollRef.current) return isMobile ? 150 : 248;
+    const containerWidth = scrollRef.current.clientWidth;
+    // Mobile: 2 cards with 1 gap, Desktop: 5 cards with 4 gaps
+    return isMobile ? (containerWidth - gap) / 2 : (containerWidth - gap * 4) / 5;
+  }, [isMobile, gap]);
+
+  const scrollToPage = useCallback((pageIndex: number, smooth = true) => {
     if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-      setCurrentPage(Math.round(scrollLeft / clientWidth));
-    }
-  };
-
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const scrollAmount = scrollRef.current.clientWidth;
-      scrollRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth'
+      const cardWidth = getCardWidth();
+      // Scroll by full page (itemsPerView items at a time)
+      const itemIndex = pageIndex * itemsPerView;
+      const scrollPosition = (itemIndex + totalItems) * (cardWidth + gap);
+      scrollRef.current.scrollTo({
+        left: scrollPosition,
+        behavior: smooth ? 'smooth' : 'auto'
       });
     }
+  }, [getCardWidth, gap, totalItems, itemsPerView]);
+
+  // Arrow navigation
+  const goToPrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + totalPages) % totalPages);
   };
+
+  const goToNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % totalPages);
+  };
+
+  // Scroll when currentIndex (page) changes
+  useEffect(() => {
+    scrollToPage(currentIndex);
+  }, [currentIndex, scrollToPage]);
+
+  // Initialize scroll position to middle set (page 0)
+  useEffect(() => {
+    if (scrollRef.current && products.length > 0) {
+      const cardWidth = getCardWidth();
+      const initialPosition = totalItems * (cardWidth + gap);
+      scrollRef.current.scrollTo({ left: initialPosition, behavior: 'auto' });
+    }
+  }, [products.length, totalItems, getCardWidth, gap]);
+
+  // Handle infinite loop - reset position when reaching edges
+  const handleScroll = useCallback(() => {
+    if (!scrollRef.current) return;
+
+    const { scrollLeft } = scrollRef.current;
+    const cardWidth = getCardWidth();
+    const singleSetWidth = totalItems * (cardWidth + gap);
+
+    // If scrolled to the end (third set), jump to middle set
+    if (scrollLeft >= singleSetWidth * 2) {
+      scrollRef.current.scrollTo({ left: scrollLeft - singleSetWidth, behavior: 'auto' });
+    }
+    // If scrolled to the beginning, jump to middle set
+    else if (scrollLeft <= 0) {
+      scrollRef.current.scrollTo({ left: scrollLeft + singleSetWidth, behavior: 'auto' });
+    }
+  }, [totalItems, getCardWidth, gap]);
+
+  const goToPage = (pageIndex: number) => {
+    setCurrentIndex(pageIndex);
+  };
+
+  if (products.length === 0) return null;
 
   return (
     <section style={{ padding: 'clamp(32px, 6vw, 60px) 0', backgroundColor: '#FFFFFF' }}>
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 clamp(16px, 4vw, 48px)' }}>
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: isMobile ? '20px' : '32px', gap: '12px' }}>
           <h2
             style={{
               fontFamily: "'Playfair Display', Georgia, serif",
-              fontSize: '24px',
+              fontSize: isMobile ? '16px' : '24px',
               fontWeight: 500,
-              letterSpacing: '2px',
-              color: '#0A0A0A'
+              letterSpacing: isMobile ? '1px' : '2px',
+              color: '#0A0A0A',
+              whiteSpace: 'nowrap'
             }}
           >
             {title}
@@ -59,7 +117,7 @@ export default function ProductCarousel({ title, viewAllLink, products }: Produc
           <Link
             to={viewAllLink}
             style={{
-              fontSize: '12px',
+              fontSize: isMobile ? '10px' : '12px',
               color: '#666666',
               textDecoration: 'none',
               letterSpacing: '1px',
@@ -67,15 +125,17 @@ export default function ProductCarousel({ title, viewAllLink, products }: Produc
               transition: 'color 0.2s',
               display: 'flex',
               alignItems: 'center',
-              gap: '8px'
+              gap: '4px',
+              whiteSpace: 'nowrap',
+              flexShrink: 0
             }}
             onMouseEnter={(e) => e.currentTarget.style.color = '#FBBE63'}
             onMouseLeave={(e) => e.currentTarget.style.color = '#666666'}
           >
-            View all
+            {t('common.viewAll')}
             <svg
-              width="12"
-              height="12"
+              width="10"
+              height="10"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -88,118 +148,125 @@ export default function ProductCarousel({ title, viewAllLink, products }: Produc
 
         {/* Carousel Container */}
         <div style={{ position: 'relative' }}>
-          {/* Navigation Arrows */}
-          <button
-            onClick={() => scroll('left')}
-            disabled={!canScrollLeft}
-            style={{
-              position: 'absolute',
-              left: '-16px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              zIndex: 10,
-              width: '40px',
-              height: '40px',
-              backgroundColor: '#FFFFFF',
-              border: '1px solid #E5E5E5',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: canScrollLeft ? 'pointer' : 'not-allowed',
-              opacity: canScrollLeft ? 1 : 0.3,
-              transition: 'all 0.2s',
-              color: '#0A0A0A'
-            }}
-            onMouseEnter={(e) => {
-              if (canScrollLeft) {
+          {/* Left Arrow */}
+          {!isMobile && (
+            <button
+              onClick={goToPrev}
+              style={{
+                position: 'absolute',
+                left: '-20px',
+                top: '35%',
+                transform: 'translateY(-50%)',
+                width: '40px',
+                height: '40px',
+                backgroundColor: '#FFFFFF',
+                border: '1px solid #E5E5E5',
+                borderRadius: '50%',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 10,
+                transition: 'all 0.2s',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}
+              onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = '#FBBE63';
-                e.currentTarget.style.color = '#FBBE63';
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = '#E5E5E5';
-              e.currentTarget.style.color = '#0A0A0A';
-            }}
-          >
-            <ChevronLeftIcon className="w-5 h-5" />
-          </button>
+                e.currentTarget.style.backgroundColor = '#FBBE63';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = '#E5E5E5';
+                e.currentTarget.style.backgroundColor = '#FFFFFF';
+              }}
+              aria-label="Previous"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+          )}
 
-          <button
-            onClick={() => scroll('right')}
-            disabled={!canScrollRight}
-            style={{
-              position: 'absolute',
-              right: '-16px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              zIndex: 10,
-              width: '40px',
-              height: '40px',
-              backgroundColor: '#FFFFFF',
-              border: '1px solid #E5E5E5',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: canScrollRight ? 'pointer' : 'not-allowed',
-              opacity: canScrollRight ? 1 : 0.3,
-              transition: 'all 0.2s',
-              color: '#0A0A0A'
-            }}
-            onMouseEnter={(e) => {
-              if (canScrollRight) {
+          {/* Right Arrow */}
+          {!isMobile && (
+            <button
+              onClick={goToNext}
+              style={{
+                position: 'absolute',
+                right: '-20px',
+                top: '35%',
+                transform: 'translateY(-50%)',
+                width: '40px',
+                height: '40px',
+                backgroundColor: '#FFFFFF',
+                border: '1px solid #E5E5E5',
+                borderRadius: '50%',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 10,
+                transition: 'all 0.2s',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}
+              onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = '#FBBE63';
-                e.currentTarget.style.color = '#FBBE63';
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = '#E5E5E5';
-              e.currentTarget.style.color = '#0A0A0A';
-            }}
-          >
-            <ChevronRightIcon className="w-5 h-5" />
-          </button>
+                e.currentTarget.style.backgroundColor = '#FBBE63';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = '#E5E5E5';
+                e.currentTarget.style.backgroundColor = '#FFFFFF';
+              }}
+              aria-label="Next"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </button>
+          )}
 
           {/* Products Container */}
           <div
             ref={scrollRef}
-            onScroll={checkScroll}
+            onScroll={handleScroll}
             style={{
               display: 'flex',
-              gap: '16px',
-              overflowX: 'auto',
+              gap: `${gap}px`,
+              overflowX: 'hidden',
               scrollBehavior: 'smooth',
               msOverflowStyle: 'none',
-              scrollbarWidth: 'none'
+              scrollbarWidth: 'none',
+              WebkitOverflowScrolling: 'touch'
             }}
           >
-            {products.map((product) => (
-              <ProductCard key={product.id} {...product} />
+            {extendedProducts.map((product, index) => (
+              <div
+                key={`${product.id}-${index}`}
+                style={{
+                  flex: isMobile ? `0 0 calc((100% - ${gap}px) / 2)` : `0 0 calc((100% - ${gap * 4}px) / 5)`,
+                  maxWidth: isMobile ? `calc((100% - ${gap}px) / 2)` : `calc((100% - ${gap * 4}px) / 5)`
+                }}
+              >
+                <ProductCard {...product} showRoomPreview={!isMobile} />
+              </div>
             ))}
           </div>
         </div>
 
-        {/* Pagination Dots */}
+        {/* Pagination Lines - one per page */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '32px' }}>
-          {Array.from({ length: totalPages }).map((_, index) => (
+          {Array.from({ length: totalPages }).map((_, pageIndex) => (
             <button
-              key={index}
-              onClick={() => {
-                if (scrollRef.current) {
-                  scrollRef.current.scrollTo({
-                    left: index * scrollRef.current.clientWidth,
-                    behavior: 'smooth'
-                  });
-                }
-              }}
+              key={pageIndex}
+              onClick={() => goToPage(pageIndex)}
               style={{
                 height: '2px',
-                width: index === currentPage ? '40px' : '20px',
-                backgroundColor: index === currentPage ? '#0A0A0A' : '#E5E5E5',
+                width: pageIndex === currentIndex ? '40px' : '20px',
+                backgroundColor: pageIndex === currentIndex ? '#0A0A0A' : '#E5E5E5',
                 border: 'none',
                 cursor: 'pointer',
                 transition: 'all 0.3s'
               }}
-              aria-label={`Go to page ${index + 1}`}
+              aria-label={`Go to page ${pageIndex + 1}`}
             />
           ))}
         </div>

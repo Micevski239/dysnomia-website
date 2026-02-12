@@ -31,8 +31,8 @@ export default function CartItem({ item, onIncrement, onDecrement, onRemove }: C
       <Link to={`/artwork/${item.productSlug}`}>
         <div
           style={{
-            width: '120px',
-            height: '150px',
+            width: 'clamp(80px, 15vw, 120px)',
+            height: 'clamp(100px, 18vw, 150px)',
             backgroundColor: '#f5f5f5',
             flexShrink: 0,
           }}

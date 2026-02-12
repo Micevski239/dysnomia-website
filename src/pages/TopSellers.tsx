@@ -2,21 +2,13 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useProducts } from '../hooks/useProducts';
 import { useBreakpoint } from '../hooks/useBreakpoint';
+import { useLanguage } from '../hooks/useLanguage';
+import { useCurrency } from '../hooks/useCurrency';
 import ProductCard from '../components/shop/ProductCard';
 import type { ProductCardProps } from '../components/shop/ProductCard';
 import type { Product } from '../types';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1000&h=1400&fit=crop';
-
-const filterOptions = [
-  { id: 'all', label: 'All Arrivals' },
-  { id: 'under200', label: 'Under €200' },
-  { id: 'under500', label: 'Under €500' },
-  { id: 'premium', label: 'Premium' },
-];
-
-const formatPrice = (value: number) =>
-  new Intl.NumberFormat('en-EU', { style: 'currency', currency: 'EUR' }).format(value);
 
 const mapProductToCard = (product: Product): ProductCardProps => ({
   id: product.id,
@@ -25,18 +17,29 @@ const mapProductToCard = (product: Product): ProductCardProps => ({
   brand: 'dysnomia',
   price: Number(product.price) || 0,
   image: product.image_url || FALLBACK_IMAGE,
-  badge: 'new',
+  badge: 'bestseller',
   sizes: ['50x70 cm', '70x100 cm', '100x150 cm'],
 });
 
-export default function NewArrivals() {
+export default function TopSellers() {
   const { products, loading } = useProducts();
-  const [activeFilter, setActiveFilter] = useState(filterOptions[0].id);
+  const [activeFilter, setActiveFilter] = useState('all');
   const { isMobile } = useBreakpoint();
+  const { t } = useLanguage();
+  const { formatPrice } = useCurrency();
+
+  const filterOptions = useMemo(() => [
+    { id: 'all', label: t('topSellers.filterAll') },
+    { id: 'under200', label: t('topSellers.filterUnder200') },
+    { id: 'under500', label: t('topSellers.filterUnder500') },
+    { id: 'premium', label: t('topSellers.filterPremium') },
+  ], [t]);
 
   const filteredProducts = useMemo(() => {
+    // Sort by sales/popularity - using price as a proxy for now
+    // In a real app, you'd sort by actual sales data
     const sorted = [...products].sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      (a, b) => Number(b.price) - Number(a.price)
     );
 
     return sorted.filter((product) => {
@@ -50,6 +53,24 @@ export default function NewArrivals() {
 
   const spotlight = filteredProducts[0];
   const gridProducts = filteredProducts.slice(0, 12);
+
+  const whyChooseUsItems = useMemo(() => [
+    {
+      icon: '🎨',
+      title: t('topSellers.curatedSelection'),
+      description: t('topSellers.curatedSelectionDesc'),
+    },
+    {
+      icon: '🚚',
+      title: t('topSellers.freeShipping'),
+      description: t('topSellers.freeShippingDesc'),
+    },
+    {
+      icon: '✨',
+      title: t('topSellers.premiumQuality'),
+      description: t('topSellers.premiumQualityDesc'),
+    },
+  ], [t]);
 
   return (
     <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: '120px' }}>
@@ -74,7 +95,7 @@ export default function NewArrivals() {
                 marginBottom: '16px',
               }}
             >
-              New Arrivals
+              {t('topSellers.title')}
             </p>
             <h1
               style={{
@@ -86,7 +107,7 @@ export default function NewArrivals() {
                 marginBottom: '24px',
               }}
             >
-              Fresh <span style={{ color: '#FBBE63' }}>Artworks</span>
+              {t('topSellers.heroTitle')} <span style={{ color: '#FBBE63' }}>{t('topSellers.heroTitleAccent')}</span>
             </h1>
             <p
               style={{
@@ -97,12 +118,11 @@ export default function NewArrivals() {
                 marginBottom: '32px',
               }}
             >
-              Discover our latest collection of unique artworks. Each piece is carefully
-              curated to bring modern elegance and timeless beauty to your space.
+              {t('topSellers.heroDescription')}
             </p>
             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
               <Link
-                to="/artworks"
+                to="/shop"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -126,7 +146,7 @@ export default function NewArrivals() {
                   e.currentTarget.style.color = '#FFFFFF';
                 }}
               >
-                Browse All
+                {t('topSellers.shopAll')}
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
@@ -155,7 +175,7 @@ export default function NewArrivals() {
                   e.currentTarget.style.borderColor = '#E5E5E5';
                 }}
               >
-                View Collections
+                {t('topSellers.viewCollections')}
               </Link>
             </div>
           </div>
@@ -205,7 +225,7 @@ export default function NewArrivals() {
                     color: '#FBBE63',
                   }}
                 >
-                  Featured
+                  {t('topSellers.featuredLabel')}
                 </p>
                 <h3
                   style={{
@@ -266,7 +286,7 @@ export default function NewArrivals() {
             ))}
           </div>
           <p style={{ fontSize: '14px', color: '#666666' }}>
-            {filteredProducts.length} {filteredProducts.length === 1 ? 'artwork' : 'artworks'}
+            {filteredProducts.length} {filteredProducts.length === 1 ? t('topSellers.artwork') : t('topSellers.artworks')}
           </p>
         </div>
       </section>
@@ -333,10 +353,10 @@ export default function NewArrivals() {
                 marginBottom: '12px',
               }}
             >
-              No artworks found
+              {t('topSellers.noArtworks')}
             </p>
             <p style={{ fontSize: '15px', color: '#666666', marginBottom: '24px' }}>
-              Try adjusting your filters to find what you're looking for.
+              {t('topSellers.noArtworksMessage')}
             </p>
             <button
               onClick={() => setActiveFilter('all')}
@@ -352,7 +372,7 @@ export default function NewArrivals() {
                 cursor: 'pointer',
               }}
             >
-              Clear Filters
+              {t('topSellers.clearFilters')}
             </button>
           </div>
         ) : (
@@ -370,94 +390,71 @@ export default function NewArrivals() {
         )}
       </section>
 
-      {/* Newsletter Section */}
+      {/* Why Buy Section */}
       <section
         style={{
-          backgroundColor: '#0A0A0A',
+          backgroundColor: '#FAFAFA',
           padding: `clamp(48px, 8vw, 80px) clamp(16px, 4vw, 48px)`,
+          borderTop: '1px solid #E5E5E5',
         }}
       >
-        <div
-          style={{
-            maxWidth: '600px',
-            margin: '0 auto',
-            textAlign: 'center',
-          }}
-        >
-          <p
-            style={{
-              fontSize: '12px',
-              letterSpacing: '3px',
-              textTransform: 'uppercase',
-              color: '#FBBE63',
-              marginBottom: '16px',
-            }}
-          >
-            Stay Updated
-          </p>
-          <h2
-            style={{
-              fontFamily: "'Playfair Display', Georgia, serif",
-              fontSize: 'clamp(28px, 5vw, 36px)',
-              color: '#FFFFFF',
-              marginBottom: '16px',
-            }}
-          >
-            Never Miss New Arrivals
-          </h2>
-          <p
-            style={{
-              fontSize: '15px',
-              lineHeight: 1.7,
-              color: 'rgba(255,255,255,0.7)',
-              marginBottom: '32px',
-            }}
-          >
-            Subscribe to get notified when new artworks arrive. Be the first to discover
-            exclusive pieces and limited editions.
-          </p>
-          <form
-            style={{
-              display: 'flex',
-              flexDirection: isMobile ? 'column' : 'row',
-              gap: '12px',
-              maxWidth: '440px',
-              margin: '0 auto',
-            }}
-            onSubmit={(e) => e.preventDefault()}
-          >
-            <input
-              type="email"
-              placeholder="Enter your email"
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+            <p
               style={{
-                flex: 1,
-                padding: '16px 20px',
-                border: '1px solid rgba(255,255,255,0.2)',
-                backgroundColor: 'transparent',
-                color: '#FFFFFF',
-                fontSize: '14px',
-              }}
-            />
-            <button
-              type="submit"
-              style={{
-                padding: '16px 32px',
-                backgroundColor: '#FBBE63',
-                color: '#0A0A0A',
-                border: 'none',
                 fontSize: '12px',
-                fontWeight: 600,
-                letterSpacing: '1px',
+                letterSpacing: '3px',
                 textTransform: 'uppercase',
-                cursor: 'pointer',
-                transition: 'opacity 0.3s',
+                color: '#FBBE63',
+                marginBottom: '16px',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
-              onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
             >
-              Subscribe
-            </button>
-          </form>
+              {t('topSellers.whyChooseUs')}
+            </p>
+            <h2
+              style={{
+                fontFamily: "'Playfair Display', Georgia, serif",
+                fontSize: 'clamp(28px, 5vw, 36px)',
+                color: '#0A0A0A',
+              }}
+            >
+              {t('topSellers.trustedByThousands')}
+            </h2>
+          </div>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+              gap: '32px',
+            }}
+          >
+            {whyChooseUsItems.map((item) => (
+              <div
+                key={item.title}
+                style={{
+                  textAlign: 'center',
+                  padding: '32px',
+                  backgroundColor: '#FFFFFF',
+                  border: '1px solid #E5E5E5',
+                }}
+              >
+                <div style={{ fontSize: '40px', marginBottom: '16px' }}>{item.icon}</div>
+                <h3
+                  style={{
+                    fontFamily: "'Playfair Display', Georgia, serif",
+                    fontSize: '20px',
+                    color: '#0A0A0A',
+                    marginBottom: '12px',
+                  }}
+                >
+                  {item.title}
+                </h3>
+                <p style={{ fontSize: '15px', lineHeight: 1.6, color: '#666666' }}>
+                  {item.description}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

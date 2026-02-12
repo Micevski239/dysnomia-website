@@ -8,11 +8,13 @@ import { CurrencyProvider } from './context/CurrencyContext';
 import AdminLayout from './components/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import ShopLayoutWrapper from './components/shop/ShopLayoutWrapper';
+import ScrollToTop from './components/ScrollToTop';
 import ShopHome from './pages/ShopHome';
 import Shop from './pages/Shop';
 import Collections from './pages/Collections';
 import CollectionShowcase from './pages/CollectionShowcase';
 import NewArrivals from './pages/NewArrivals';
+import TopSellers from './pages/TopSellers';
 import About from './pages/About';
 import { PageErrorBoundary } from './components/ErrorBoundary';
 
@@ -43,6 +45,12 @@ const AccountSettings = lazy(() => import('./pages/account/Settings'));
 const OrdersList = lazy(() => import('./pages/admin/OrdersList'));
 const OrderDetail = lazy(() => import('./pages/admin/OrderDetail'));
 const ReviewsList = lazy(() => import('./pages/admin/ReviewsList'));
+
+// Support pages
+const Contact = lazy(() => import('./pages/Contact'));
+const FAQ = lazy(() => import('./pages/FAQ'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const Shipping = lazy(() => import('./pages/Shipping'));
 
 // Loading fallback component
 function PageLoader() {
@@ -82,6 +90,7 @@ function App() {
           <WishlistProvider>
             <AuthProvider>
               <BrowserRouter>
+                <ScrollToTop />
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
                     {/* Public Shop Routes */}
@@ -99,10 +108,14 @@ function App() {
                 }
               />
               <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/shipping" element={<Shipping />} />
               <Route path="/posters" element={<ShopHome />} />
               <Route path="/frames" element={<ShopHome />} />
               <Route path="/new-arrivals" element={<NewArrivals />} />
-              <Route path="/top-sellers" element={<ShopHome />} />
+              <Route path="/top-sellers" element={<TopSellers />} />
               <Route path="/kids" element={<ShopHome />} />
               <Route path="/inspiration" element={<ShopHome />} />
               <Route path="/business" element={<ShopHome />} />

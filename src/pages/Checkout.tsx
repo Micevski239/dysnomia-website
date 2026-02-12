@@ -183,7 +183,7 @@ export default function Checkout() {
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-            gap: '48px',
+            gap: 'clamp(24px, 4vw, 48px)',
           }}
         >
           {/* Checkout Form */}

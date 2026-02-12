@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useOrderDetail, useOrders } from '../../hooks/useOrders';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
 import { sendOrderEmail } from '../../lib/sendOrderEmail';
 import { printTypes } from '../../config/printOptions';
 import type { OrderStatus } from '../../types';
@@ -40,6 +41,7 @@ export default function OrderDetail() {
   const [showNotesForm, setShowNotesForm] = useState(false);
   const [trackingNumber, setTrackingNumber] = useState('');
   const [trackingInitialized, setTrackingInitialized] = useState(false);
+  const { isMobile } = useBreakpoint();
 
   // Initialize tracking number from order data once loaded
   if (order && !trackingInitialized) {
@@ -270,8 +272,8 @@ export default function OrderDetail() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 350px',
-          gap: '32px',
+          gridTemplateColumns: isMobile ? '1fr' : '1fr 350px',
+          gap: 'clamp(20px, 3vw, 32px)',
         }}
       >
         {/* Main Content */}

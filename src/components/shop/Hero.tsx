@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
+import { useLanguage } from '../../hooks/useLanguage';
 
 export default function Hero() {
   const { isMobile } = useBreakpoint();
+  const { t } = useLanguage();
 
   return (
     <section
@@ -91,7 +93,7 @@ export default function Hero() {
               marginBottom: 'clamp(16px, 3vw, 28px)'
             }}
           >
-            Art • Design • Lifestyle
+            {t('home.tagline')}
           </p>
 
           {/* Description */}
@@ -104,26 +106,26 @@ export default function Hero() {
               maxWidth: '500px'
             }}
           >
-            Where contemporary art meets modern living. Discover unique artworks
-            and decorative pieces crafted with care, style, and sustainability.
+            {t('home.heroDescription')}
           </p>
 
           {/* CTA Buttons */}
-          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: isMobile ? '12px' : '16px', flexDirection: isMobile ? 'column' : 'row', flexWrap: 'wrap' }}>
             <Link
               to="/collections"
               style={{
                 display: 'inline-block',
                 backgroundColor: '#FBBE63',
                 color: '#0A0A0A',
-                padding: 'clamp(14px, 2vw, 18px) clamp(28px, 4vw, 44px)',
-                fontSize: '12px',
+                padding: isMobile ? '12px 24px' : 'clamp(14px, 2vw, 18px) clamp(28px, 4vw, 44px)',
+                fontSize: isMobile ? '11px' : '12px',
                 fontWeight: 700,
                 letterSpacing: '2px',
                 textTransform: 'uppercase',
                 textDecoration: 'none',
                 transition: 'all 0.3s',
-                border: '2px solid #FBBE63'
+                border: '2px solid #FBBE63',
+                textAlign: 'center'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent';
@@ -134,7 +136,7 @@ export default function Hero() {
                 e.currentTarget.style.color = '#0A0A0A';
               }}
             >
-              Explore Collection
+              {t('home.exploreCollection')}
             </Link>
 
             <Link
@@ -143,14 +145,15 @@ export default function Hero() {
                 display: 'inline-block',
                 backgroundColor: 'transparent',
                 color: '#FFFFFF',
-                padding: 'clamp(14px, 2vw, 18px) clamp(28px, 4vw, 44px)',
-                fontSize: '12px',
+                padding: isMobile ? '12px 24px' : 'clamp(14px, 2vw, 18px) clamp(28px, 4vw, 44px)',
+                fontSize: isMobile ? '11px' : '12px',
                 fontWeight: 700,
                 letterSpacing: '2px',
                 textTransform: 'uppercase',
                 textDecoration: 'none',
                 transition: 'all 0.3s',
-                border: '2px solid rgba(255,255,255,0.4)'
+                border: '2px solid rgba(255,255,255,0.4)',
+                textAlign: 'center'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = '#FBBE63';
@@ -161,44 +164,46 @@ export default function Hero() {
                 e.currentTarget.style.color = '#FFFFFF';
               }}
             >
-              Our Story
+              {t('home.ourStory')}
             </Link>
           </div>
         </div>
 
       </div>
 
-      {/* Scroll indicator */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '40px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '10px'
-        }}
-      >
-        <span
-          style={{
-            fontSize: '10px',
-            letterSpacing: '3px',
-            textTransform: 'uppercase',
-            color: 'rgba(255,255,255,0.5)'
-          }}
-        >
-          Scroll
-        </span>
+      {/* Scroll indicator - hidden on mobile */}
+      {!isMobile && (
         <div
           style={{
-            width: '1px',
-            height: '35px',
-            background: 'linear-gradient(to bottom, #FBBE63, transparent)'
+            position: 'absolute',
+            bottom: '40px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '10px'
           }}
-        />
-      </div>
+        >
+          <span
+            style={{
+              fontSize: '10px',
+              letterSpacing: '3px',
+              textTransform: 'uppercase',
+              color: 'rgba(255,255,255,0.5)'
+            }}
+          >
+            {t('home.scroll')}
+          </span>
+          <div
+            style={{
+              width: '1px',
+              height: '35px',
+              background: 'linear-gradient(to bottom, #FBBE63, transparent)'
+            }}
+          />
+        </div>
+      )}
 
       {/* Corner accents - hidden on mobile */}
       {!isMobile && (

@@ -1,45 +1,131 @@
-import { Link } from 'react-router-dom';
+import { useLanguage } from '../../hooks/useLanguage';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 export default function BrandStory() {
-  const linkStyle: React.CSSProperties = {
-    textDecoration: 'none',
-    color: '#0A0A0A',
-    borderBottom: '1px solid #FBBE63',
-    paddingBottom: '2px',
-    transition: 'all 0.2s'
-  };
+  const { t } = useLanguage();
+  const { isMobile } = useBreakpoint();
 
   return (
     <section
       style={{
-        padding: '80px 0',
+        padding: isMobile ? '40px 0' : '100px 0',
         backgroundColor: '#FAFAFA',
-        borderTop: '1px solid #E5E5E5'
+        borderTop: '1px solid #E5E5E5',
+        position: 'relative',
+        overflow: 'hidden'
       }}
     >
-      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 48px' }}>
+      {/* Decorative elements - hidden on mobile */}
+      {!isMobile && (
+        <>
+          {/* Decorative corner elements */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '40px',
+              left: '40px',
+              width: '80px',
+              height: '80px',
+              borderTop: '2px solid #FBBE63',
+              borderLeft: '2px solid #FBBE63'
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              top: '40px',
+              right: '40px',
+              width: '80px',
+              height: '80px',
+              borderTop: '2px solid #FBBE63',
+              borderRight: '2px solid #FBBE63'
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '40px',
+              left: '40px',
+              width: '80px',
+              height: '80px',
+              borderBottom: '2px solid #FBBE63',
+              borderLeft: '2px solid #FBBE63'
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '40px',
+              right: '40px',
+              width: '80px',
+              height: '80px',
+              borderBottom: '2px solid #FBBE63',
+              borderRight: '2px solid #FBBE63'
+            }}
+          />
+
+          {/* Decorative circles */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '5%',
+              transform: 'translateY(-50%)',
+              width: '120px',
+              height: '120px',
+              border: '1px solid #FBBE63',
+              borderRadius: '50%',
+              opacity: 0.4
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              right: '5%',
+              transform: 'translateY(-50%)',
+              width: '120px',
+              height: '120px',
+              border: '1px solid #FBBE63',
+              borderRadius: '50%',
+              opacity: 0.4
+            }}
+          />
+        </>
+      )}
+
+      <div style={{ maxWidth: '800px', margin: '0 auto', padding: isMobile ? '0 16px' : '0 48px', position: 'relative', zIndex: 1 }}>
         {/* Section Header */}
-        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+        <div style={{ textAlign: 'center', marginBottom: isMobile ? '24px' : '48px' }}>
+          {/* Decorative line above label */}
+          <div
+            style={{
+              width: '40px',
+              height: '2px',
+              backgroundColor: '#FBBE63',
+              margin: '0 auto 16px'
+            }}
+          />
           <p
             style={{
-              fontSize: '11px',
+              fontSize: isMobile ? '10px' : '11px',
               color: '#666666',
               letterSpacing: '3px',
               textTransform: 'uppercase',
-              marginBottom: '12px'
+              marginBottom: '8px'
             }}
           >
-            Our Story
+            {t('home.ourStoryLabel')}
           </p>
           <h2
             style={{
               fontFamily: "'Playfair Display', Georgia, serif",
-              fontSize: '32px',
+              fontSize: isMobile ? '20px' : '32px',
               color: '#0A0A0A',
-              letterSpacing: '2px'
+              letterSpacing: isMobile ? '1px' : '2px'
             }}
           >
-            About <span style={{ color: '#FBBE63' }}>Dysnomia</span>
+            {t('home.aboutDysnomia')}
           </h2>
         </div>
 
@@ -47,78 +133,95 @@ export default function BrandStory() {
         <div
           style={{
             textAlign: 'center',
-            fontSize: '16px',
-            lineHeight: 1.9,
+            fontSize: isMobile ? '13px' : '16px',
+            lineHeight: 1.8,
             color: '#666666'
           }}
         >
-          <p style={{ marginBottom: '28px' }}>
-            <span style={{ color: '#0A0A0A', fontFamily: "'Playfair Display', Georgia, serif", fontStyle: 'italic' }}>
-              Dysnomia Art Gallery
-            </span>{' '}
-            is a modern space where{' '}
-            <Link to="/artworks" style={linkStyle}>art</Link>,{' '}
-            <Link to="/collections" style={linkStyle}>design</Link>, and{' '}
-            lifestyle come together. We offer unique artworks and decorative pieces
-            crafted with care, style, and high-quality materials.
+          <p style={{ marginBottom: isMobile ? '16px' : '28px' }}>
+            {t('home.brandStoryP1')}
           </p>
 
-          <p style={{ marginBottom: '28px' }}>
-            With a focus on{' '}
-            <Link to="/about" style={linkStyle}>aesthetics</Link>,
-            eco-friendly production, and original design, Dysnomia brings beauty
-            and inspiration into every home. Our curated collection features
-            everything from contemporary art to{' '}
-            <Link to="/collections/abstract" style={linkStyle}>abstract pieces</Link>,
-            each selected to transform your living spaces.
-          </p>
+          {!isMobile && (
+            <>
+              {/* Decorative diamond divider */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '32px 0' }}>
+                <div style={{ width: '40px', height: '1px', backgroundColor: '#FBBE63', opacity: 0.5 }} />
+                <div
+                  style={{
+                    width: '8px',
+                    height: '8px',
+                    backgroundColor: 'transparent',
+                    border: '1px solid #FBBE63',
+                    transform: 'rotate(45deg)',
+                    margin: '0 12px'
+                  }}
+                />
+                <div style={{ width: '40px', height: '1px', backgroundColor: '#FBBE63', opacity: 0.5 }} />
+              </div>
 
-          <p style={{ marginBottom: '28px' }}>
-            We believe that art should be accessible to everyone. That's why we
-            work directly with talented{' '}
-            <Link to="/artists" style={linkStyle}>artists</Link>{' '}
-            from around the world, offering{' '}
-            <Link to="/limited-edition" style={linkStyle}>limited edition</Link>{' '}
-            works and exclusive collaborations that you won't find anywhere else.
-          </p>
+              <p style={{ marginBottom: '28px' }}>
+                {t('home.brandStoryP2')}
+              </p>
+
+              {/* Decorative diamond divider */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '32px 0' }}>
+                <div style={{ width: '40px', height: '1px', backgroundColor: '#FBBE63', opacity: 0.5 }} />
+                <div
+                  style={{
+                    width: '8px',
+                    height: '8px',
+                    backgroundColor: 'transparent',
+                    border: '1px solid #FBBE63',
+                    transform: 'rotate(45deg)',
+                    margin: '0 12px'
+                  }}
+                />
+                <div style={{ width: '40px', height: '1px', backgroundColor: '#FBBE63', opacity: 0.5 }} />
+              </div>
+
+              <p style={{ marginBottom: '28px' }}>
+                {t('home.brandStoryP3')}
+              </p>
+            </>
+          )}
 
           {/* Quote */}
           <blockquote
             style={{
               fontFamily: "'Playfair Display', Georgia, serif",
-              fontSize: '22px',
+              fontSize: isMobile ? '15px' : '20px',
               fontStyle: 'italic',
               color: '#0A0A0A',
-              margin: '48px 0',
-              padding: '24px 0',
-              borderTop: '1px solid #E5E5E5',
-              borderBottom: '1px solid #E5E5E5',
+              margin: isMobile ? '24px 0 16px' : '48px 0 32px',
+              padding: isMobile ? '16px 0' : '24px 0',
+              borderTop: '1px solid #FBBE63',
+              borderBottom: '1px solid #FBBE63',
               position: 'relative'
             }}
           >
-            <span
-              style={{
-                position: 'absolute',
-                top: '-16px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                backgroundColor: '#FAFAFA',
-                padding: '0 16px',
-                color: '#FBBE63',
-                fontSize: '32px'
-              }}
-            >
-              "
-            </span>
-            Where contemporary art meets modern living
+            {!isMobile && (
+              <span
+                style={{
+                  position: 'absolute',
+                  top: '-12px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  backgroundColor: '#FAFAFA',
+                  padding: '0 16px',
+                  fontSize: '28px',
+                  color: '#FBBE63',
+                  fontFamily: 'Georgia, serif'
+                }}
+              >
+                ❝
+              </span>
+            )}
+            {t('home.brandQuote')}
           </blockquote>
 
-          <p style={{ fontSize: '14px', color: '#999999' }}>
-            Need assistance? Our{' '}
-            <Link to="/support" style={{ ...linkStyle, color: '#666666', borderColor: '#666666' }}>
-              support team
-            </Link>{' '}
-            is here to help you find the perfect pieces for your home or office.
+          <p style={{ fontSize: isMobile ? '12px' : '14px', color: '#999999' }}>
+            {t('home.brandSupport')}
           </p>
         </div>
       </div>

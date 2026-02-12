@@ -1,61 +1,67 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCollections } from '../../hooks/useCollections';
+import { useLanguage } from '../../hooks/useLanguage';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=800&h=1000&fit=crop';
 
 export default function GalleryTour() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const { collections, loading } = useCollections(true);
+  const { t } = useLanguage();
+  const { isMobile } = useBreakpoint();
 
   const visibleCollections = useMemo(() => {
     if (!collections.length) return [];
     return collections.map((collection) => ({
       id: collection.id,
       title: collection.title || 'Untitled',
-      subtitle: collection.is_featured ? 'Featured Series' : 'Curated Set',
+      subtitle: collection.is_featured ? t('home.featuredSeries') : t('home.curatedSet'),
       description: collection.description || 'Discover the curation and explore the featured artworks.',
       image: collection.cover_image || collection.cover_image_url || FALLBACK_IMAGE,
       link: `/collections/${collection.slug}`,
-      pieces: collection.display_order ?? 0,
+      pieces: (collection as any).collection_products?.[0]?.count ?? 0,
     }));
-  }, [collections]);
+  }, [collections, t]);
 
   return (
-    <section style={{ backgroundColor: '#FFFFFF', padding: '80px 0' }}>
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 48px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '56px' }}>
-          <p style={{ fontSize: '11px', color: '#666666', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '12px' }}>
-            Explore Our World
+    <section style={{ backgroundColor: '#FFFFFF', padding: isMobile ? '40px 0' : '80px 0' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: isMobile ? '0 16px' : '0 48px' }}>
+        <div style={{ textAlign: 'center', marginBottom: isMobile ? '24px' : '56px' }}>
+          <p style={{ fontSize: isMobile ? '10px' : '11px', color: '#666666', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '12px' }}>
+            {t('home.exploreOurWorld')}
           </p>
           <h2
             style={{
               fontFamily: "'Playfair Display', Georgia, serif",
-              fontSize: '36px',
+              fontSize: isMobile ? '20px' : '36px',
               color: '#0A0A0A',
-              letterSpacing: '2px',
+              letterSpacing: isMobile ? '1px' : '2px',
               marginBottom: '16px'
             }}
           >
-            Gallery <span style={{ color: '#FBBE63' }}>Tour</span>
+            {t('home.galleryTour')} <span style={{ color: '#FBBE63' }}>{t('home.galleryTourAccent')}</span>
           </h2>
-          <p style={{ fontSize: '15px', color: '#666666', maxWidth: '500px', margin: '0 auto', lineHeight: 1.6 }}>
-            Discover our live collections sourced directly from the Dysnomia catalog.
-          </p>
+          {!isMobile && (
+            <p style={{ fontSize: '15px', color: '#666666', maxWidth: '500px', margin: '0 auto', lineHeight: 1.6 }}>
+              {t('home.galleryTourDesc')}
+            </p>
+          )}
         </div>
 
         {loading ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(220px, 1fr))', gap: isMobile ? '8px' : '24px' }}>
             {Array.from({ length: 4 }).map((_, index) => (
               <div key={index} style={{ aspectRatio: '3/4', backgroundColor: '#f5f5f5', border: '1px solid #eee' }} />
             ))}
           </div>
         ) : visibleCollections.length === 0 ? (
           <p style={{ textAlign: 'center', color: '#666666' }}>
-            Curated collections will appear here once you create them.
+            {t('home.collectionsEmpty')}
           </p>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(220px, 1fr))', gap: isMobile ? '8px' : '24px' }}>
             {visibleCollections.map((collection) => (
               <Link
                 key={collection.id}
@@ -102,125 +108,135 @@ export default function GalleryTour() {
                     bottom: 0,
                     left: 0,
                     right: 0,
-                    padding: '32px 24px',
+                    padding: isMobile ? '12px' : '32px 24px',
                     transform: hoveredId === collection.id ? 'translateY(0)' : 'translateY(20px)',
                     transition: 'transform 0.4s ease'
                   }}
                 >
-                  <p
-                    style={{
-                      fontSize: '10px',
-                      color: '#FBBE63',
-                      letterSpacing: '2px',
-                      textTransform: 'uppercase',
-                      marginBottom: '8px',
-                      opacity: hoveredId === collection.id ? 1 : 0,
-                      transition: 'opacity 0.3s ease'
-                    }}
-                  >
-                    {collection.subtitle}
-                  </p>
+                  {!isMobile && (
+                    <p
+                      style={{
+                        fontSize: '10px',
+                        color: '#FBBE63',
+                        letterSpacing: '2px',
+                        textTransform: 'uppercase',
+                        marginBottom: '8px',
+                        opacity: hoveredId === collection.id ? 1 : 0,
+                        transition: 'opacity 0.3s ease'
+                      }}
+                    >
+                      {collection.subtitle}
+                    </p>
+                  )}
 
                   <h3
                     style={{
                       fontFamily: "'Playfair Display', Georgia, serif",
-                      fontSize: '24px',
+                      fontSize: isMobile ? '13px' : '24px',
                       color: '#FFFFFF',
                       fontWeight: 500,
-                      marginBottom: '8px',
+                      marginBottom: isMobile ? '0' : '8px',
                       letterSpacing: '1px'
                     }}
                   >
                     {collection.title}
                   </h3>
 
-                  <p
-                    style={{
-                      fontSize: '13px',
-                      color: 'rgba(255,255,255,0.8)',
-                      lineHeight: 1.5,
-                      marginBottom: '16px',
-                      opacity: hoveredId === collection.id ? 1 : 0,
-                      maxHeight: hoveredId === collection.id ? '60px' : '0',
-                      transition: 'all 0.4s ease',
-                      overflow: 'hidden'
-                    }}
-                  >
-                    {collection.description}
-                  </p>
+                  {!isMobile && (
+                    <>
+                      <p
+                        style={{
+                          fontSize: '13px',
+                          color: 'rgba(255,255,255,0.8)',
+                          lineHeight: 1.5,
+                          marginBottom: '16px',
+                          opacity: hoveredId === collection.id ? 1 : 0,
+                          maxHeight: hoveredId === collection.id ? '60px' : '0',
+                          transition: 'all 0.4s ease',
+                          overflow: 'hidden'
+                        }}
+                      >
+                        {collection.description}
+                      </p>
 
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      opacity: hoveredId === collection.id ? 1 : 0,
-                      transition: 'opacity 0.4s ease'
-                    }}
-                  >
-                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', letterSpacing: '1px' }}>
-                      {collection.pieces} pieces
-                    </span>
-                    <span
-                      style={{
-                        fontSize: '11px',
-                        color: '#FBBE63',
-                        fontWeight: 700,
-                        letterSpacing: '1px',
-                        textTransform: 'uppercase',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px'
-                      }}
-                    >
-                      View Collection
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M5 12h14M12 5l7 7-7 7" />
-                      </svg>
-                    </span>
-                  </div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          opacity: hoveredId === collection.id ? 1 : 0,
+                          transition: 'opacity 0.4s ease'
+                        }}
+                      >
+                        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', letterSpacing: '1px' }}>
+                          {collection.pieces} {t('common.pieces')}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: '11px',
+                            color: '#FBBE63',
+                            fontWeight: 700,
+                            letterSpacing: '1px',
+                            textTransform: 'uppercase',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          {t('home.viewCollection')}
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                          </svg>
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
 
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '16px',
-                    right: '16px',
-                    width: '24px',
-                    height: '24px',
-                    borderTop: '2px solid #FBBE63',
-                    borderRight: '2px solid #FBBE63',
-                    opacity: hoveredId === collection.id ? 1 : 0,
-                    transition: 'opacity 0.3s ease'
-                  }}
-                />
-                <div
-                  style={{
-                    position: 'absolute',
-                    bottom: '16px',
-                    left: '16px',
-                    width: '24px',
-                    height: '24px',
-                    borderBottom: '2px solid #FBBE63',
-                    borderLeft: '2px solid #FBBE63',
-                    opacity: hoveredId === collection.id ? 1 : 0,
-                    transition: 'opacity 0.3s ease'
-                  }}
-                />
+                {!isMobile && (
+                  <>
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '16px',
+                        right: '16px',
+                        width: '24px',
+                        height: '24px',
+                        borderTop: '2px solid #FBBE63',
+                        borderRight: '2px solid #FBBE63',
+                        opacity: hoveredId === collection.id ? 1 : 0,
+                        transition: 'opacity 0.3s ease'
+                      }}
+                    />
+                    <div
+                      style={{
+                        position: 'absolute',
+                        bottom: '16px',
+                        left: '16px',
+                        width: '24px',
+                        height: '24px',
+                        borderBottom: '2px solid #FBBE63',
+                        borderLeft: '2px solid #FBBE63',
+                        opacity: hoveredId === collection.id ? 1 : 0,
+                        transition: 'opacity 0.3s ease'
+                      }}
+                    />
+                  </>
+                )}
               </Link>
             ))}
           </div>
         )}
 
-        <div style={{ textAlign: 'center', marginTop: '48px' }}>
+        <div style={{ textAlign: 'center', marginTop: isMobile ? '24px' : '48px' }}>
           <Link
             to="/collections"
             style={{
               display: 'inline-block',
-              padding: '14px 36px',
+              padding: isMobile ? '12px 24px' : '14px 36px',
               backgroundColor: '#0A0A0A',
               color: '#FFFFFF',
-              fontSize: '12px',
+              fontSize: isMobile ? '11px' : '12px',
               fontWeight: 700,
               letterSpacing: '2px',
               textTransform: 'uppercase',
@@ -239,7 +255,7 @@ export default function GalleryTour() {
               e.currentTarget.style.color = '#FFFFFF';
             }}
           >
-            View All Collections
+            {t('home.viewAllCollections')}
           </Link>
         </div>
       </div>

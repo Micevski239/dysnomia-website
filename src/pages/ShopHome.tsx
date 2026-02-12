@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
-import { Hero, ProductCarousel, USPSection, GalleryTour, BrandStory } from '../components/shop';
+import { Hero, ProductCarousel, USPSection, GalleryTour, BrandStory, ImageMarquee } from '../components/shop';
 import type { ProductCardProps } from '../components/shop';
 import { useProducts } from '../hooks/useProducts';
+import { useLanguage } from '../hooks/useLanguage';
 import type { Product } from '../types';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=533&fit=crop';
@@ -79,15 +80,24 @@ const mapProductToCard = (product: Product): ProductCardProps => ({
   image: product.image_url || FALLBACK_IMAGE,
   hoverImage: product.image_url || FALLBACK_IMAGE,
   badge: product.status === 'sold' ? 'limited' : product.is_featured ? 'artist' : undefined,
-  sizes: ['30x40 cm', '50x70 cm', '70x100 cm']
+  sizes: ['50x70 cm', '70x100 cm', '100x150 cm']
 });
 
 export default function ShopHome() {
   const { products, loading } = useProducts();
+  const { t } = useLanguage();
   const featuredProducts = useMemo(() => {
     const featured = products.filter((product) => product.is_featured);
     const source = featured.length > 0 ? featured : products;
     return source.slice(0, 10).map(mapProductToCard);
+  }, [products]);
+
+  const marqueeImages = useMemo(() => {
+    return products.slice(0, 12).map((product) => ({
+      src: product.image_url || FALLBACK_IMAGE,
+      slug: product.slug,
+      title: product.title
+    }));
   }, [products]);
 
   return (
@@ -99,12 +109,12 @@ export default function ShopHome() {
       {loading ? (
         <FeaturedCarouselSkeleton />
       ) : featuredProducts.length > 0 ? (
-        <ProductCarousel title="Featured Artworks" viewAllLink="/artworks" products={featuredProducts} />
+        <ProductCarousel title={t('home.featuredArtworks')} viewAllLink="/artworks" products={featuredProducts} />
       ) : (
         <section style={{ padding: '60px 0', backgroundColor: '#FFFFFF' }}>
           <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 48px', textAlign: 'center' }}>
             <p style={{ color: '#666666', letterSpacing: '2px', textTransform: 'uppercase' }}>
-              Featured artworks will appear here once you mark products as featured.
+              {t('home.featuredEmpty')}
             </p>
           </div>
         </section>
@@ -115,13 +125,6 @@ export default function ShopHome() {
 
       {/* Gallery Tour Preview - Collection Showcase */}
       <GalleryTour />
-
-      {/* Limited Edition Carousel */}
-      <ProductCarousel
-        title="Limited Edition"
-        viewAllLink="/limited-edition"
-        products={limitedEditionProducts}
-      />
 
       {/* Brand Story - Dysnomia Narrative */}
       <BrandStory />

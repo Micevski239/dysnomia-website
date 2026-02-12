@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   printTypes,
   printSizes,
@@ -7,26 +7,42 @@ import {
   type PrintType,
 } from '../../config/printOptions';
 
+export type FrameColor = 'gold' | 'silver' | 'white' | 'black';
+
 interface VariantSelectorProps {
-  onSelectionChange?: (printType: PrintType, sizeId: string, price: number) => void;
+  printType?: PrintType;
+  onSelectionChange?: (printType: PrintType, sizeId: string, price: number, frameColor?: FrameColor) => void;
 }
 
-export default function VariantSelector({ onSelectionChange }: VariantSelectorProps) {
-  const [selectedType, setSelectedType] = useState<PrintType>('canvas');
+export default function VariantSelector({ printType, onSelectionChange }: VariantSelectorProps) {
+  const [selectedType, setSelectedType] = useState<PrintType>(printType || 'canvas');
   const [selectedSize, setSelectedSize] = useState<string>('50x70');
+  const [frameColor, setFrameColor] = useState<FrameColor>('gold');
+
+  // Sync with external print type changes (e.g. thumbnail clicks)
+  useEffect(() => {
+    if (printType && printType !== selectedType) {
+      setSelectedType(printType);
+    }
+  }, [printType]);
 
   const currentPrice = getPrice(selectedType, selectedSize);
 
   const handleTypeChange = (type: PrintType) => {
     setSelectedType(type);
     const newPrice = getPrice(type, selectedSize);
-    onSelectionChange?.(type, selectedSize, newPrice);
+    onSelectionChange?.(type, selectedSize, newPrice, type === 'framed' ? frameColor : undefined);
   };
 
   const handleSizeChange = (sizeId: string) => {
     setSelectedSize(sizeId);
     const newPrice = getPrice(selectedType, sizeId);
-    onSelectionChange?.(selectedType, sizeId, newPrice);
+    onSelectionChange?.(selectedType, sizeId, newPrice, selectedType === 'framed' ? frameColor : undefined);
+  };
+
+  const handleFrameColorChange = (color: FrameColor) => {
+    setFrameColor(color);
+    onSelectionChange?.(selectedType, selectedSize, currentPrice, color);
   };
 
   return (
@@ -105,6 +121,88 @@ export default function VariantSelector({ onSelectionChange }: VariantSelectorPr
           })}
         </div>
       </div>
+
+      {/* Frame Color Selection (only for framed) */}
+      {selectedType === 'framed' && (
+        <div>
+          <label
+            style={{
+              display: 'block',
+              fontSize: '12px',
+              fontWeight: 600,
+              color: '#1a1a1a',
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              marginBottom: '12px',
+            }}
+          >
+            Frame Color
+          </label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {([
+              { id: 'gold', label: 'Gold' },
+              { id: 'silver', label: 'Silver' },
+              { id: 'white', label: 'White' },
+              { id: 'black', label: 'Black' },
+            ] as const).map((color) => {
+              const isSelected = frameColor === color.id;
+              return (
+                <button
+                  key={color.id}
+                  type="button"
+                  onClick={() => handleFrameColorChange(color.id)}
+                  style={{
+                    padding: '12px 20px',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    border: isSelected ? '2px solid #B8860B' : '1px solid #e5e5e5',
+                    borderRadius: '4px',
+                    backgroundColor: isSelected ? '#FFF8E7' : '#ffffff',
+                    color: isSelected ? '#B8860B' : '#4a4a4a',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    position: 'relative',
+                  }}
+                >
+                  {color.label}
+                  {isSelected && (
+                    <span
+                      style={{
+                        position: 'absolute',
+                        top: '-1px',
+                        right: '-1px',
+                        width: '18px',
+                        height: '18px',
+                        backgroundColor: '#B8860B',
+                        borderRadius: '0 4px 0 4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <svg
+                        width="10"
+                        height="8"
+                        viewBox="0 0 10 8"
+                        fill="none"
+                        style={{ color: '#ffffff' }}
+                      >
+                        <path
+                          d="M1 4L3.5 6.5L9 1"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Size Selection */}
       <div>

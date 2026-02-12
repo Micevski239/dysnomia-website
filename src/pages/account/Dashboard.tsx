@@ -83,7 +83,7 @@ export default function AccountDashboard() {
         style={{
           maxWidth: '800px',
           margin: '0 auto',
-          padding: '48px 24px',
+          padding: `clamp(24px, 5vw, 48px) clamp(16px, 4vw, 24px)`,
         }}
       >
         {/* Welcome Header */}

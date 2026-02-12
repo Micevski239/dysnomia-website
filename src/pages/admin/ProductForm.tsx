@@ -2,6 +2,7 @@ import { useState, useEffect, type FormEvent, type ChangeEvent } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useProductById, useProductMutations } from '../../hooks/useProducts';
 import { useCollections } from '../../hooks/useCollections';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
 import { supabase } from '../../lib/supabase';
 import { generateSlug } from '../../lib/utils';
 import { validateProduct, type ProductFormErrors } from '../../lib/validation';
@@ -71,6 +72,7 @@ export default function ProductForm() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEditing = Boolean(id);
+  const { isMobile } = useBreakpoint();
 
   const { product, loading: productLoading } = useProductById(id);
   const { createProduct, updateProduct, loading, error } = useProductMutations();
@@ -388,7 +390,7 @@ export default function ProductForm() {
           <p style={{ ...hintStyle, marginBottom: '24px', marginTop: '0' }}>
             Upload separate images for each print type. These will be shown when customers select different options.
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '24px' }}>
             {imageTypes.map((imgType) => {
               const preview = imagePreviews[imgType.key];
               return (
@@ -543,7 +545,7 @@ export default function ProductForm() {
         <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <p style={sectionTitleStyle}>Pricing & Status</p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '24px' }}>
             {/* Price */}
             <div>
               <label htmlFor="price" style={labelStyle}>Price (USD)</label>

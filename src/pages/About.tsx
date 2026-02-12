@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 const VALUES = [
   {
@@ -52,15 +53,17 @@ const STATS = [
 ];
 
 export default function About() {
+  const { isMobile } = useBreakpoint();
+
   return (
     <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: '120px' }}>
       {/* Hero Section */}
-      <section style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 48px 100px' }}>
+      <section style={{ maxWidth: '1400px', margin: '0 auto', padding: `0 clamp(16px, 4vw, 48px) clamp(60px, 10vw, 100px)` }}>
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '80px',
+            gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+            gap: 'clamp(32px, 8vw, 80px)',
             alignItems: 'center',
           }}
         >
@@ -80,7 +83,7 @@ export default function About() {
             <h1
               style={{
                 fontFamily: "'Playfair Display', Georgia, serif",
-                fontSize: '52px',
+                fontSize: 'clamp(32px, 6vw, 52px)',
                 lineHeight: 1.1,
                 letterSpacing: '0.5px',
                 color: '#0A0A0A',
@@ -214,7 +217,7 @@ export default function About() {
       <section
         style={{
           backgroundColor: '#0A0A0A',
-          padding: '60px 48px',
+          padding: `clamp(40px, 6vw, 60px) clamp(16px, 4vw, 48px)`,
         }}
       >
         <div
@@ -222,8 +225,8 @@ export default function About() {
             maxWidth: '1400px',
             margin: '0 auto',
             display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: '32px',
+            gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+            gap: 'clamp(16px, 3vw, 32px)',
             textAlign: 'center',
           }}
         >
@@ -232,7 +235,7 @@ export default function About() {
               <p
                 style={{
                   fontFamily: "'Playfair Display', Georgia, serif",
-                  fontSize: '48px',
+                  fontSize: 'clamp(32px, 5vw, 48px)',
                   color: '#FBBE63',
                   marginBottom: '8px',
                 }}
@@ -255,7 +258,7 @@ export default function About() {
       </section>
 
       {/* Values Section */}
-      <section style={{ maxWidth: '1400px', margin: '0 auto', padding: '100px 48px' }}>
+      <section style={{ maxWidth: '1400px', margin: '0 auto', padding: `clamp(60px, 10vw, 100px) clamp(16px, 4vw, 48px)` }}>
         <div style={{ textAlign: 'center', marginBottom: '64px' }}>
           <p
             style={{
@@ -271,7 +274,7 @@ export default function About() {
           <h2
             style={{
               fontFamily: "'Playfair Display', Georgia, serif",
-              fontSize: '42px',
+              fontSize: 'clamp(32px, 5vw, 42px)',
               color: '#0A0A0A',
               marginBottom: '20px',
             }}
@@ -295,15 +298,15 @@ export default function About() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: '32px',
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
+            gap: 'clamp(16px, 3vw, 32px)',
           }}
         >
           {VALUES.map((value) => (
             <div
               key={value.title}
               style={{
-                padding: '48px',
+                padding: 'clamp(24px, 4vw, 48px)',
                 backgroundColor: '#FAFAFA',
                 border: '1px solid #E5E5E5',
                 transition: 'all 0.3s',
@@ -360,25 +363,25 @@ export default function About() {
           style={{
             maxWidth: '1400px',
             margin: '0 auto',
-            padding: '100px 48px',
+            padding: `clamp(60px, 10vw, 100px) clamp(16px, 4vw, 48px)`,
             display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '80px',
+            gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+            gap: 'clamp(32px, 8vw, 80px)',
             alignItems: 'center',
           }}
         >
-          <div>
+          <div style={{ order: isMobile ? 2 : 1 }}>
             <img
               src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=800&h=600&fit=crop"
               alt="Art studio"
               style={{
                 width: '100%',
-                height: '400px',
+                height: isMobile ? '280px' : '400px',
                 objectFit: 'cover',
               }}
             />
           </div>
-          <div>
+          <div style={{ order: isMobile ? 1 : 2 }}>
             <p
               style={{
                 fontSize: '12px',
@@ -393,7 +396,7 @@ export default function About() {
             <h2
               style={{
                 fontFamily: "'Playfair Display', Georgia, serif",
-                fontSize: '36px',
+                fontSize: 'clamp(28px, 5vw, 36px)',
                 color: '#0A0A0A',
                 marginBottom: '24px',
                 lineHeight: 1.2,
@@ -451,12 +454,12 @@ export default function About() {
       </section>
 
       {/* Contact Section */}
-      <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '100px 48px' }}>
+      <section style={{ maxWidth: '1200px', margin: '0 auto', padding: `clamp(60px, 10vw, 100px) clamp(16px, 4vw, 48px)` }}>
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '1.2fr 1fr',
-            gap: '64px',
+            gridTemplateColumns: isMobile ? '1fr' : '1.2fr 1fr',
+            gap: 'clamp(32px, 6vw, 64px)',
             alignItems: 'start',
           }}
         >
@@ -475,7 +478,7 @@ export default function About() {
             <h2
               style={{
                 fontFamily: "'Playfair Display', Georgia, serif",
-                fontSize: '36px',
+                fontSize: 'clamp(28px, 5vw, 36px)',
                 color: '#0A0A0A',
                 marginBottom: '24px',
               }}

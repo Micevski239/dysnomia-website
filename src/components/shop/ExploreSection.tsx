@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 const exploreItems = [
   {
@@ -16,13 +17,15 @@ const exploreItems = [
 ];
 
 export default function ExploreSection() {
+  const { isMobile } = useBreakpoint();
+
   return (
-    <section style={{ padding: '40px 0' }}>
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 48px' }}>
+    <section style={{ padding: 'clamp(24px, 4vw, 40px) 0' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 clamp(16px, 4vw, 48px)' }}>
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
             gap: '6px'
           }}
         >

@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/shop/ProductCard';
 import type { ProductCardProps } from '../components/shop/ProductCard';
 import { useProducts } from '../hooks/useProducts';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 type SortOption = 'newest' | 'price-low' | 'price-high' | 'name';
 type CategoryFilter = 'all' | 'dysnomia' | 'artist' | 'limited';
@@ -33,6 +34,7 @@ export default function Shop() {
   const [showOnSale, setShowOnSale] = useState(initialSale);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const { products, loading, error, refetch } = useProducts();
+  const { isMobileOrTablet } = useBreakpoint();
 
   // Sync URL params when filters change
   useEffect(() => {
@@ -117,7 +119,7 @@ export default function Shop() {
 
   return (
     <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: '120px' }}>
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 48px 80px' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: `0 clamp(16px, 4vw, 48px) clamp(40px, 8vw, 80px)` }}>
         {/* Page Header */}
         <div style={{ marginBottom: '48px' }}>
           <h1
@@ -152,7 +154,7 @@ export default function Shop() {
           <button
             onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
             style={{
-              display: 'none',
+              display: isMobileOrTablet ? 'flex' : 'none',
               alignItems: 'center',
               gap: '8px',
               padding: '10px 16px',
@@ -207,12 +209,25 @@ export default function Shop() {
         </div>
 
         {/* Main Content */}
-        <div style={{ display: 'flex', gap: '48px' }}>
+        <div style={{ display: 'flex', gap: 'clamp(24px, 4vw, 48px)' }}>
           {/* Sidebar Filters */}
           <aside
             style={{
               width: '240px',
-              flexShrink: 0
+              flexShrink: 0,
+              display: isMobileOrTablet ? (mobileFiltersOpen ? 'block' : 'none') : 'block',
+              ...(isMobileOrTablet && mobileFiltersOpen ? {
+                position: 'fixed',
+                top: '82px',
+                left: 0,
+                right: 0,
+                bottom: 0,
+                width: '100%',
+                backgroundColor: '#FFFFFF',
+                zIndex: 30,
+                padding: '24px',
+                overflowY: 'auto'
+              } : {})
             }}
           >
             {/* Clear Filters */}

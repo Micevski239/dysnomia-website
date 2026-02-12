@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLanguage } from '../../hooks/useLanguage';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
 import { validateCheckoutForm, countryOptions, type CheckoutFormData } from '../../lib/checkoutValidation';
 
 interface CheckoutFormProps {
@@ -9,6 +10,7 @@ interface CheckoutFormProps {
 
 export default function CheckoutForm({ onSubmit, isSubmitting }: CheckoutFormProps) {
   const { t } = useLanguage();
+  const { isMobile } = useBreakpoint();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     email: '',
@@ -160,7 +162,7 @@ export default function CheckoutForm({ onSubmit, isSubmitting }: CheckoutFormPro
             {errors.address && <p style={errorStyle}>{errors.address}</p>}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
             <div>
               <label style={labelStyle}>{t('checkout.city')} *</label>
               <input

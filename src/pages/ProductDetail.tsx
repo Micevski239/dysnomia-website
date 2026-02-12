@@ -4,6 +4,7 @@ import { useProduct } from '../hooks/useProducts';
 import { useCart } from '../hooks/useCart';
 import { useWishlist } from '../hooks/useWishlist';
 import { useLanguage } from '../hooks/useLanguage';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 import Accordion from '../components/ui/Accordion';
 import SizeGuideModal from '../components/shop/SizeGuideModal';
 import VariantSelector from '../components/shop/VariantSelector';
@@ -12,7 +13,15 @@ import ReviewList from '../components/shop/ReviewList';
 import StarRating from '../components/shop/StarRating';
 import { useReviews } from '../hooks/useReviews';
 import { productContent } from '../config/productContent';
-import { printTypes, type PrintType } from '../config/printOptions';
+import { type PrintType } from '../config/printOptions';
+
+// Adjust these per frame color to position the artwork on each livingroom photo
+const FRAME_DIMENSIONS: Record<string, { top: string; left: string; width: string; height: string }> = {
+  gold:   { top: '18.3%', left: '55.1%', width: '16.7%', height: '27%' },
+  silver: { top: '18.4%', left: '55.1%', width: '16.2%', height: '27%' },
+  white:  { top: '18.3%', left: '55.1%', width: '16.7%', height: '27%' },
+  black:  { top: '18.3%', left: '54.8%', width: '17%', height: '26.8%' },
+};
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -26,6 +35,8 @@ export default function ProductDetail() {
   const [selectedPrintType, setSelectedPrintType] = useState<PrintType>('canvas');
   const [selectedSizeId, setSelectedSizeId] = useState<string>('50x70');
   const [addedToCart, setAddedToCart] = useState(false);
+  const [frameColor, setFrameColor] = useState<string>('gold');
+  const { isMobile } = useBreakpoint();
 
   // Get image URL based on selected print type
   const getImageForType = (type: PrintType): string | null => {
@@ -44,28 +55,13 @@ export default function ProductDetail() {
 
   const currentImage = getImageForType(selectedPrintType);
 
-  // Get all available images for thumbnails
-  const getAvailableImages = () => {
-    if (!product) return [];
-    return printTypes
-      .map((type) => ({
-        type: type.id,
-        label: type.labelMk,
-        url: getImageForType(type.id),
-      }))
-      .filter((img) => img.url);
-  };
-
-  const availableImages = getAvailableImages();
-
   // Lightbox images
-  const lightboxImages = availableImages.map((img) => ({
-    url: img.url!,
-    alt: `${product?.title || 'Product'} - ${img.label}`,
-  }));
+  const lightboxImages = currentImage
+    ? [{ url: currentImage, alt: product?.title || 'Product' }]
+    : [];
 
-  const handleImageClick = (index: number) => {
-    setLightboxIndex(index);
+  const handleImageClick = () => {
+    setLightboxIndex(0);
     setIsLightboxOpen(true);
   };
 
@@ -156,7 +152,7 @@ export default function ProductDetail() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#ffffff', padding: '48px 24px' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#ffffff', padding: 'clamp(24px, 4vw, 48px) clamp(16px, 3vw, 24px)' }}>
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
         {/* Back Link */}
         <Link
@@ -167,7 +163,7 @@ export default function ProductDetail() {
             color: '#6b6b6b',
             fontSize: '14px',
             textDecoration: 'none',
-            marginBottom: '32px'
+            marginBottom: 'clamp(16px, 3vw, 32px)'
           }}
         >
           <svg style={{ width: '16px', height: '16px', marginRight: '8px' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -176,21 +172,79 @@ export default function ProductDetail() {
           Back to Gallery
         </Link>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '64px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(400px, 1fr))', gap: 'clamp(24px, 5vw, 64px)' }}>
           {/* Image Section */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {/* Main Image */}
-            <div style={{ position: 'relative' }}>
-              {currentImage ? (
-                <div
-                  onClick={() => handleImageClick(availableImages.findIndex((img) => img.type === selectedPrintType))}
-                  style={{ cursor: 'zoom-in', position: 'relative' }}
-                >
-                  <img
-                    src={currentImage}
-                    alt={product.title}
-                    style={{ width: '100%', aspectRatio: '3/4', objectFit: 'cover' }}
-                  />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {currentImage ? (
+              <>
+                {/* Main big image */}
+                <div style={{ position: 'relative' }}>
+                  {/* Canvas — full image */}
+                  {selectedPrintType === 'canvas' && (
+                    <div onClick={handleImageClick} style={{ cursor: 'zoom-in' }}>
+                      <img
+                        src={currentImage}
+                        alt={product.title}
+                        style={{ width: '100%', aspectRatio: '3/4', objectFit: 'cover', display: 'block' }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Roll — image with white sides */}
+                  {selectedPrintType === 'roll' && (
+                    <div
+                      onClick={handleImageClick}
+                      style={{
+                        cursor: 'zoom-in',
+                        backgroundColor: '#f5f5f3',
+                        padding: '8%',
+                        aspectRatio: '3/4',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <img
+                        src={currentImage}
+                        alt={`${product.title} – roll`}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Framed — livingroom mockup */}
+                  {selectedPrintType === 'framed' && (
+                    <div
+                      onClick={handleImageClick}
+                      style={{ cursor: 'zoom-in', position: 'relative', width: '100%', overflow: 'hidden' }}
+                    >
+                      <img
+                        src={`/livingroom${frameColor}.webp`}
+                        alt="Room interior"
+                        style={{ width: '100%', display: 'block' }}
+                      />
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: FRAME_DIMENSIONS[frameColor].top,
+                          left: FRAME_DIMENSIONS[frameColor].left,
+                          transform: 'translateX(-50%)',
+                          width: FRAME_DIMENSIONS[frameColor].width,
+                          height: FRAME_DIMENSIONS[frameColor].height,
+                          boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.2)',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <img
+                          src={currentImage}
+                          alt={`${product.title} – framed`}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Zoom hint */}
                   <div
                     style={{
                       position: 'absolute',
@@ -215,54 +269,104 @@ export default function ProductDetail() {
                     </svg>
                     {t('product.clickToZoom')}
                   </div>
-                </div>
-              ) : (
-                <div style={{ width: '100%', aspectRatio: '3/4', backgroundColor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg style={{ width: '64px', height: '64px', color: '#e5e5e5' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-              )}
-              {product.status === 'sold' && (
-                <div style={{ position: 'absolute', top: '24px', left: '24px' }}>
-                  <span style={{ backgroundColor: '#1a1a1a', color: '#ffffff', padding: '8px 16px', fontSize: '14px', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500 }}>
-                    Sold
-                  </span>
-                </div>
-              )}
-            </div>
 
-            {/* Thumbnail Images */}
-            {availableImages.length > 1 && (
-              <div style={{ display: 'flex', gap: '12px' }}>
-                {availableImages.map((img) => {
-                  const isSelected = selectedPrintType === img.type;
-                  return (
-                    <button
-                      key={img.type}
-                      type="button"
-                      onClick={() => setSelectedPrintType(img.type)}
-                      style={{
-                        width: '80px',
-                        height: '80px',
-                        padding: 0,
-                        border: isSelected ? '2px solid #B8860B' : '2px solid transparent',
-                        borderRadius: '4px',
-                        overflow: 'hidden',
-                        cursor: 'pointer',
-                        opacity: isSelected ? 1 : 0.6,
-                        transition: 'all 0.15s ease',
-                      }}
-                      title={img.label}
-                    >
-                      <img
-                        src={img.url!}
-                        alt={img.label}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
-                    </button>
-                  );
-                })}
+                  {product.status === 'sold' && (
+                    <div style={{ position: 'absolute', top: '24px', left: '24px' }}>
+                      <span style={{ backgroundColor: '#1a1a1a', color: '#ffffff', padding: '8px 16px', fontSize: '14px', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500 }}>
+                        Sold
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Two smaller thumbnails below */}
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {(['canvas', 'roll', 'framed'] as const)
+                    .filter((v) => v !== selectedPrintType)
+                    .map((view) => (
+                      <button
+                        key={view}
+                        type="button"
+                        onClick={() => setSelectedPrintType(view)}
+                        style={{
+                          position: 'relative',
+                          width: '80px',
+                          height: '80px',
+                          padding: 0,
+                          border: '2px solid #e5e5e5',
+                          borderRadius: '4px',
+                          overflow: 'hidden',
+                          cursor: 'pointer',
+                          background: 'none',
+                          flexShrink: 0,
+                          transition: 'border-color 0.15s ease',
+                        }}
+                      >
+                        {/* Canvas thumbnail */}
+                        {view === 'canvas' && (
+                          <img
+                            src={currentImage}
+                            alt={product.title}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                          />
+                        )}
+
+                        {/* Roll thumbnail */}
+                        {view === 'roll' && (
+                          <div style={{
+                            width: '100%',
+                            height: '100%',
+                            backgroundColor: '#f5f5f3',
+                            padding: '10%',
+                            boxSizing: 'border-box',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}>
+                            <img
+                              src={currentImage}
+                              alt={`${product.title} – roll`}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
+                            />
+                          </div>
+                        )}
+
+                        {/* Framed thumbnail */}
+                        {view === 'framed' && (
+                          <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                            <img
+                              src={`/livingroom${frameColor}.webp`}
+                              alt="Room interior"
+                              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                            />
+                            <div
+                              style={{
+                                position: 'absolute',
+                                top: FRAME_DIMENSIONS[frameColor].top,
+                                left: FRAME_DIMENSIONS[frameColor].left,
+                                transform: 'translateX(-50%)',
+                                width: FRAME_DIMENSIONS[frameColor].width,
+                                height: FRAME_DIMENSIONS[frameColor].height,
+                                overflow: 'hidden',
+                              }}
+                            >
+                              <img
+                                src={currentImage}
+                                alt={`${product.title} – framed`}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                </div>
+              </>
+            ) : (
+              <div style={{ width: '100%', aspectRatio: '3/4', backgroundColor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg style={{ width: '64px', height: '64px', color: '#e5e5e5' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
               </div>
             )}
           </div>
@@ -298,9 +402,11 @@ export default function ProductDetail() {
                 {/* Variant Selector */}
                 <div style={{ marginBottom: '24px' }}>
                   <VariantSelector
-                    onSelectionChange={(printType, sizeId) => {
+                    printType={selectedPrintType}
+                    onSelectionChange={(printType, sizeId, _price, newFrameColor) => {
                       setSelectedPrintType(printType);
                       setSelectedSizeId(sizeId);
+                      if (newFrameColor) setFrameColor(newFrameColor);
                     }}
                   />
                 </div>

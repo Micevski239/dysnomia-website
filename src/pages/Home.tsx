@@ -122,59 +122,30 @@ export default function Home() {
 
       {/* Featured Section */}
       {featuredProducts.length > 0 && (
-        <section style={{ backgroundColor: '#fafafa', padding: '96px 24px', width: '100%' }}>
-          <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: '64px' }}>
-              <p style={{ color: '#B8860B', fontSize: '14px', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '16px', fontWeight: 500 }}>
-                Curated Selection
-              </p>
-              <h2 style={{ color: '#1a1a1a', fontSize: '36px', fontWeight: 300 }}>
-                Featured Artworks
-              </h2>
+        <section style={{ backgroundColor: '#fafafa', padding: '64px 24px' }}>
+          <div style={{ maxWidth: '700px', margin: '0 auto' }}>
+            <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+              <p style={{ color: '#B8860B', fontSize: '12px', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '12px' }}>Curated Selection</p>
+              <h2 style={{ fontSize: '28px', fontWeight: 300, color: '#1a1a1a' }}>Featured Artworks</h2>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
               {featuredProducts.map((product) => (
-                <Link
-                  key={product.id}
-                  to={`/artwork/${product.slug}`}
-                  style={{ backgroundColor: '#ffffff', textDecoration: 'none', display: 'block' }}
-                >
-                  <div style={{ position: 'relative', aspectRatio: '3/4', overflow: 'hidden' }}>
-                    {product.image_url ? (
-                      <img
-                        src={product.image_url}
-                        alt={product.title}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
-                    ) : (
-                      <div style={{ width: '100%', height: '100%', backgroundColor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ color: '#6b6b6b' }}>No Image</span>
-                      </div>
-                    )}
-                    {product.status === 'sold' && (
-                      <div style={{ position: 'absolute', top: '16px', left: '16px' }}>
-                        <span style={{ backgroundColor: '#1a1a1a', color: '#ffffff', padding: '4px 12px', fontSize: '12px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                          Sold
-                        </span>
-                      </div>
-                    )}
+                <Link key={product.id} to={`/artwork/${product.slug}`} style={{ display: 'block', width: '150px', backgroundColor: '#fff', textDecoration: 'none' }}>
+                  <div style={{ width: '150px', height: '180px', position: 'relative', overflow: 'hidden' }}>
+                    <img src={product.image_url || ''} alt={product.title} style={{ position: 'absolute', top: 0, left: 0, width: '150px', height: '180px', objectFit: 'cover' }} />
+                    {product.status === 'sold' && <span style={{ position: 'absolute', top: '6px', left: '6px', backgroundColor: '#000', color: '#fff', fontSize: '9px', padding: '2px 6px', textTransform: 'uppercase' }}>Sold</span>}
                   </div>
-                  <div style={{ padding: '16px' }}>
-                    <h3 style={{ color: '#1a1a1a', fontWeight: 500, marginBottom: '4px' }}>{product.title}</h3>
-                    <p style={{ color: '#B8860B', fontWeight: 500 }}>{formatPrice(product.price)}</p>
+                  <div style={{ padding: '8px' }}>
+                    <h3 style={{ fontSize: '12px', fontWeight: 500, color: '#1a1a1a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.title}</h3>
+                    <p style={{ fontSize: '12px', color: '#B8860B', fontWeight: 500 }}>{formatPrice(product.price)}</p>
                   </div>
                 </Link>
               ))}
             </div>
 
-            <div style={{ textAlign: 'center', marginTop: '48px' }}>
-              <a href="#gallery" style={{ color: '#1a1a1a', fontWeight: 500, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                View All Artworks
-                <svg style={{ width: '16px', height: '16px' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </a>
+            <div style={{ textAlign: 'center', marginTop: '32px' }}>
+              <a href="#gallery" style={{ color: '#1a1a1a', fontWeight: 500, textDecoration: 'none' }}>View All Artworks →</a>
             </div>
           </div>
         </section>
@@ -197,13 +168,13 @@ export default function Home() {
 
           {/* Loading */}
           {loading && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
-              {[...Array(8)].map((_, i) => (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px' }}>
+              {[...Array(10)].map((_, i) => (
                 <div key={i}>
-                  <div style={{ aspectRatio: '3/4', backgroundColor: '#f5f5f5' }} />
-                  <div style={{ padding: '16px' }}>
-                    <div style={{ height: '16px', backgroundColor: '#f5f5f5', width: '75%', marginBottom: '8px' }} />
-                    <div style={{ height: '16px', backgroundColor: '#f5f5f5', width: '25%' }} />
+                  <div style={{ width: '100%', aspectRatio: '3/4', backgroundColor: '#f5f5f5' }} />
+                  <div style={{ padding: '10px' }}>
+                    <div style={{ height: '12px', backgroundColor: '#f5f5f5', width: '75%', marginBottom: '6px' }} />
+                    <div style={{ height: '12px', backgroundColor: '#f5f5f5', width: '40%' }} />
                   </div>
                 </div>
               ))}
@@ -219,7 +190,7 @@ export default function Home() {
 
           {/* Products Grid */}
           {!loading && products.length > 0 && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px' }}>
               {products.map((product) => (
                 <Link
                   key={product.id}
@@ -232,7 +203,7 @@ export default function Home() {
                     transition: 'box-shadow 0.3s'
                   }}
                 >
-                  <div style={{ position: 'relative', aspectRatio: '3/4', overflow: 'hidden' }}>
+                  <div style={{ position: 'relative', width: '100%', aspectRatio: '3/4', overflow: 'hidden' }}>
                     {product.image_url ? (
                       <img
                         src={product.image_url}
@@ -241,29 +212,24 @@ export default function Home() {
                       />
                     ) : (
                       <div style={{ width: '100%', height: '100%', backgroundColor: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <svg style={{ width: '40px', height: '40px', color: '#e5e5e5' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg style={{ width: '24px', height: '24px', color: '#e5e5e5' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                       </div>
                     )}
                     {product.status === 'sold' && (
                       <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ backgroundColor: '#B8860B', color: '#ffffff', padding: '8px 16px', fontSize: '14px', letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 500 }}>
+                        <span style={{ backgroundColor: '#B8860B', color: '#ffffff', padding: '4px 10px', fontSize: '11px', letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 500 }}>
                           Sold
                         </span>
                       </div>
                     )}
                   </div>
-                  <div style={{ padding: '20px', borderTop: '1px solid #e5e5e5' }}>
-                    <h3 style={{ color: '#1a1a1a', fontWeight: 500, marginBottom: '8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div style={{ padding: '10px', borderTop: '1px solid #e5e5e5' }}>
+                    <h3 style={{ color: '#1a1a1a', fontWeight: 500, marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '13px' }}>
                       {product.title}
                     </h3>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <p style={{ color: '#B8860B', fontWeight: 600 }}>{formatPrice(product.price)}</p>
-                      <span style={{ color: '#6b6b6b', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        {product.status === 'sold' ? 'Sold' : 'Available'}
-                      </span>
-                    </div>
+                    <p style={{ color: '#B8860B', fontWeight: 600, fontSize: '13px' }}>{formatPrice(product.price)}</p>
                   </div>
                 </Link>
               ))}

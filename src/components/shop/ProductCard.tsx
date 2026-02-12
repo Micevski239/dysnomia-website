@@ -1,6 +1,9 @@
-import { useState, memo } from 'react';
+import { useState, memo, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { HeartIcon } from './Icons';
+import RoomMockup from './RoomMockup';
+import { useCurrency } from '../../hooks/useCurrency';
+import { priceMatrix, printSizes } from '../../config/printOptions';
 
 export interface ProductCardProps {
   id: string;
@@ -11,12 +14,22 @@ export interface ProductCardProps {
   originalPrice?: number;
   image: string;
   hoverImage?: string;
-  badge?: 'sale' | 'new' | 'artist' | 'limited';
+  badge?: 'sale' | 'new' | 'artist' | 'limited' | 'bestseller';
   discount?: number;
   sizes?: string[];
   isWishlisted?: boolean;
   onWishlistToggle?: (id: string) => void;
+  showRoomPreview?: boolean;
 }
+
+// Map display sizes to config size IDs
+const SIZE_TO_ID: Record<string, string> = {
+  '50x70 cm': '50x70',
+  '60x90 cm': '60x90',
+  '70x100 cm': '70x100',
+  '80x120 cm': '80x120',
+  '100x150 cm': '100x150',
+};
 
 const ProductCard = memo(function ProductCard({
   id,
@@ -29,19 +42,39 @@ const ProductCard = memo(function ProductCard({
   hoverImage,
   badge,
   discount,
-  sizes = ['30x40 cm', '50x70 cm', '70x100 cm'],
+  sizes = ['50x70 cm', '70x100 cm', '100x150 cm'],
   isWishlisted = false,
-  onWishlistToggle
+  onWishlistToggle,
+  showRoomPreview = false
 }: ProductCardProps) {
   const [selectedSize, setSelectedSize] = useState(sizes[0]);
   const [isHovered, setIsHovered] = useState(false);
+  const { currency } = useCurrency();
 
-  const formatPrice = (p: number) => {
-    return new Intl.NumberFormat('en-EU', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 2
-    }).format(p);
+  // Get price from static price matrix based on selected size
+  // Using 'canvas' as default print type for carousel display
+  const displayPrice = useMemo(() => {
+    const sizeId = SIZE_TO_ID[selectedSize] || '50x70';
+    const priceInMKD = priceMatrix.canvas[sizeId] || priceMatrix.canvas['50x70'];
+
+    // Convert to EUR if needed (approximate rate: 1 EUR = 61.5 MKD)
+    if (currency === 'EUR') {
+      return priceInMKD / 61.5;
+    }
+    return priceInMKD;
+  }, [selectedSize, currency]);
+
+  // Format price based on currency
+  const formatDisplayPrice = (amount: number) => {
+    if (currency === 'EUR') {
+      return new Intl.NumberFormat('en-EU', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(amount);
+    }
+    return `${Math.round(amount).toLocaleString()} MKD`;
   };
 
   return (
@@ -69,17 +102,40 @@ const ProductCard = memo(function ProductCard({
           transition: 'border-color 0.3s'
         }}
       >
-        <img
-          src={isHovered && hoverImage ? hoverImage : image}
-          alt={title}
+        {/* Regular Image */}
+        <div
           style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'contain',
-            padding: '16px',
-            transition: 'all 0.5s'
+            position: 'absolute',
+            inset: 0,
+            opacity: isHovered && showRoomPreview ? 0 : 1,
+            transition: 'opacity 0.4s ease'
           }}
-        />
+        >
+          <img
+            src={image}
+            alt={title}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+              padding: '16px'
+            }}
+          />
+        </div>
+
+        {/* Room Preview on Hover */}
+        {showRoomPreview && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              opacity: isHovered ? 1 : 0,
+              transition: 'opacity 0.4s ease'
+            }}
+          >
+            <RoomMockup artworkImage={image} artworkTitle={title} />
+          </div>
+        )}
 
         {/* Badges */}
         {badge === 'sale' && discount && (
@@ -94,7 +150,8 @@ const ProductCard = memo(function ProductCard({
               fontWeight: 700,
               padding: '4px 8px',
               textTransform: 'uppercase',
-              letterSpacing: '0.5px'
+              letterSpacing: '0.5px',
+              zIndex: 2
             }}
           >
             -{discount}%
@@ -112,7 +169,8 @@ const ProductCard = memo(function ProductCard({
               fontWeight: 700,
               padding: '4px 8px',
               textTransform: 'uppercase',
-              letterSpacing: '0.5px'
+              letterSpacing: '0.5px',
+              zIndex: 2
             }}
           >
             New
@@ -131,7 +189,8 @@ const ProductCard = memo(function ProductCard({
               fontWeight: 700,
               padding: '4px 8px',
               textTransform: 'uppercase',
-              letterSpacing: '0.5px'
+              letterSpacing: '0.5px',
+              zIndex: 2
             }}
           >
             Artist
@@ -149,10 +208,30 @@ const ProductCard = memo(function ProductCard({
               fontWeight: 700,
               padding: '4px 8px',
               textTransform: 'uppercase',
-              letterSpacing: '0.5px'
+              letterSpacing: '0.5px',
+              zIndex: 2
             }}
           >
             Limited
+          </span>
+        )}
+        {badge === 'bestseller' && (
+          <span
+            style={{
+              position: 'absolute',
+              top: '12px',
+              left: '12px',
+              backgroundColor: '#0A0A0A',
+              color: '#FBBE63',
+              fontSize: '10px',
+              fontWeight: 700,
+              padding: '4px 8px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              zIndex: 2
+            }}
+          >
+            Bestseller
           </span>
         )}
 
@@ -175,22 +254,12 @@ const ProductCard = memo(function ProductCard({
             cursor: 'pointer',
             transition: 'all 0.3s',
             opacity: isHovered ? 1 : 0,
-            color: isWishlisted ? '#FBBE63' : '#0A0A0A'
+            color: isWishlisted ? '#FBBE63' : '#0A0A0A',
+            zIndex: 2
           }}
         >
           <HeartIcon className="w-4 h-4" filled={isWishlisted} />
         </button>
-
-        {/* Hover Overlay */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundColor: 'rgba(251, 190, 99, 0.03)',
-            opacity: isHovered ? 1 : 0,
-            transition: 'opacity 0.3s'
-          }}
-        />
       </Link>
 
       {/* Product Info */}
@@ -219,16 +288,11 @@ const ProductCard = memo(function ProductCard({
           </h3>
         </Link>
 
-        {/* Price */}
+        {/* Price - From static price matrix based on size */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
           <span style={{ fontSize: '13px', color: '#0A0A0A', fontWeight: 500 }}>
-            {formatPrice(price)}
+            {formatDisplayPrice(displayPrice)}
           </span>
-          {originalPrice && originalPrice > price && (
-            <span style={{ fontSize: '12px', color: '#666666', textDecoration: 'line-through' }}>
-              {formatPrice(originalPrice)}
-            </span>
-          )}
         </div>
 
         {/* Size Options */}

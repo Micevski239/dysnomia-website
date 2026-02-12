@@ -29,7 +29,7 @@ export function useCollections(includeInactive = false) {
     setLoading(true);
     setError(null);
 
-    const { data, error } = await supabase.from('collections').select('*');
+    const { data, error } = await supabase.from('collections').select('*, collection_products(count)');
 
     if (error) {
       setError(error.message);

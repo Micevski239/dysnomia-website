@@ -15,7 +15,7 @@ export default function CartSummary({ subtotal, itemCount }: CartSummaryProps) {
     <div
       style={{
         backgroundColor: '#f9f9f9',
-        padding: '32px',
+        padding: 'clamp(20px, 3vw, 32px)',
         borderRadius: '8px',
       }}
     >

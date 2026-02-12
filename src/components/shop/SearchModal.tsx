@@ -112,7 +112,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         {/* Search Header */}
         <div
           style={{
-            padding: '24px 32px',
+            padding: 'clamp(16px, 3vw, 24px) clamp(16px, 3vw, 32px)',
             borderBottom: '1px solid #e5e5e5',
           }}
         >
@@ -177,7 +177,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
           style={{
             maxWidth: '800px',
             margin: '0 auto',
-            padding: '32px',
+            padding: 'clamp(16px, 3vw, 32px)',
             minHeight: '300px',
           }}
         >

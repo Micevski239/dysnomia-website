@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useProducts, useProductMutations } from '../../hooks/useProducts';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
 import { formatPrice } from '../../lib/utils';
 import { AdminCard, DataTable, SearchInput, StatusBadge, EmptyState } from '../../components/admin';
 import type { Column } from '../../components/admin';
@@ -48,6 +49,7 @@ export default function ProductsList() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const { isMobile } = useBreakpoint();
 
   const filteredProducts = useMemo(() => {
     let filtered = products;
@@ -195,7 +197,7 @@ export default function ProductsList() {
 
       {/* Filters */}
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '20px' }}>
-        <SearchInput value={searchQuery} onChange={setSearchQuery} placeholder="Search products..." style={{ width: '320px' }} />
+        <SearchInput value={searchQuery} onChange={setSearchQuery} placeholder="Search products..." style={{ width: isMobile ? '100%' : 'clamp(200px, 40vw, 320px)' }} />
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
           {statusOptions.map((opt) => (
             <button key={opt.value} onClick={() => setStatusFilter(opt.value)} style={filterBtn(statusFilter === opt.value)}>

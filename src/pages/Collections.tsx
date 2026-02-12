@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCollections } from '../hooks/useCollections';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 const placeholderImage = 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&h=1000&fit=crop';
 
 export default function CollectionsPage() {
   const { collections, loading, error } = useCollections();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const { isMobile } = useBreakpoint();
 
   const renderState = () => {
     if (loading) {
@@ -37,8 +39,8 @@ export default function CollectionsPage() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '24px'
+          gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+          gap: 'clamp(12px, 2vw, 24px)'
         }}
       >
         {collections.map((collection) => {
@@ -143,7 +145,7 @@ export default function CollectionsPage() {
 
   return (
     <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: '120px' }}>
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 48px 80px' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: `0 clamp(16px, 4vw, 48px) clamp(40px, 8vw, 80px)` }}>
         <div style={{ textAlign: 'center', marginBottom: '56px' }}>
           <p
             style={{

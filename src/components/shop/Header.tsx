@@ -1,18 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { SearchIcon, HeartIcon, UserIcon, BagIcon, MenuIcon, CloseIcon } from './Icons';
 import SearchModal from './SearchModal';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useCurrency } from '../../hooks/useCurrency';
 import { useAuthContext } from '../../context/AuthContext';
-
-const navItems = [
-  { label: 'HOME', href: '/' },
-  { label: 'SHOP', href: '/shop' },
-  { label: 'COLLECTIONS', href: '/collections' },
-  { label: 'NEW ARRIVALS', href: '/new-arrivals' },
-  { label: 'ABOUT', href: '/about' },
-];
 
 interface HeaderProps {
   cartCount?: number;
@@ -25,9 +17,18 @@ export default function Header({ cartCount = 0, wishlistCount = 0 }: HeaderProps
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const location = useLocation();
   const isHome = location.pathname === '/';
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const { currency, setCurrency } = useCurrency();
   const { user } = useAuthContext();
+
+  const navItems = useMemo(() => [
+    { label: t('common.home'), href: '/' },
+    { label: t('common.shop'), href: '/shop' },
+    { label: t('common.collections'), href: '/collections' },
+    { label: t('common.newArrivals'), href: '/new-arrivals' },
+    { label: t('common.topSellers'), href: '/top-sellers' },
+    { label: t('common.aboutUs'), href: '/about' },
+  ], [t]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -123,7 +124,7 @@ export default function Header({ cartCount = 0, wishlistCount = 0 }: HeaderProps
           </nav>
 
           {/* Right Side Icons */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div className="header-icons" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             <button
               onClick={() => setIsSearchOpen(true)}
               style={{
@@ -149,7 +150,7 @@ export default function Header({ cartCount = 0, wishlistCount = 0 }: HeaderProps
                   textTransform: 'uppercase'
                 }}
               >
-                Search
+                {t('common.search')}
               </span>
             </button>
 
@@ -295,52 +296,135 @@ export default function Header({ cartCount = 0, wishlistCount = 0 }: HeaderProps
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '100%',
-            left: 0,
-            right: 0,
-            backgroundColor: '#FFFFFF',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-            padding: '24px',
-            borderTop: '1px solid #E5E5E5'
-          }}
-        >
-          <nav>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              {navItems.map((item) => (
-                <li
-                  key={item.label}
-                  style={{
-                    borderBottom: '1px solid #E5E5E5',
-                    padding: '12px 0'
-                  }}
-                >
-                  <Link
-                    to={item.href}
-                    style={{
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      letterSpacing: '1px',
-                      textTransform: 'uppercase',
-                      color: '#0A0A0A',
-                      textDecoration: 'none',
-                      transition: 'color 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.color = '#FBBE63'}
-                    onMouseLeave={(e) => e.currentTarget.style.color = '#0A0A0A'}
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+      {/* Mobile Menu Overlay */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          opacity: mobileMenuOpen ? 1 : 0,
+          visibility: mobileMenuOpen ? 'visible' : 'hidden',
+          transition: 'opacity 0.3s, visibility 0.3s',
+          zIndex: 49
+        }}
+        onClick={() => setMobileMenuOpen(false)}
+      />
+
+      {/* Mobile Menu - Slide from Left */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          bottom: 0,
+          width: '280px',
+          maxWidth: '80vw',
+          backgroundColor: '#FFFFFF',
+          boxShadow: '4px 0 20px rgba(0,0,0,0.15)',
+          padding: '24px',
+          transform: mobileMenuOpen ? 'translateX(0)' : 'translateX(-100%)',
+          transition: 'transform 0.3s ease-in-out',
+          zIndex: 50,
+          overflowY: 'auto'
+        }}
+      >
+        {/* Close Button */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+          <span
+            style={{
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: '18px',
+              fontWeight: 600,
+              color: '#0A0A0A',
+              letterSpacing: '2px'
+            }}
+          >
+            MENU
+          </span>
+          <button
+            onClick={() => setMobileMenuOpen(false)}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '8px',
+              color: '#0A0A0A'
+            }}
+          >
+            <CloseIcon />
+          </button>
         </div>
-      )}
+
+        <nav>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {navItems.map((item) => (
+              <li
+                key={item.label}
+                style={{
+                  borderBottom: '1px solid #E5E5E5',
+                  padding: '16px 0'
+                }}
+              >
+                <Link
+                  to={item.href}
+                  style={{
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    letterSpacing: '1px',
+                    textTransform: 'uppercase',
+                    color: '#0A0A0A',
+                    textDecoration: 'none',
+                    transition: 'color 0.2s'
+                  }}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* Language/Currency in Mobile Menu */}
+        <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #E5E5E5' }}>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <button
+              onClick={() => setLanguage(language === 'en' ? 'mk' : 'en')}
+              style={{
+                fontSize: '12px',
+                fontWeight: 600,
+                letterSpacing: '1px',
+                color: '#666666',
+                background: 'none',
+                border: '1px solid #E5E5E5',
+                padding: '8px 16px',
+                cursor: 'pointer',
+                textTransform: 'uppercase'
+              }}
+            >
+              {language === 'en' ? 'MK' : 'EN'}
+            </button>
+            <button
+              onClick={() => setCurrency(currency === 'EUR' ? 'MKD' : 'EUR')}
+              style={{
+                fontSize: '12px',
+                fontWeight: 600,
+                letterSpacing: '1px',
+                color: '#666666',
+                background: 'none',
+                border: '1px solid #E5E5E5',
+                padding: '8px 16px',
+                cursor: 'pointer'
+              }}
+            >
+              {currency === 'EUR' ? 'MKD' : 'EUR'}
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Search Modal */}
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />

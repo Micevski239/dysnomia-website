@@ -42,6 +42,12 @@
   box-sizing: border-box;
 }
 
+img {
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: cover !important;
+}
+
 html {
   scroll-behavior: smooth;
   font-size: 12px;
@@ -264,5 +270,13 @@ body {
 @media (max-width: 767px) {
   .mobile-only {
     display: flex !important;
+  }
+}
+
+/* Small mobile screens (Galaxy Z Fold 5 - 344px) */
+@media (max-width: 400px) {
+  /* Header icons closer together */
+  .header-icons {
+    gap: 12px !important;
   }
 }

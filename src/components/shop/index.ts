@@ -13,4 +13,6 @@ export { default as Footer } from './Footer';
 export { default as CookieConsent } from './CookieConsent';
 export { default as USPSection } from './USPSection';
 export { default as GalleryTour } from './GalleryTour';
+export { default as RoomMockup } from './RoomMockup';
+export { default as ImageMarquee } from './ImageMarquee';
 export * from './Icons';

@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import type { Collection, Product } from '../types';
 import { formatPrice } from '../lib/utils';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1000&h=1400&fit=crop';
 
@@ -16,6 +17,7 @@ export default function CollectionShowcase() {
   const [artworks, setArtworks] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { isMobile } = useBreakpoint();
 
   useEffect(() => {
     let isMounted = true;
@@ -84,7 +86,7 @@ export default function CollectionShowcase() {
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(15%) brightness(0.85)' }}
         />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(115deg, rgba(10,10,10,0.8), rgba(10,10,10,0.35))' }} />
-        <div style={{ position: 'relative', maxWidth: '1100px', margin: '0 auto', padding: '120px 32px 80px', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 0.7fr', gap: '32px' }}>
+        <div style={{ position: 'relative', maxWidth: '1100px', margin: '0 auto', padding: `clamp(80px, 12vw, 120px) clamp(16px, 3vw, 32px) clamp(40px, 8vw, 80px)`, display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 0.7fr', gap: 'clamp(24px, 4vw, 32px)' }}>
           <div>
             <p style={{ fontSize: '12px', letterSpacing: '0.4em', textTransform: 'uppercase', color: '#eadcc0' }}>Collection</p>
             <h1 style={{ fontSize: '46px', fontWeight: 400, color: '#ffffff', margin: '12px 0 16px' }}>
@@ -125,7 +127,7 @@ export default function CollectionShowcase() {
         </div>
       </section>
 
-      <section style={{ maxWidth: '1100px', margin: '0 auto', padding: '48px 24px 80px' }}>
+      <section style={{ maxWidth: '1100px', margin: '0 auto', padding: 'clamp(32px, 5vw, 48px) clamp(16px, 3vw, 24px) clamp(48px, 8vw, 80px)' }}>
         <div style={{ textAlign: 'center', marginBottom: '48px' }}>
           <p style={{ fontSize: '11px', letterSpacing: '0.35em', textTransform: 'uppercase', color: '#a89c8c', marginBottom: '12px' }}>Artworks</p>
           <h2 style={{ fontSize: '34px', fontWeight: 400, color: '#151310' }}>Pieces in this capsule</h2>
