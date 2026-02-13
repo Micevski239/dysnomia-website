@@ -23,7 +23,7 @@ export default function CollectionShowcase() {
   const [error, setError] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(PRODUCTS_PER_PAGE);
   const { isMobile } = useBreakpoint();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   useEffect(() => {
     let isMounted = true;
@@ -123,7 +123,7 @@ export default function CollectionShowcase() {
                 marginBottom: '16px',
               }}
             >
-              Collection
+              {t('common.collection')}
             </p>
             <h1
               style={{
@@ -152,7 +152,7 @@ export default function CollectionShowcase() {
             )}
             <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
               <span style={{ fontSize: '24px', fontWeight: 600, color: '#0A0A0A' }}>{artworks.length}</span>
-              <span style={{ fontSize: '12px', color: '#666666', letterSpacing: '1px', textTransform: 'uppercase' }}>Pieces</span>
+              <span style={{ fontSize: '12px', color: '#666666', letterSpacing: '1px', textTransform: 'uppercase' }}>{t('common.pieces')}</span>
             </div>
           </div>
 
@@ -195,7 +195,7 @@ export default function CollectionShowcase() {
                   color: '#FBBE63',
                 }}
               >
-                Cover
+                {t('common.cover')}
               </p>
               <h3
                 style={{
@@ -214,7 +214,7 @@ export default function CollectionShowcase() {
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: isMobile ? '16px' : '24px 48px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#666666' }}>
           <Link to="/collections" style={{ color: '#666666', textDecoration: 'none', letterSpacing: '1px', textTransform: 'uppercase' }}>
-            Collections
+            {t('common.collections')}
           </Link>
           <span>/</span>
           <span style={{ color: '#0A0A0A', fontWeight: 600 }}>{localize(collection?.title, collection?.title_mk, language) || '...'}</span>
@@ -233,7 +233,7 @@ export default function CollectionShowcase() {
               marginBottom: '12px',
             }}
           >
-            Explore the collection
+            {t('common.exploreTheCollection')}
           </p>
           <h2
             style={{
@@ -243,7 +243,7 @@ export default function CollectionShowcase() {
               letterSpacing: '2px',
             }}
           >
-            Artworks
+            {t('common.artworks')}
           </h2>
         </div>
 
@@ -266,17 +266,17 @@ export default function CollectionShowcase() {
         ) : error ? (
           <div style={{ textAlign: 'center', padding: '80px 20px', backgroundColor: '#FAFAFA', border: '1px solid #E5E5E5' }}>
             <p style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '20px', color: '#0A0A0A', marginBottom: '12px' }}>
-              Unable to load artworks
+              {t('common.unableToLoadArtworks')}
             </p>
             <p style={{ fontSize: '14px', color: '#666666' }}>{error}</p>
           </div>
         ) : artworks.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '80px 20px', backgroundColor: '#FAFAFA', border: '1px solid #E5E5E5' }}>
             <p style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '20px', color: '#0A0A0A', marginBottom: '12px' }}>
-              No artworks yet
+              {t('common.noArtworksYet')}
             </p>
             <p style={{ fontSize: '14px', color: '#666666', marginBottom: '24px' }}>
-              This collection doesn't have any artworks linked yet.
+              {t('common.noArtworksYetDesc')}
             </p>
             <Link
               to="/shop"
@@ -292,7 +292,7 @@ export default function CollectionShowcase() {
                 textDecoration: 'none',
               }}
             >
-              Browse All Artworks
+              {t('common.browseAllArtworks')}
             </Link>
           </div>
         ) : (
@@ -336,7 +336,7 @@ export default function CollectionShowcase() {
                     e.currentTarget.style.color = '#FFFFFF';
                   }}
                 >
-                  Load More
+                  {t('common.loadMore')}
                 </button>
               </div>
             )}

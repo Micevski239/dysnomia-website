@@ -164,3 +164,20 @@ export interface BestsellerProduct {
   display_order: number;
   added_at: string;
 }
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  title_mk?: string | null;
+  slug: string;
+  excerpt: string | null;
+  excerpt_mk?: string | null;
+  content: string | null;
+  content_mk?: string | null;
+  cover_image: string | null;
+  author: string;
+  is_published: boolean;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+}

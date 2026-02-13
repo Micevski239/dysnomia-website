@@ -2,27 +2,29 @@ import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { InstagramIcon, FacebookIcon } from './Icons';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
+import { useLanguage } from '../../hooks/useLanguage';
 
 const footerLinks = {
   shop: [
-    { label: 'All Artworks', href: '/shop' },
-    { label: 'Collections', href: '/collections' },
-    { label: 'New Arrivals', href: '/new-arrivals' },
-    { label: 'Top Sellers', href: '/top-sellers' }
+    { labelKey: 'footer.allArtworks', href: '/shop' },
+    { labelKey: 'common.collections', href: '/collections' },
+    { labelKey: 'common.newArrivals', href: '/new-arrivals' },
+    { labelKey: 'common.topSellers', href: '/top-sellers' }
   ],
   about: [
-    { label: 'About Us', href: '/about' }
+    { labelKey: 'common.aboutUs', href: '/about' }
   ],
   support: [
-    { label: 'Contact Us', href: '/contact' },
-    { label: 'Shipping & Delivery', href: '/shipping' },
-    { label: 'FAQ', href: '/faq' },
-    { label: 'Privacy Policy', href: '/privacy' }
+    { labelKey: 'about.contactUs', href: '/contact' },
+    { labelKey: 'footer.shippingDelivery', href: '/shipping' },
+    { labelKey: 'footer.faq', href: '/faq' },
+    { labelKey: 'footer.privacyPolicy', href: '/privacy' }
   ]
 };
 
 export default memo(function Footer() {
   const { isMobile, isTablet } = useBreakpoint();
+  const { t } = useLanguage();
 
   const linkStyle: React.CSSProperties = {
     fontSize: '13px',
@@ -55,55 +57,55 @@ export default memo(function Footer() {
         >
           {/* Shop */}
           <div>
-            <h3 style={headingStyle}>SHOP</h3>
+            <h3 style={headingStyle}>{t('footer.shop')}</h3>
             {footerLinks.shop.map((link) => (
               <Link
-                key={link.label}
+                key={link.href}
                 to={link.href}
                 style={linkStyle}
                 onMouseEnter={(e) => e.currentTarget.style.color = '#FBBE63'}
                 onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
               >
-                {link.label}
+                {t(link.labelKey)}
               </Link>
             ))}
           </div>
 
           {/* About Dysnomia */}
           <div>
-            <h3 style={headingStyle}>ABOUT</h3>
+            <h3 style={headingStyle}>{t('footer.about')}</h3>
             {footerLinks.about.map((link) => (
               <Link
-                key={link.label}
+                key={link.href}
                 to={link.href}
                 style={linkStyle}
                 onMouseEnter={(e) => e.currentTarget.style.color = '#FBBE63'}
                 onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
               >
-                {link.label}
+                {t(link.labelKey)}
               </Link>
             ))}
           </div>
 
           {/* Support */}
           <div>
-            <h3 style={headingStyle}>SUPPORT</h3>
+            <h3 style={headingStyle}>{t('footer.support')}</h3>
             {footerLinks.support.map((link) => (
               <Link
-                key={link.label}
+                key={link.href}
                 to={link.href}
                 style={linkStyle}
                 onMouseEnter={(e) => e.currentTarget.style.color = '#FBBE63'}
                 onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
               >
-                {link.label}
+                {t(link.labelKey)}
               </Link>
             ))}
           </div>
 
           {/* Connect */}
           <div>
-            <h3 style={headingStyle}>CONNECT</h3>
+            <h3 style={headingStyle}>{t('footer.connect')}</h3>
 
             {/* Email */}
             <a
@@ -187,7 +189,7 @@ export default memo(function Footer() {
             onMouseEnter={(e) => e.currentTarget.style.color = '#FBBE63'}
             onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
           >
-            EU | EUR
+           
           </button>
 
           {/* Logo */}
@@ -216,12 +218,12 @@ export default memo(function Footer() {
               fontStyle: 'italic'
             }}
           >
-            Art • Design • Lifestyle
+            {t('home.tagline')}
           </p>
 
           {/* Copyright */}
           <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>
-            Copyright {new Date().getFullYear()} Dysnomia Art Gallery. All rights reserved.
+            {t('footer.copyright')} {new Date().getFullYear()} {t('footer.rightsReserved')}
           </p>
         </div>
       </div>

@@ -20,7 +20,7 @@ export default function Hero() {
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundImage: 'url(/logo.png)',
+          backgroundImage: 'url(/logo.webp)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'

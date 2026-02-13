@@ -11,7 +11,7 @@ export default function CollectionsPage() {
   const { collections, loading, error } = useCollections();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const { isMobile } = useBreakpoint();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
 
   const renderState = () => {
     if (loading) {
@@ -127,7 +127,7 @@ export default function CollectionsPage() {
                     transition: 'opacity 0.3s ease'
                   }}
                 >
-                  Collection
+                  {t('common.collection')}
                 </p>
                 <h3
                   style={{
@@ -176,7 +176,7 @@ export default function CollectionsPage() {
               marginBottom: '12px'
             }}
           >
-            Explore Our Collections
+            {t('common.exploreOurCollections')}
           </p>
           <h1
             style={{
@@ -187,7 +187,7 @@ export default function CollectionsPage() {
               marginBottom: '16px'
             }}
           >
-            Collections
+            {t('common.collections')}
           </h1>
           <p
             style={{
@@ -197,7 +197,7 @@ export default function CollectionsPage() {
               margin: '0 auto'
             }}
           >
-            Discover curated sets of artworks and décor that share a common story, color palette, or mood.
+            {t('common.collectionsDescription')}
           </p>
         </div>
 

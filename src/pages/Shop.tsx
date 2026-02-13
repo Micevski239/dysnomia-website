@@ -38,7 +38,7 @@ export default function Shop() {
   const { products, loading, error, refetch } = useProducts();
   const { collections } = useCollections();
   const productCollectionMap = useProductCollectionMap();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const { isMobileOrTablet } = useBreakpoint();
 
   // Fetch product IDs for selected collections
@@ -172,11 +172,10 @@ export default function Shop() {
               marginBottom: '12px'
             }}
           >
-            Shop <span style={{ color: '#FBBE63' }}>All</span>
+            {t('shop.shopTitle')} <span style={{ color: '#FBBE63' }}>{t('shop.shopTitleAccent')}</span>
           </h1>
           <p style={{ fontSize: '15px', color: '#666666', maxWidth: '600px' }}>
-            Explore our complete collection of unique artworks and decorative pieces.
-            Each piece is crafted with care, style, and sustainability in mind.
+            {t('shop.shopDescription')}
           </p>
         </div>
 
@@ -213,18 +212,18 @@ export default function Shop() {
               <line x1="4" y1="12" x2="20" y2="12" />
               <line x1="4" y1="18" x2="20" y2="18" />
             </svg>
-            Filters
+            {t('shop.filters')}
           </button>
 
           {/* Results Count */}
           <p style={{ fontSize: '13px', color: '#666666' }}>
-            {filteredAndSortedProducts.length} {filteredAndSortedProducts.length === 1 ? 'artwork' : 'artworks'}
+            {filteredAndSortedProducts.length} {filteredAndSortedProducts.length === 1 ? t('shop.artwork') : t('shop.artworks')}
           </p>
 
           {/* Sort Dropdown */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <label style={{ fontSize: '12px', color: '#666666', letterSpacing: '1px' }}>
-              Sort by:
+              {t('shop.sortBy')}
             </label>
             <select
               value={sortBy}
@@ -241,10 +240,10 @@ export default function Shop() {
                 backgroundPosition: 'right 10px center'
               }}
             >
-              <option value="newest">Newest</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-              <option value="name">Name A-Z</option>
+              <option value="newest">{t('shop.sortNewest')}</option>
+              <option value="price-low">{t('shop.sortPriceLow')}</option>
+              <option value="price-high">{t('shop.sortPriceHigh')}</option>
+              <option value="name">{t('shop.sortName')}</option>
             </select>
           </div>
         </div>
@@ -290,7 +289,7 @@ export default function Shop() {
                   transition: 'all 0.3s'
                 }}
               >
-                Clear All Filters
+                {t('shop.clearAllFilters')}
               </button>
             )}
 
@@ -306,7 +305,7 @@ export default function Shop() {
                   borderBottom: '1px solid #E5E5E5'
                 }}
               >
-                Collections
+                {t('shop.collectionsFilter')}
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {collections.map((col) => (
@@ -346,15 +345,15 @@ export default function Shop() {
                   borderBottom: '1px solid #E5E5E5'
                 }}
               >
-                Price
+                {t('shop.priceFilter')}
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {[
-                  { value: 'all', label: 'All Prices' },
-                  { value: 'under-100', label: 'Under €100' },
-                  { value: '100-200', label: '€100 - €200' },
-                  { value: '200-300', label: '€200 - €300' },
-                  { value: 'over-300', label: 'Over €300' }
+                  { value: 'all', label: t('shop.allPrices') },
+                  { value: 'under-100', label: t('shop.under100') },
+                  { value: '100-200', label: t('shop.price100to200') },
+                  { value: '200-300', label: t('shop.price200to300') },
+                  { value: 'over-300', label: t('shop.over300') }
                 ].map((option) => (
                   <label
                     key={option.value}
@@ -398,7 +397,7 @@ export default function Shop() {
                   borderBottom: '1px solid #E5E5E5'
                 }}
               >
-                Special Offers
+                {t('shop.specialOffers')}
               </h3>
               <label
                 style={{
@@ -421,7 +420,7 @@ export default function Shop() {
                     accentColor: '#FBBE63'
                   }}
                 />
-                On Sale
+                {t('shop.onSale')}
               </label>
             </div>
 
@@ -520,7 +519,7 @@ export default function Shop() {
                     marginBottom: '12px'
                   }}
                 >
-                  Failed to load artworks
+                  {t('shop.failedToLoad')}
                 </p>
                 <p style={{ fontSize: '14px', color: '#7F1D1D', marginBottom: '24px' }}>
                   {error}
@@ -546,7 +545,7 @@ export default function Shop() {
                     e.currentTarget.style.backgroundColor = '#DC2626';
                   }}
                 >
-                  Try Again
+                  {t('shop.tryAgain')}
                 </button>
               </div>
             ) : filteredAndSortedProducts.length === 0 ? (
@@ -566,10 +565,10 @@ export default function Shop() {
                     marginBottom: '12px'
                   }}
                 >
-                  No artworks found
+                  {t('shop.noArtworksFound')}
                 </p>
                 <p style={{ fontSize: '14px', color: '#666666', marginBottom: '24px' }}>
-                  Try adjusting your filters to find what you're looking for.
+                  {t('shop.noArtworksFoundDesc')}
                 </p>
                 <button
                   onClick={clearFilters}
@@ -594,7 +593,7 @@ export default function Shop() {
                     e.currentTarget.style.color = '#FFFFFF';
                   }}
                 >
-                  Clear Filters
+                  {t('shop.clearFilters')}
                 </button>
               </div>
             ) : (
@@ -639,10 +638,10 @@ export default function Shop() {
                     e.currentTarget.style.color = '#FFFFFF';
                   }}
                 >
-                  Load More
+                  {t('shop.loadMore')}
                 </button>
                 <p style={{ fontSize: '12px', color: '#666666', marginTop: '12px' }}>
-                  Showing {visibleCount} of {filteredAndSortedProducts.length} artworks
+                  {t('shop.showing')} {visibleCount} {t('shop.of')} {filteredAndSortedProducts.length} {t('shop.artworks')}
                 </p>
               </div>
             )}

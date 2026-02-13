@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo, useRef, memo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { SearchIcon, HeartIcon, UserIcon, BagIcon, MenuIcon, CloseIcon } from './Icons';
-import SearchModal from './SearchModal';
+import { HeartIcon, UserIcon, BagIcon, MenuIcon, CloseIcon } from './Icons';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useCurrency } from '../../hooks/useCurrency';
 import { useAuthContext } from '../../context/AuthContext';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 interface HeaderProps {
   cartCount?: number;
@@ -14,12 +14,12 @@ interface HeaderProps {
 export default memo(function Header({ cartCount = 0, wishlistCount = 0 }: HeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const location = useLocation();
   const isHome = location.pathname === '/';
   const { language, setLanguage, t } = useLanguage();
   const { currency, setCurrency } = useCurrency();
   const { user } = useAuthContext();
+  const { isMobile } = useBreakpoint();
 
   const navItems = useMemo(() => [
     { label: t('common.home'), href: '/' },
@@ -27,6 +27,7 @@ export default memo(function Header({ cartCount = 0, wishlistCount = 0 }: Header
     { label: t('common.collections'), href: '/collections' },
     { label: t('common.newArrivals'), href: '/new-arrivals' },
     { label: t('common.topSellers'), href: '/top-sellers' },
+    { label: t('common.blog'), href: '/blog' },
     { label: t('common.aboutUs'), href: '/about' },
   ], [t]);
 
@@ -59,8 +60,8 @@ export default memo(function Header({ cartCount = 0, wishlistCount = 0 }: Header
   return (
     <header
       style={{
-        position: 'fixed',
-        top: '35px',
+        position: isMobile ? 'sticky' : 'fixed',
+        top: isMobile ? 0 : '35px',
         left: 0,
         right: 0,
         zIndex: 40,
@@ -133,35 +134,6 @@ export default memo(function Header({ cartCount = 0, wishlistCount = 0 }: Header
 
           {/* Right Side Icons */}
           <div className="header-icons" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <button
-              onClick={() => setIsSearchOpen(true)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                color: textColor,
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'color 0.2s'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = '#FBBE63'}
-              onMouseLeave={(e) => e.currentTarget.style.color = textColor}
-            >
-              <SearchIcon className="w-4 h-4" />
-              <span
-                className="desktop-only"
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  letterSpacing: '1px',
-                  textTransform: 'uppercase'
-                }}
-              >
-                {t('common.search')}
-              </span>
-            </button>
-
             <Link
               to="/account/wishlist"
               style={{
@@ -434,8 +406,6 @@ export default memo(function Header({ cartCount = 0, wishlistCount = 0 }: Header
         </div>
       </div>
 
-      {/* Search Modal */}
-      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </header>
   );
 });

@@ -12,7 +12,7 @@ export default function Home() {
       <section
         style={{
           backgroundColor: '#1a1a1a',
-          backgroundImage: 'url(/logo.png)',
+          backgroundImage: 'url(/logo.webp)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',

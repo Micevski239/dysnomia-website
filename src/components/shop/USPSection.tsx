@@ -79,8 +79,11 @@ export default function USPSection() {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                justifyContent: 'flex-start',
-                minHeight: isMobile ? '140px' : 'auto'
+                justifyContent: isMobile ? 'center' : 'flex-start',
+                minHeight: isMobile ? '140px' : 'auto',
+                gridColumn: isMobile && uspItems.length % 2 === 1 && index === uspItems.length - 1 ? '1 / -1' : undefined,
+                justifySelf: isMobile && uspItems.length % 2 === 1 && index === uspItems.length - 1 ? 'center' : undefined,
+                width: isMobile && uspItems.length % 2 === 1 && index === uspItems.length - 1 ? 'calc(50% - 4px)' : undefined,
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = '#FBBE63';

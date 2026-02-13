@@ -3,6 +3,7 @@ import AnnouncementBar from './AnnouncementBar';
 import Header from './Header';
 import Footer from './Footer';
 import CookieConsent from './CookieConsent';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 interface ShopLayoutProps {
   cartCount?: number;
@@ -10,6 +11,8 @@ interface ShopLayoutProps {
 }
 
 export default function ShopLayout({ cartCount = 0, wishlistCount = 0 }: ShopLayoutProps) {
+  const { isMobile } = useBreakpoint();
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Skip to main content link for accessibility */}
@@ -40,10 +43,14 @@ export default function ShopLayout({ cartCount = 0, wishlistCount = 0 }: ShopLay
         Skip to main content
       </a>
 
-      {/* Sticky Announcement Bar */}
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50 }}>
+      {/* Announcement Bar: fixed on desktop, normal flow on mobile */}
+      {isMobile ? (
         <AnnouncementBar />
-      </div>
+      ) : (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50 }}>
+          <AnnouncementBar />
+        </div>
+      )}
 
       {/* Header */}
       <Header cartCount={cartCount} wishlistCount={wishlistCount} />

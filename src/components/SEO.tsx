@@ -12,7 +12,7 @@ interface SEOProps {
 
 const DEFAULT_TITLE = 'Dysnomia Art Gallery';
 const DEFAULT_DESCRIPTION = 'Discover unique artworks and decorative pieces at Dysnomia Art Gallery. Each piece is crafted with care, style, and sustainability in mind.';
-const DEFAULT_IMAGE = '/logo.png';
+const DEFAULT_IMAGE = '/logo.webp';
 const SITE_NAME = 'Dysnomia Art Gallery';
 
 export default function SEO({

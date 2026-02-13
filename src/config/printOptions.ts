@@ -17,9 +17,9 @@ export interface PrintTypeOption {
 }
 
 export const printTypes: PrintTypeOption[] = [
-  { id: 'canvas', label: 'Canvas Print', labelMk: 'Canvas Print' },
-  { id: 'roll', label: 'Roll Print', labelMk: 'Roll Print' },
-  { id: 'framed', label: 'Decorative Frame', labelMk: 'Framed Print' },
+  { id: 'canvas', label: 'Canvas Print', labelMk: 'Принт на Платно' },
+  { id: 'roll', label: 'Roll Print', labelMk: 'Принт на Ролна' },
+  { id: 'framed', label: 'Decorative Frame', labelMk: 'Декоративна Рамка' },
 ];
 
 export const printSizes: PrintSize[] = [

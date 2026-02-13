@@ -18,7 +18,7 @@ export default function GalleryTour() {
     return collections.map((collection) => ({
       id: collection.id,
       title: localize(collection.title, collection.title_mk, language) || 'Untitled',
-      subtitle: 'Collection',
+      subtitle: t('common.collection'),
       description: localize(collection.description, collection.description_mk, language) || 'Discover the curation and explore the featured artworks.',
       image: collection.cover_image || collection.cover_image_url || FALLBACK_IMAGE,
       link: `/collections/${collection.slug}`,
@@ -110,7 +110,11 @@ export default function GalleryTour() {
                     left: 0,
                     right: 0,
                     padding: isMobile ? '12px' : '32px 24px',
-                    transform: hoveredId === collection.id ? 'translateY(0)' : 'translateY(20px)',
+                    transform: isMobile
+                      ? 'translateY(0)'
+                      : hoveredId === collection.id
+                        ? 'translateY(0)'
+                        : 'translateY(20px)',
                     transition: 'transform 0.4s ease'
                   }}
                 >
@@ -167,6 +171,7 @@ export default function GalleryTour() {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
+                          columnGap: '14px',
                           opacity: hoveredId === collection.id ? 1 : 0,
                           maxHeight: hoveredId === collection.id ? '30px' : '0',
                           overflow: 'hidden',

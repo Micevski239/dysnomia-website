@@ -50,13 +50,13 @@ export default function ProductDetail() {
   const loadStartRef = useRef<number>(0);
   const { isMobile } = useBreakpoint();
   const [isKidsCollection, setIsKidsCollection] = useState(false);
-  const [collectionName, setCollectionName] = useState<string | null>(null);
+  const [collectionData, setCollectionData] = useState<{ title: string; title_mk?: string } | null>(null);
 
   useEffect(() => {
     if (!product) return;
     supabase
       .from('collection_products')
-      .select('collection:collections(slug,name)')
+      .select('collection:collections(slug,title,title_mk)')
       .eq('product_id', product.id)
       .then(({ data }) => {
         const collections = (data || []).flatMap((r: any) => {
@@ -65,7 +65,7 @@ export default function ProductDetail() {
         });
         setIsKidsCollection(collections.some((c: any) => c.slug === 'kid'));
         if (collections.length > 0) {
-          setCollectionName(collections[0].name);
+          setCollectionData({ title: collections[0].title, title_mk: collections[0].title_mk });
         }
       });
   }, [product?.id]);
@@ -180,9 +180,9 @@ export default function ProductDetail() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
-          <h2 style={{ fontSize: '24px', fontWeight: 300, color: '#1a1a1a', marginBottom: '16px' }}>Artwork Not Found</h2>
+          <h2 style={{ fontSize: '24px', fontWeight: 300, color: '#1a1a1a', marginBottom: '16px' }}>{t('product.artworkNotFound')}</h2>
           <p style={{ color: '#6b6b6b', marginBottom: '32px' }}>
-            The artwork you're looking for doesn't exist or has been removed.
+            {t('product.artworkNotFoundDesc')}
           </p>
           <Link
             to="/"
@@ -196,7 +196,7 @@ export default function ProductDetail() {
               textDecoration: 'none'
             }}
           >
-            Back to Gallery
+            {t('product.backToGallery')}
           </Link>
         </div>
       </div>
@@ -221,7 +221,7 @@ export default function ProductDetail() {
           <svg style={{ width: '16px', height: '16px', marginRight: '8px' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          Back to Gallery
+          {t('product.backToGallery')}
         </Link>
 
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(400px, 1fr))', gap: 'clamp(24px, 5vw, 64px)' }}>
@@ -364,7 +364,7 @@ export default function ProductDetail() {
                   {product.status === 'sold' && (
                     <div style={{ position: 'absolute', top: '24px', left: '24px' }}>
                       <span style={{ backgroundColor: '#1a1a1a', color: '#ffffff', padding: '8px 16px', fontSize: '14px', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500 }}>
-                        Sold
+                        {t('product.sold')}
                       </span>
                     </div>
                   )}
@@ -464,9 +464,9 @@ export default function ProductDetail() {
 
           {/* Details */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {collectionName && (
+            {collectionData && (
               <p style={{ color: '#B8860B', fontSize: '14px', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '8px', fontWeight: 500 }}>
-                {collectionName}
+                {localize(collectionData.title, collectionData.title_mk, language)}
               </p>
             )}
 
@@ -487,7 +487,7 @@ export default function ProductDetail() {
             {product.status === 'sold' ? (
               <div style={{ backgroundColor: '#f5f5f5', border: '1px solid #e5e5e5', padding: '24px', marginBottom: '32px' }}>
                 <p style={{ color: '#4a4a4a', fontSize: '14px' }}>
-                  This artwork has been sold. Contact us for similar pieces or to commission a custom work.
+                  {t('product.soldMessage')}
                 </p>
               </div>
             ) : (
@@ -523,7 +523,7 @@ export default function ProductDetail() {
                       transition: 'background-color 0.2s',
                     }}
                   >
-                    {addedToCart ? 'Added!' : t('product.addToCart')}
+                    {addedToCart ? t('product.added') : t('product.addToCart')}
                   </button>
                   <button
                     onClick={handleWishlistToggle}
@@ -569,7 +569,7 @@ export default function ProductDetail() {
                   color: '#6b6b6b',
                   letterSpacing: '0.05em'
                 }}>
-                  Product ID: {product.product_code}
+                  {t('product.productId')}: {product.product_code}
                 </span>
               )}
               {!product.product_code && <span />}
@@ -585,33 +585,33 @@ export default function ProductDetail() {
                   padding: 0,
                 }}
               >
-                Size Guide
+                {t('product.sizeGuide')}
               </button>
             </div>
 
             {/* Accordion Sections */}
             <div>
-              <Accordion title="Description" defaultOpen={true}>
+              <Accordion title={t('product.description')} defaultOpen={true}>
                 <p style={{ color: '#4a4a4a', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
                   {localize(product.description, product.description_mk, language) || 'No description available.'}
                 </p>
               </Accordion>
 
-              <Accordion title="Details">
+              <Accordion title={t('product.details')}>
                 <p style={{ color: '#4a4a4a', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
                   {localize(product.details, product.details_mk, language) || 'No additional details available.'}
                 </p>
               </Accordion>
 
-              <Accordion title="Delivery and Returns">
+              <Accordion title={t('product.deliveryReturns')}>
                 <p style={{ color: '#4a4a4a', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
-                  {productContent.deliveryAndReturns}
+                  {language === 'mk' ? productContent.deliveryAndReturnsMk : productContent.deliveryAndReturns}
                 </p>
               </Accordion>
 
-              <Accordion title="Support">
+              <Accordion title={t('product.support')}>
                 <p style={{ color: '#4a4a4a', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
-                  {productContent.support}
+                  {language === 'mk' ? productContent.supportMk : productContent.support}
                 </p>
               </Accordion>
             </div>

@@ -153,7 +153,7 @@ export default function About() {
             }}
           >
             <img
-              src="/logo.png"
+              src="/logo.webp"
               alt="Dysnomia Art Gallery"
               style={{
                 width: '100%',

@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { HeartIcon } from './Icons';
 import { useCurrency } from '../../hooks/useCurrency';
 import { useWishlist } from '../../hooks/useWishlist';
+import { useLanguage } from '../../hooks/useLanguage';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 const RoomMockup = lazy(() => import('./RoomMockup'));
 import { priceMatrix } from '../../config/printOptions';
@@ -49,6 +51,8 @@ const ProductCard = memo(function ProductCard({
   const [isHovered, setIsHovered] = useState(false);
   const { currency } = useCurrency();
   const { isInWishlist, toggle } = useWishlist();
+  const { t } = useLanguage();
+  const { isMobile } = useBreakpoint();
   const wishlisted = isInWishlist(id);
 
   // Get price from static price matrix based on selected size
@@ -179,7 +183,7 @@ const ProductCard = memo(function ProductCard({
               zIndex: 2
             }}
           >
-            New
+            {t('shop.badgeNew')}
           </span>
         )}
         {badge === 'artist' && (
@@ -199,7 +203,7 @@ const ProductCard = memo(function ProductCard({
               zIndex: 2
             }}
           >
-            Artist
+            {t('shop.badgeArtist')}
           </span>
         )}
         {badge === 'limited' && (
@@ -218,7 +222,7 @@ const ProductCard = memo(function ProductCard({
               zIndex: 2
             }}
           >
-            Limited
+            {t('shop.badgeLimited')}
           </span>
         )}
         {badge === 'bestseller' && (
@@ -237,7 +241,7 @@ const ProductCard = memo(function ProductCard({
               zIndex: 2
             }}
           >
-            Bestseller
+            {t('shop.badgeBestseller')}
           </span>
         )}
 
@@ -311,12 +315,19 @@ const ProductCard = memo(function ProductCard({
               style={{
                 fontSize: '10px',
                 padding: '6px 10px',
+                width: isMobile ? '84px' : 'auto',
                 minHeight: '32px',
+                boxSizing: 'border-box',
                 border: selectedSize === size ? '1px solid #0A0A0A' : '1px solid #E5E5E5',
                 backgroundColor: selectedSize === size ? '#0A0A0A' : '#FFFFFF',
                 color: selectedSize === size ? '#FFFFFF' : '#0A0A0A',
                 cursor: 'pointer',
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center',
+                whiteSpace: 'nowrap',
               }}
             >
               {size}

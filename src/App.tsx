@@ -47,6 +47,9 @@ const OrderDetail = lazy(() => import('./pages/admin/OrderDetail'));
 const ReviewsList = lazy(() => import('./pages/admin/ReviewsList'));
 const FeaturedManager = lazy(() => import('./pages/admin/FeaturedManager'));
 const Announcements = lazy(() => import('./pages/admin/Announcements'));
+const Blog = lazy(() => import('./pages/Blog'));
+const BlogPostPage = lazy(() => import('./pages/BlogPost'));
+const BlogAdmin = lazy(() => import('./pages/admin/BlogAdmin'));
 
 // Support pages
 const Contact = lazy(() => import('./pages/Contact'));
@@ -110,6 +113,8 @@ function App() {
                 }
               />
               <Route path="/about" element={<About />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:slug" element={<BlogPostPage />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/privacy" element={<Privacy />} />
@@ -167,6 +172,7 @@ function App() {
               <Route path="/admin/reviews" element={<ReviewsList />} />
               <Route path="/admin/featured" element={<FeaturedManager />} />
               <Route path="/admin/announcements" element={<Announcements />} />
+              <Route path="/admin/blog" element={<BlogAdmin />} />
             </Route>
           </Routes>
                 </Suspense>

@@ -3,9 +3,10 @@ import {
   printTypes,
   printSizes,
   getPrice,
-  formatPriceMKD,
   type PrintType,
 } from '../../config/printOptions';
+import { useLanguage } from '../../hooks/useLanguage';
+import { useCurrency } from '../../hooks/useCurrency';
 
 export type FrameColor = 'gold' | 'silver' | 'white' | 'black';
 
@@ -18,6 +19,8 @@ export default function VariantSelector({ printType, onSelectionChange }: Varian
   const [selectedType, setSelectedType] = useState<PrintType>(printType || 'canvas');
   const [selectedSize, setSelectedSize] = useState<string>('50x70');
   const [frameColor, setFrameColor] = useState<FrameColor>('gold');
+  const { t, language } = useLanguage();
+  const { formatPrice } = useCurrency();
 
   // Sync with external print type changes (e.g. thumbnail clicks)
   useEffect(() => {
@@ -60,7 +63,7 @@ export default function VariantSelector({ printType, onSelectionChange }: Varian
             marginBottom: '12px',
           }}
         >
-          Print Type
+          {t('product.printType')}
         </label>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
           {printTypes.map((type) => {
@@ -83,7 +86,7 @@ export default function VariantSelector({ printType, onSelectionChange }: Varian
                   position: 'relative',
                 }}
               >
-                {type.labelMk}
+                {language === 'mk' ? type.labelMk : type.label}
                 {isSelected && (
                   <span
                     style={{
@@ -136,15 +139,15 @@ export default function VariantSelector({ printType, onSelectionChange }: Varian
               marginBottom: '12px',
             }}
           >
-            Frame Color
+            {t('product.frameColor')}
           </label>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
             {([
-              { id: 'gold', label: 'Gold' },
-              { id: 'silver', label: 'Silver' },
-              { id: 'white', label: 'White' },
-              { id: 'black', label: 'Black' },
-            ] as const).map((color) => {
+              { id: 'gold' as FrameColor, label: t('product.colorGold') },
+              { id: 'silver' as FrameColor, label: t('product.colorSilver') },
+              { id: 'white' as FrameColor, label: t('product.colorWhite') },
+              { id: 'black' as FrameColor, label: t('product.colorBlack') },
+            ]).map((color) => {
               const isSelected = frameColor === color.id;
               return (
                 <button
@@ -217,7 +220,7 @@ export default function VariantSelector({ printType, onSelectionChange }: Varian
             marginBottom: '12px',
           }}
         >
-          Size
+          {t('product.size')}
         </label>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
           {printSizes.map((size) => {
@@ -254,7 +257,7 @@ export default function VariantSelector({ printType, onSelectionChange }: Varian
                     fontWeight: 400,
                   }}
                 >
-                  {formatPriceMKD(price)}
+                  {formatPrice(price)}
                 </span>
                 {isSelected && (
                   <span
@@ -305,7 +308,7 @@ export default function VariantSelector({ printType, onSelectionChange }: Varian
           alignItems: 'center',
         }}
       >
-        <span style={{ fontSize: '14px', color: '#4a4a4a' }}>Price:</span>
+        <span style={{ fontSize: '14px', color: '#4a4a4a' }}>{t('product.price')}:</span>
         <span
           style={{
             fontSize: '24px',
@@ -313,7 +316,7 @@ export default function VariantSelector({ printType, onSelectionChange }: Varian
             color: '#B8860B',
           }}
         >
-          {formatPriceMKD(currentPrice)}
+          {formatPrice(currentPrice)}
         </span>
       </div>
     </div>

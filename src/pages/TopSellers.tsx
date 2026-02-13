@@ -37,23 +37,6 @@ export default function TopSellers() {
 
   const gridProducts = products.slice(0, 12);
 
-  const whyChooseUsItems = useMemo(() => [
-    {
-      icon: '🎨',
-      title: t('topSellers.curatedSelection'),
-      description: t('topSellers.curatedSelectionDesc'),
-    },
-    {
-      icon: '🚚',
-      title: t('topSellers.freeShipping'),
-      description: t('topSellers.freeShippingDesc'),
-    },
-    {
-      icon: '✨',
-      title: t('topSellers.premiumQuality'),
-      description: t('topSellers.premiumQualityDesc'),
-    },
-  ], [t]);
 
   return (
     <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: '120px' }}>
@@ -307,74 +290,6 @@ export default function TopSellers() {
             ))}
           </div>
         )}
-      </section>
-
-      {/* Why Buy Section */}
-      <section
-        style={{
-          backgroundColor: '#FAFAFA',
-          padding: `clamp(48px, 8vw, 80px) clamp(16px, 4vw, 48px)`,
-          borderTop: '1px solid #E5E5E5',
-        }}
-      >
-        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-            <p
-              style={{
-                fontSize: '12px',
-                letterSpacing: '3px',
-                textTransform: 'uppercase',
-                color: '#FBBE63',
-                marginBottom: '16px',
-              }}
-            >
-              {t('topSellers.whyChooseUs')}
-            </p>
-            <h2
-              style={{
-                fontFamily: "'Playfair Display', Georgia, serif",
-                fontSize: 'clamp(28px, 5vw, 36px)',
-                color: '#0A0A0A',
-              }}
-            >
-              {t('topSellers.trustedByThousands')}
-            </h2>
-          </div>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-              gap: '32px',
-            }}
-          >
-            {whyChooseUsItems.map((item) => (
-              <div
-                key={item.title}
-                style={{
-                  textAlign: 'center',
-                  padding: '32px',
-                  backgroundColor: '#FFFFFF',
-                  border: '1px solid #E5E5E5',
-                }}
-              >
-                <div style={{ fontSize: '40px', marginBottom: '16px' }}>{item.icon}</div>
-                <h3
-                  style={{
-                    fontFamily: "'Playfair Display', Georgia, serif",
-                    fontSize: '20px',
-                    color: '#0A0A0A',
-                    marginBottom: '12px',
-                  }}
-                >
-                  {item.title}
-                </h3>
-                <p style={{ fontSize: '15px', lineHeight: 1.6, color: '#666666' }}>
-                  {item.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
       </section>
 
       {/* Gold Accent Line */}

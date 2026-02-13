@@ -4,6 +4,7 @@ import { useProducts } from '../hooks/useProducts';
 import { useNewArrivalsSpotlight } from '../hooks/useFeaturedSections';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { useLanguage } from '../hooks/useLanguage';
+import { useCurrency } from '../hooks/useCurrency';
 import { localize } from '../lib/localize';
 import ProductCard from '../components/shop/ProductCard';
 import type { ProductCardProps } from '../components/shop/ProductCard';
@@ -11,8 +12,6 @@ import type { Product } from '../types';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1000&h=1400&fit=crop';
 
-const formatPrice = (value: number) =>
-  new Intl.NumberFormat('en-EU', { style: 'currency', currency: 'EUR' }).format(value);
 
 const mapProductToCard = (product: Product, language = 'en'): ProductCardProps => ({
   id: product.id,
@@ -29,7 +28,8 @@ export default function NewArrivals() {
   const { products, loading } = useProducts();
   const { spotlightProductId } = useNewArrivalsSpotlight();
   const { isMobile } = useBreakpoint();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
+  const { formatPrice } = useCurrency();
 
   const sortedProducts = useMemo(() => {
     return [...products].sort(
@@ -69,7 +69,7 @@ export default function NewArrivals() {
                 marginBottom: '16px',
               }}
             >
-              New Arrivals
+              {t('newArrivals.title')}
             </p>
             <h1
               style={{
@@ -81,7 +81,7 @@ export default function NewArrivals() {
                 marginBottom: '24px',
               }}
             >
-              Fresh <span style={{ color: '#FBBE63' }}>Artworks</span>
+              {t('newArrivals.heroTitle')} <span style={{ color: '#FBBE63' }}>{t('newArrivals.heroTitleAccent')}</span>
             </h1>
             <p
               style={{
@@ -92,8 +92,7 @@ export default function NewArrivals() {
                 marginBottom: '32px',
               }}
             >
-              Discover our latest collection of unique artworks. Each piece is carefully
-              curated to bring modern elegance and timeless beauty to your space.
+              {t('newArrivals.heroDescription')}
             </p>
             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
               <Link
@@ -121,7 +120,7 @@ export default function NewArrivals() {
                   e.currentTarget.style.color = '#FFFFFF';
                 }}
               >
-                Browse All
+                {t('newArrivals.browseAll')}
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
@@ -150,7 +149,7 @@ export default function NewArrivals() {
                   e.currentTarget.style.borderColor = '#E5E5E5';
                 }}
               >
-                View Collections
+                {t('newArrivals.viewCollections')}
               </Link>
             </div>
           </div>
@@ -202,7 +201,7 @@ export default function NewArrivals() {
                     color: '#FBBE63',
                   }}
                 >
-                  Featured
+                  {t('newArrivals.featured')}
                 </p>
                 <h3
                   style={{
@@ -283,10 +282,10 @@ export default function NewArrivals() {
                 marginBottom: '12px',
               }}
             >
-              No artworks found
+              {t('newArrivals.noArtworks')}
             </p>
             <p style={{ fontSize: '15px', color: '#666666' }}>
-              Check back soon for new arrivals.
+              {t('newArrivals.noArtworksMessage')}
             </p>
           </div>
         ) : (
@@ -302,97 +301,6 @@ export default function NewArrivals() {
             ))}
           </div>
         )}
-      </section>
-
-      {/* Newsletter Section */}
-      <section
-        style={{
-          backgroundColor: '#0A0A0A',
-          padding: `clamp(48px, 8vw, 80px) clamp(16px, 4vw, 48px)`,
-        }}
-      >
-        <div
-          style={{
-            maxWidth: '600px',
-            margin: '0 auto',
-            textAlign: 'center',
-          }}
-        >
-          <p
-            style={{
-              fontSize: '12px',
-              letterSpacing: '3px',
-              textTransform: 'uppercase',
-              color: '#FBBE63',
-              marginBottom: '16px',
-            }}
-          >
-            Stay Updated
-          </p>
-          <h2
-            style={{
-              fontFamily: "'Playfair Display', Georgia, serif",
-              fontSize: 'clamp(28px, 5vw, 36px)',
-              color: '#FFFFFF',
-              marginBottom: '16px',
-            }}
-          >
-            Never Miss New Arrivals
-          </h2>
-          <p
-            style={{
-              fontSize: '15px',
-              lineHeight: 1.7,
-              color: 'rgba(255,255,255,0.7)',
-              marginBottom: '32px',
-            }}
-          >
-            Subscribe to get notified when new artworks arrive. Be the first to discover
-            exclusive pieces and limited editions.
-          </p>
-          <form
-            style={{
-              display: 'flex',
-              flexDirection: isMobile ? 'column' : 'row',
-              gap: '12px',
-              maxWidth: '440px',
-              margin: '0 auto',
-            }}
-            onSubmit={(e) => e.preventDefault()}
-          >
-            <input
-              type="email"
-              placeholder="Enter your email"
-              style={{
-                flex: 1,
-                padding: '16px 20px',
-                border: '1px solid rgba(255,255,255,0.2)',
-                backgroundColor: 'transparent',
-                color: '#FFFFFF',
-                fontSize: '14px',
-              }}
-            />
-            <button
-              type="submit"
-              style={{
-                padding: '16px 32px',
-                backgroundColor: '#FBBE63',
-                color: '#0A0A0A',
-                border: 'none',
-                fontSize: '12px',
-                fontWeight: 600,
-                letterSpacing: '1px',
-                textTransform: 'uppercase',
-                cursor: 'pointer',
-                transition: 'opacity 0.3s',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
-              onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-            >
-              Subscribe
-            </button>
-          </form>
-        </div>
       </section>
 
       {/* Gold Accent Line */}
