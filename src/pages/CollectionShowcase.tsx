@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import type { Collection, Product } from '../types';
-import { formatPrice } from '../lib/utils';
+import ProductCard from '../components/shop/ProductCard';
+import type { ProductCardProps } from '../components/shop/ProductCard';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1000&h=1400&fit=crop';
@@ -77,113 +78,228 @@ export default function CollectionShowcase() {
 
   const heroImage = useMemo(() => collection?.cover_image || collection?.cover_image_url || FALLBACK_IMAGE, [collection]);
 
+  const productCards: ProductCardProps[] = useMemo(
+    () =>
+      artworks.map((p) => ({
+        id: p.id,
+        title: p.title,
+        slug: p.slug,
+        price: p.price,
+        image: p.image_url ?? '',
+        brand: collection?.title || 'dysnomia',
+        showRoomPreview: true,
+      })),
+    [artworks, collection]
+  );
+
   return (
-    <div style={{ backgroundColor: '#f6f3ed', minHeight: '100vh', color: '#1a1813' }}>
-      <section style={{ position: 'relative', minHeight: '65vh', overflow: 'hidden' }}>
-        <img
-          src={heroImage}
-          alt={collection?.title || 'Collection cover'}
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(15%) brightness(0.85)' }}
-        />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(115deg, rgba(10,10,10,0.8), rgba(10,10,10,0.35))' }} />
-        <div style={{ position: 'relative', maxWidth: '1100px', margin: '0 auto', padding: `clamp(80px, 12vw, 120px) clamp(16px, 3vw, 32px) clamp(40px, 8vw, 80px)`, display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1fr) 0.7fr', gap: 'clamp(24px, 4vw, 32px)' }}>
+    <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: '120px' }}>
+      {/* Hero Section */}
+      <section style={{ maxWidth: '1400px', margin: '0 auto', padding: `0 clamp(16px, 4vw, 48px) clamp(40px, 8vw, 80px)` }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: !isMobile ? '1fr 1fr' : '1fr',
+            gap: 'clamp(24px, 5vw, 48px)',
+            alignItems: 'center',
+          }}
+        >
+          {/* Text Content */}
           <div>
-            <p style={{ fontSize: '12px', letterSpacing: '0.4em', textTransform: 'uppercase', color: '#eadcc0' }}>Collection</p>
-            <h1 style={{ fontSize: '46px', fontWeight: 400, color: '#ffffff', margin: '12px 0 16px' }}>
+            <p
+              style={{
+                fontSize: '12px',
+                letterSpacing: '3px',
+                textTransform: 'uppercase',
+                color: '#FBBE63',
+                marginBottom: '16px',
+              }}
+            >
+              Collection
+            </p>
+            <h1
+              style={{
+                fontFamily: "'Playfair Display', Georgia, serif",
+                fontSize: 'clamp(32px, 6vw, 52px)',
+                color: '#0A0A0A',
+                letterSpacing: '1px',
+                lineHeight: 1.1,
+                marginBottom: '24px',
+              }}
+            >
               {collection?.title || 'Collection'}
             </h1>
-            <p style={{ fontSize: '17px', lineHeight: 1.7, color: 'rgba(255,255,255,0.86)' }}>
-              {collection?.description || 'Explore the palette and textures that define this capsule. Each artwork echoes the tone set by the hero imagery.'}
-            </p>
-            <div style={{ marginTop: '32px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-              <Link
-                to="/collections"
-                style={{ padding: '14px 32px', borderRadius: '999px', border: '1px solid rgba(255,255,255,0.5)', color: '#ffffff', letterSpacing: '0.35em', textTransform: 'uppercase', textDecoration: 'none', fontSize: '12px' }}
+            {collection?.description && (
+              <p
+                style={{
+                  fontSize: '17px',
+                  lineHeight: 1.7,
+                  color: '#666666',
+                  maxWidth: '500px',
+                  marginBottom: '32px',
+                }}
               >
-                Back to collections
-              </Link>
-              <Link
-                to="/shop"
-                style={{ padding: '14px 32px', borderRadius: '999px', backgroundColor: '#ffffff', color: '#0f0f0f', letterSpacing: '0.35em', textTransform: 'uppercase', textDecoration: 'none', fontSize: '12px' }}
-              >
-                Shop all
-              </Link>
+                {collection.description}
+              </p>
+            )}
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+              <span style={{ fontSize: '24px', fontWeight: 600, color: '#0A0A0A' }}>{artworks.length}</span>
+              <span style={{ fontSize: '12px', color: '#666666', letterSpacing: '1px', textTransform: 'uppercase' }}>Pieces</span>
             </div>
           </div>
-          <div style={{ display: 'grid', gap: '16px' }}>
-            <div style={{ border: '1px solid rgba(255,255,255,0.3)', borderRadius: '24px', padding: '20px', color: '#f5ead4' }}>
-              <p style={{ fontSize: '12px', letterSpacing: '0.35em', textTransform: 'uppercase', color: '#eadcc0', marginBottom: '8px' }}>Pieces</p>
-              <p style={{ fontSize: '34px', fontWeight: 500 }}>{artworks.length > 0 ? artworks.length : '—'}</p>
-              <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.75)' }}>Linked artworks in this capsule</p>
-            </div>
-            <div style={{ border: '1px solid rgba(255,255,255,0.3)', borderRadius: '24px', padding: '20px', color: '#f5ead4' }}>
-              <p style={{ fontSize: '12px', letterSpacing: '0.35em', textTransform: 'uppercase', color: '#eadcc0', marginBottom: '8px' }}>Updated</p>
-              <p style={{ fontSize: '18px', fontWeight: 500 }}>
-                {collection ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(collection.updated_at)) : '—'}
+
+          {/* Featured Image */}
+          <div
+            style={{
+              position: 'relative',
+              aspectRatio: '4/5',
+              backgroundColor: '#F5F5F5',
+              overflow: 'hidden',
+            }}
+          >
+            <img
+              src={heroImage}
+              alt={collection?.title || 'Collection cover'}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                padding: '32px',
+                background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)',
+                color: '#FFFFFF',
+              }}
+            >
+              <p
+                style={{
+                  fontSize: '11px',
+                  letterSpacing: '2px',
+                  textTransform: 'uppercase',
+                  marginBottom: '8px',
+                  color: '#FBBE63',
+                }}
+              >
+                Cover
               </p>
-              <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.75)' }}>Last curation refresh</p>
+              <h3
+                style={{
+                  fontFamily: "'Playfair Display', Georgia, serif",
+                  fontSize: '28px',
+                }}
+              >
+                {collection?.title || 'Collection'}
+              </h3>
             </div>
           </div>
         </div>
       </section>
 
-      <section style={{ maxWidth: '1100px', margin: '0 auto', padding: 'clamp(32px, 5vw, 48px) clamp(16px, 3vw, 24px) clamp(48px, 8vw, 80px)' }}>
-        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-          <p style={{ fontSize: '11px', letterSpacing: '0.35em', textTransform: 'uppercase', color: '#a89c8c', marginBottom: '12px' }}>Artworks</p>
-          <h2 style={{ fontSize: '34px', fontWeight: 400, color: '#151310' }}>Pieces in this capsule</h2>
+      {/* Breadcrumb */}
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: isMobile ? '16px' : '24px 48px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#666666' }}>
+          <Link to="/collections" style={{ color: '#666666', textDecoration: 'none', letterSpacing: '1px', textTransform: 'uppercase' }}>
+            Collections
+          </Link>
+          <span>/</span>
+          <span style={{ color: '#0A0A0A', fontWeight: 600 }}>{collection?.title || '...'}</span>
+        </div>
+      </div>
+
+      {/* Artworks Section */}
+      <section style={{ maxWidth: '1400px', margin: '0 auto', padding: `0 ${isMobile ? '16px' : '48px'} ${isMobile ? '40px' : '80px'}` }}>
+        <div style={{ textAlign: 'center', marginBottom: isMobile ? '24px' : '48px', marginTop: '24px' }}>
+          <p
+            style={{
+              fontSize: '11px',
+              color: '#666666',
+              letterSpacing: '3px',
+              textTransform: 'uppercase',
+              marginBottom: '12px',
+            }}
+          >
+            Explore the collection
+          </p>
+          <h2
+            style={{
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: isMobile ? '24px' : '36px',
+              color: '#0A0A0A',
+              letterSpacing: '2px',
+            }}
+          >
+            Artworks
+          </h2>
         </div>
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '80px 0', color: '#7a7266' }}>Loading artworks…</div>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(260px, 1fr))',
+              gap: isMobile ? '12px' : '32px',
+            }}
+          >
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i}>
+                <div style={{ aspectRatio: '3/4', backgroundColor: '#F5F5F5', marginBottom: '12px' }} />
+                <div style={{ height: '12px', backgroundColor: '#F5F5F5', width: '60%', marginBottom: '8px' }} />
+                <div style={{ height: '16px', backgroundColor: '#F5F5F5', width: '80%' }} />
+              </div>
+            ))}
+          </div>
         ) : error ? (
-          <div style={{ textAlign: 'center', padding: '80px 0', color: '#b3261e' }}>{error}</div>
+          <div style={{ textAlign: 'center', padding: '80px 20px', backgroundColor: '#FAFAFA', border: '1px solid #E5E5E5' }}>
+            <p style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '20px', color: '#0A0A0A', marginBottom: '12px' }}>
+              Unable to load artworks
+            </p>
+            <p style={{ fontSize: '14px', color: '#666666' }}>{error}</p>
+          </div>
         ) : artworks.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px 0', color: '#7a7266' }}>
-            This collection does not have any artworks linked yet.
+          <div style={{ textAlign: 'center', padding: '80px 20px', backgroundColor: '#FAFAFA', border: '1px solid #E5E5E5' }}>
+            <p style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '20px', color: '#0A0A0A', marginBottom: '12px' }}>
+              No artworks yet
+            </p>
+            <p style={{ fontSize: '14px', color: '#666666', marginBottom: '24px' }}>
+              This collection doesn't have any artworks linked yet.
+            </p>
+            <Link
+              to="/artworks"
+              style={{
+                display: 'inline-block',
+                padding: '14px 36px',
+                backgroundColor: '#0A0A0A',
+                color: '#FFFFFF',
+                fontSize: '12px',
+                fontWeight: 700,
+                letterSpacing: '2px',
+                textTransform: 'uppercase',
+                textDecoration: 'none',
+              }}
+            >
+              Browse All Artworks
+            </Link>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '24px' }}>
-            {artworks.map((product, index) => (
-              <ProductTile key={product.id} product={product} highlight={index % 5 === 0} />
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(260px, 1fr))',
+              gap: isMobile ? '12px' : '32px',
+            }}
+          >
+            {productCards.map((product) => (
+              <ProductCard key={product.id} {...product} />
             ))}
           </div>
         )}
       </section>
     </div>
-  );
-}
-
-function ProductTile({ product, highlight }: { product: Product; highlight: boolean }) {
-  return (
-    <Link
-      to={`/artwork/${product.slug}`}
-      style={{
-        display: 'block',
-        backgroundColor: '#ffffff',
-        borderRadius: '32px',
-        overflow: 'hidden',
-        textDecoration: 'none',
-        color: '#151310',
-        boxShadow: highlight ? '0 40px 110px rgba(20,17,15,0.15)' : '0 25px 70px rgba(20,17,15,0.08)',
-        minHeight: highlight ? '520px' : '420px'
-      }}
-    >
-      <div style={{ position: 'relative', height: highlight ? '360px' : '280px', overflow: 'hidden' }}>
-        <img
-          src={product.image_url || FALLBACK_IMAGE}
-          alt={product.title}
-          style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease', transform: 'scale(1)' }}
-        />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent, rgba(0,0,0,0.45))' }} />
-        <span style={{ position: 'absolute', top: '16px', left: '16px', backgroundColor: '#ffffff', color: '#0f0f0f', fontSize: '10px', fontWeight: 700, letterSpacing: '0.3em', textTransform: 'uppercase', padding: '6px 12px' }}>
-          {product.status}
-        </span>
-      </div>
-      <div style={{ padding: '24px' }}>
-        <p style={{ fontSize: '11px', letterSpacing: '0.35em', color: '#a79c8c', textTransform: 'uppercase', marginBottom: '6px' }}>Artwork</p>
-        <h3 style={{ fontSize: '22px', fontWeight: 600, marginBottom: '4px' }}>{product.title}</h3>
-        <p style={{ fontSize: '14px', color: '#6d6459' }}>{formatPrice(Number(product.price) || 0)}</p>
-      </div>
-    </Link>
   );
 }

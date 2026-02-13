@@ -2,12 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Order, OrderStatus, CreateOrderData } from '../types';
 
-function generateOrderNumber(): string {
-  const timestamp = Date.now().toString(36).toUpperCase();
-  const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `DYS-${timestamp}-${random}`;
-}
-
 export function useOrders() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -17,25 +11,16 @@ export function useOrders() {
     setError(null);
 
     try {
-      const orderNumber = generateOrderNumber();
-
+      // Use server-side RPC with price validation
       const { data: order, error: createError } = await supabase
-        .from('orders')
-        .insert({
-          order_number: orderNumber,
-          customer_email: data.customerEmail,
-          customer_name: data.customerName,
-          customer_phone: data.customerPhone || null,
-          shipping_address: data.shippingAddress,
-          items: data.items,
-          subtotal: data.subtotal,
-          shipping_cost: data.shippingCost,
-          total_amount: data.totalAmount,
-          currency: 'MKD',
-          status: 'pending',
-          notes: data.notes || null,
+        .rpc('create_validated_order', {
+          p_customer_email: data.customerEmail,
+          p_customer_name: data.customerName,
+          p_customer_phone: data.customerPhone || null,
+          p_shipping_address: data.shippingAddress,
+          p_items: data.items,
+          p_notes: data.notes || null,
         })
-        .select()
         .single();
 
       if (createError) {
@@ -43,7 +28,7 @@ export function useOrders() {
       }
 
       setLoading(false);
-      return { data: order, error: null };
+      return { data: order as Order, error: null };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create order';
       setError(errorMessage);
@@ -54,14 +39,13 @@ export function useOrders() {
 
   const getOrder = async (id: string): Promise<{ data: Order | null; error: string | null }> => {
     try {
+      // Use secure RPC that allows lookup by ID without exposing all orders
       const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('id', id)
+        .rpc('get_order_by_id', { order_id: id })
         .single();
 
       if (error) throw error;
-      return { data, error: null };
+      return { data: data as Order, error: null };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch order';
       return { data: null, error: errorMessage };
@@ -212,14 +196,13 @@ export function useOrderDetail(id: string | undefined) {
       setError(null);
 
       try {
+        // Use secure RPC for order lookup
         const { data, error } = await supabase
-          .from('orders')
-          .select('*')
-          .eq('id', id)
+          .rpc('get_order_by_id', { order_id: id })
           .single();
 
         if (error) throw error;
-        setOrder(data);
+        setOrder(data as Order);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch order');
       } finally {
@@ -235,13 +218,11 @@ export function useOrderDetail(id: string | undefined) {
 
     try {
       const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('id', id)
+        .rpc('get_order_by_id', { order_id: id })
         .single();
 
       if (error) throw error;
-      setOrder(data);
+      setOrder(data as Order);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch order');
     }

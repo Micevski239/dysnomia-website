@@ -140,3 +140,17 @@ export interface CreateReviewData {
   title?: string;
   content?: string;
 }
+
+// Featured sections types
+export interface FeaturedSection {
+  id: string;
+  section_key: 'bestsellers' | 'new_arrivals';
+  spotlight_product_id: string | null;
+  updated_at: string;
+}
+
+export interface BestsellerProduct {
+  product_id: string;
+  display_order: number;
+  added_at: string;
+}

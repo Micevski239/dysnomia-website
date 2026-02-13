@@ -45,7 +45,7 @@ const ProductCard = memo(function ProductCard({
   sizes = ['50x70 cm', '70x100 cm', '100x150 cm'],
   isWishlisted = false,
   onWishlistToggle,
-  showRoomPreview = false
+  showRoomPreview = true
 }: ProductCardProps) {
   const [selectedSize, setSelectedSize] = useState(sizes[0]);
   const [isHovered, setIsHovered] = useState(false);
@@ -264,7 +264,7 @@ const ProductCard = memo(function ProductCard({
 
       {/* Product Info */}
       <div>
-        <p style={{ fontSize: '11px', color: '#666666', marginBottom: '4px', textTransform: 'lowercase' }}>
+        <p style={{ fontSize: '11px', color: '#666666', marginBottom: '4px', textTransform: 'uppercase' }}>
           {brand}
         </p>
         <Link to={`/artwork/${slug}`} style={{ textDecoration: 'none' }}>

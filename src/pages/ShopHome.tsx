@@ -1,18 +1,18 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Hero, ProductCarousel, USPSection, GalleryTour, BrandStory } from '../components/shop';
 import type { ProductCardProps } from '../components/shop';
 import { useProducts } from '../hooks/useProducts';
 import { useLanguage } from '../hooks/useLanguage';
+import { supabase } from '../lib/supabase';
 import type { Product } from '../types';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=533&fit=crop';
 
-
-const mapProductToCard = (product: Product): ProductCardProps => ({
+const mapProductToCard = (product: Product, collectionName?: string): ProductCardProps => ({
   id: product.id,
   title: product.title,
   slug: product.slug,
-  brand: 'dysnomia',
+  brand: collectionName || 'dysnomia',
   price: Number(product.price) || 0,
   image: product.image_url || FALLBACK_IMAGE,
   hoverImage: product.image_url || FALLBACK_IMAGE,
@@ -23,11 +23,31 @@ const mapProductToCard = (product: Product): ProductCardProps => ({
 export default function ShopHome() {
   const { products, loading } = useProducts();
   const { t } = useLanguage();
+  const [productCollectionMap, setProductCollectionMap] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    async function fetchProductCollections() {
+      const { data } = await supabase
+        .from('collection_products')
+        .select('product_id, collection:collections(title)');
+      if (data) {
+        const map: Record<string, string> = {};
+        for (const row of data as { product_id: string; collection: { title: string }[] | null }[]) {
+          if (row.collection?.[0]?.title) {
+            map[row.product_id] = row.collection[0].title;
+          }
+        }
+        setProductCollectionMap(map);
+      }
+    }
+    fetchProductCollections();
+  }, []);
+
   const featuredProducts = useMemo(() => {
     const featured = products.filter((product) => product.is_featured);
     const source = featured.length > 0 ? featured : products;
-    return source.slice(0, 10).map(mapProductToCard);
-  }, [products]);
+    return source.slice(0, 10).map((p) => mapProductToCard(p, productCollectionMap[p.id]));
+  }, [products, productCollectionMap]);
 
 
   return (

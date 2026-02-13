@@ -61,14 +61,14 @@ export function useReviewMutations() {
     setError(null);
 
     try {
-      const { error: createError } = await supabase.from('reviews').insert({
-        product_id: data.productId,
-        customer_name: data.customerName,
-        customer_email: data.customerEmail,
-        rating: data.rating,
-        title: data.title || null,
-        content: data.content || null,
-        is_approved: false, // Reviews require admin approval
+      // Use rate-limited RPC for review creation
+      const { error: createError } = await supabase.rpc('create_review', {
+        p_product_id: data.productId,
+        p_customer_name: data.customerName,
+        p_customer_email: data.customerEmail,
+        p_rating: data.rating,
+        p_title: data.title || null,
+        p_content: data.content || null,
       });
 
       if (createError) throw createError;

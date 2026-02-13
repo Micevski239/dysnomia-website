@@ -1,16 +1,16 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/shop/ProductCard';
 import type { ProductCardProps } from '../components/shop/ProductCard';
 import { useProducts } from '../hooks/useProducts';
+import { useCollections } from '../hooks/useCollections';
+import { supabase } from '../lib/supabase';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 
 type SortOption = 'newest' | 'price-low' | 'price-high' | 'name';
-type CategoryFilter = 'all' | 'dysnomia' | 'artist' | 'limited';
 type PriceFilter = 'all' | 'under-100' | '100-200' | '200-300' | 'over-300';
 
 const VALID_SORT_OPTIONS: SortOption[] = ['newest', 'price-low', 'price-high', 'name'];
-const VALID_CATEGORY_FILTERS: CategoryFilter[] = ['all', 'dysnomia', 'artist', 'limited'];
 const VALID_PRICE_FILTERS: PriceFilter[] = ['all', 'under-100', '100-200', '200-300', 'over-300'];
 
 export default function Shop() {
@@ -18,33 +18,82 @@ export default function Shop() {
 
   // Initialize state from URL params
   const initialSort = (searchParams.get('sort') as SortOption) || 'newest';
-  const initialCategory = (searchParams.get('category') as CategoryFilter) || 'all';
+  const initialCollections = searchParams.get('collection')?.split(',').filter(Boolean) || [];
   const initialPrice = (searchParams.get('price') as PriceFilter) || 'all';
   const initialSale = searchParams.get('sale') === 'true';
 
   const [sortBy, setSortBy] = useState<SortOption>(
     VALID_SORT_OPTIONS.includes(initialSort) ? initialSort : 'newest'
   );
-  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>(
-    VALID_CATEGORY_FILTERS.includes(initialCategory) ? initialCategory : 'all'
-  );
+  const [selectedCollections, setSelectedCollections] = useState<Set<string>>(new Set(initialCollections));
   const [priceFilter, setPriceFilter] = useState<PriceFilter>(
     VALID_PRICE_FILTERS.includes(initialPrice) ? initialPrice : 'all'
   );
   const [showOnSale, setShowOnSale] = useState(initialSale);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [collectionProductIds, setCollectionProductIds] = useState<Set<string> | null>(null);
+  const [productCollectionMap, setProductCollectionMap] = useState<Record<string, string>>({});
   const { products, loading, error, refetch } = useProducts();
+  const { collections } = useCollections();
   const { isMobileOrTablet } = useBreakpoint();
+
+  // Build product → collection name lookup
+  useEffect(() => {
+    async function fetchProductCollections() {
+      const { data } = await supabase
+        .from('collection_products')
+        .select('product_id, collection:collections(title)');
+      if (data) {
+        const map: Record<string, string> = {};
+        for (const row of data as { product_id: string; collection: { title: string }[] | null }[]) {
+          if (row.collection?.[0]?.title) {
+            map[row.product_id] = row.collection[0].title;
+          }
+        }
+        setProductCollectionMap(map);
+      }
+    }
+    fetchProductCollections();
+  }, []);
+
+  // Fetch product IDs for selected collections
+  const fetchCollectionProducts = useCallback(async (collectionIds: Set<string>) => {
+    if (collectionIds.size === 0) {
+      setCollectionProductIds(null);
+      return;
+    }
+    const { data } = await supabase
+      .from('collection_products')
+      .select('product_id')
+      .in('collection_id', Array.from(collectionIds));
+    setCollectionProductIds(new Set((data || []).map((r: { product_id: string }) => r.product_id)));
+  }, []);
+
+  useEffect(() => {
+    fetchCollectionProducts(selectedCollections);
+  }, [selectedCollections, fetchCollectionProducts]);
+
+  const toggleCollection = (id: string) => {
+    setSelectedCollections((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
 
   // Sync URL params when filters change
   useEffect(() => {
     const params = new URLSearchParams();
     if (sortBy !== 'newest') params.set('sort', sortBy);
-    if (categoryFilter !== 'all') params.set('category', categoryFilter);
+    if (selectedCollections.size > 0) params.set('collection', Array.from(selectedCollections).join(','));
     if (priceFilter !== 'all') params.set('price', priceFilter);
     if (showOnSale) params.set('sale', 'true');
     setSearchParams(params, { replace: true });
-  }, [sortBy, categoryFilter, priceFilter, showOnSale, setSearchParams]);
+  }, [sortBy, selectedCollections, priceFilter, showOnSale, setSearchParams]);
 
   // Map backend products to ProductCardProps used by this view
   const allProducts: ProductCardProps[] = useMemo(
@@ -55,22 +104,18 @@ export default function Shop() {
         slug: p.slug,
         price: p.price,
         image: p.image_url ?? '',
-        brand: 'dysnomia',
+        brand: productCollectionMap[p.id] || 'dysnomia',
+        showRoomPreview: true,
       })),
-    [products]
+    [products, productCollectionMap]
   );
 
   const filteredAndSortedProducts = useMemo(() => {
     let result = [...allProducts];
 
-    // Apply category filter
-    if (categoryFilter !== 'all') {
-      result = result.filter((p) => {
-        if (categoryFilter === 'dysnomia') return p.brand?.toLowerCase() === 'dysnomia';
-        if (categoryFilter === 'artist') return p.badge === 'artist' || p.brand === 'Artist Series';
-        if (categoryFilter === 'limited') return p.badge === 'limited' || p.brand === 'Limited Edition';
-        return true;
-      });
+    // Apply collection filter
+    if (selectedCollections.size > 0 && collectionProductIds) {
+      result = result.filter((p) => collectionProductIds.has(p.id));
     }
 
     // Apply price filter
@@ -107,15 +152,26 @@ export default function Shop() {
     }
 
     return result;
-  }, [allProducts, sortBy, categoryFilter, priceFilter, showOnSale]);
+  }, [allProducts, sortBy, selectedCollections, collectionProductIds, priceFilter, showOnSale]);
 
   const clearFilters = () => {
-    setCategoryFilter('all');
+    setSelectedCollections(new Set());
     setPriceFilter('all');
     setShowOnSale(false);
   };
 
-  const hasActiveFilters = categoryFilter !== 'all' || priceFilter !== 'all' || showOnSale;
+  const PRODUCTS_PER_PAGE = 12;
+  const [visibleCount, setVisibleCount] = useState(PRODUCTS_PER_PAGE);
+
+  // Reset visible count when filters change
+  useEffect(() => {
+    setVisibleCount(PRODUCTS_PER_PAGE);
+  }, [selectedCollections, collectionProductIds, priceFilter, showOnSale, sortBy]);
+
+  const visibleProducts = filteredAndSortedProducts.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredAndSortedProducts.length;
+
+  const hasActiveFilters = selectedCollections.size > 0 || priceFilter !== 'all' || showOnSale;
 
   return (
     <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: '120px' }}>
@@ -253,7 +309,7 @@ export default function Shop() {
               </button>
             )}
 
-            {/* Category Filter */}
+            {/* Collection Filter */}
             <div style={{ marginBottom: '32px' }}>
               <h3
                 style={{
@@ -265,40 +321,29 @@ export default function Shop() {
                   borderBottom: '1px solid #E5E5E5'
                 }}
               >
-                Category
+                Collections
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {[
-                  { value: 'all', label: 'All Artworks' },
-                  { value: 'dysnomia', label: 'Dysnomia Collection' },
-                  { value: 'artist', label: 'Artist Series' },
-                  { value: 'limited', label: 'Limited Edition' }
-                ].map((option) => (
+                {collections.map((col) => (
                   <label
-                    key={option.value}
+                    key={col.id}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: '10px',
                       cursor: 'pointer',
                       fontSize: '13px',
-                      color: categoryFilter === option.value ? '#0A0A0A' : '#666666',
-                      fontWeight: categoryFilter === option.value ? 600 : 400
+                      color: selectedCollections.has(col.id) ? '#0A0A0A' : '#666666',
+                      fontWeight: selectedCollections.has(col.id) ? 600 : 400
                     }}
                   >
                     <input
-                      type="radio"
-                      name="category"
-                      value={option.value}
-                      checked={categoryFilter === option.value}
-                      onChange={(e) => setCategoryFilter(e.target.value as CategoryFilter)}
-                      style={{
-                        width: '16px',
-                        height: '16px',
-                        accentColor: '#FBBE63'
-                      }}
+                      type="checkbox"
+                      checked={selectedCollections.has(col.id)}
+                      onChange={() => toggleCollection(col.id)}
+                      style={{ width: '16px', height: '16px', accentColor: '#FBBE63' }}
                     />
-                    {option.label}
+                    {col.title}
                   </label>
                 ))}
               </div>
@@ -575,9 +620,45 @@ export default function Shop() {
                   gap: '32px'
                 }}
               >
-                {filteredAndSortedProducts.map((product) => (
+                {visibleProducts.map((product) => (
                   <ProductCard key={product.id} {...product} />
                 ))}
+              </div>
+            )}
+
+            {/* Load More */}
+            {hasMore && (
+              <div style={{ textAlign: 'center', marginTop: '48px' }}>
+                <button
+                  onClick={() => setVisibleCount((prev) => prev + PRODUCTS_PER_PAGE)}
+                  style={{
+                    padding: '14px 48px',
+                    backgroundColor: '#0A0A0A',
+                    color: '#FFFFFF',
+                    border: '1px solid #0A0A0A',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    letterSpacing: '2px',
+                    textTransform: 'uppercase',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#FBBE63';
+                    e.currentTarget.style.borderColor = '#FBBE63';
+                    e.currentTarget.style.color = '#0A0A0A';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#0A0A0A';
+                    e.currentTarget.style.borderColor = '#0A0A0A';
+                    e.currentTarget.style.color = '#FFFFFF';
+                  }}
+                >
+                  Load More
+                </button>
+                <p style={{ fontSize: '12px', color: '#666666', marginTop: '12px' }}>
+                  Showing {visibleCount} of {filteredAndSortedProducts.length} artworks
+                </p>
               </div>
             )}
           </div>

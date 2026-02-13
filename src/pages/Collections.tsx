@@ -107,7 +107,7 @@ export default function CollectionsPage() {
                     transition: 'opacity 0.3s ease'
                   }}
                 >
-                  Curated Series
+                  Collection
                 </p>
                 <h3
                   style={{

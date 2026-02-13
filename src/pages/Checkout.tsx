@@ -40,9 +40,9 @@ export default function Checkout() {
           sizeId: item.sizeId,
           sizeLabel: item.sizeLabel,
           quantity: item.quantity,
-          unitPrice: item.unitPrice,
+          unitPrice: item.unitPrice, // client-side price for display; server re-validates
         })),
-        subtotal: totalPrice,
+        subtotal: totalPrice, // server recalculates from price matrix
         shippingCost: 0,
         totalAmount: totalPrice,
         notes: formData.notes,

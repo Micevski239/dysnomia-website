@@ -1,19 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useProducts } from '../hooks/useProducts';
+import { useNewArrivalsSpotlight } from '../hooks/useFeaturedSections';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import ProductCard from '../components/shop/ProductCard';
 import type { ProductCardProps } from '../components/shop/ProductCard';
 import type { Product } from '../types';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1000&h=1400&fit=crop';
-
-const filterOptions = [
-  { id: 'all', label: 'All Arrivals' },
-  { id: 'under200', label: 'Under €200' },
-  { id: 'under500', label: 'Under €500' },
-  { id: 'premium', label: 'Premium' },
-];
 
 const formatPrice = (value: number) =>
   new Intl.NumberFormat('en-EU', { style: 'currency', currency: 'EUR' }).format(value);
@@ -31,25 +25,23 @@ const mapProductToCard = (product: Product): ProductCardProps => ({
 
 export default function NewArrivals() {
   const { products, loading } = useProducts();
-  const [activeFilter, setActiveFilter] = useState(filterOptions[0].id);
+  const { spotlightProductId } = useNewArrivalsSpotlight();
   const { isMobile } = useBreakpoint();
 
-  const filteredProducts = useMemo(() => {
-    const sorted = [...products].sort(
+  const sortedProducts = useMemo(() => {
+    return [...products].sort(
       (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
+  }, [products]);
 
-    return sorted.filter((product) => {
-      const price = Number(product.price) || 0;
-      if (activeFilter === 'under200') return price < 200;
-      if (activeFilter === 'under500') return price < 500;
-      if (activeFilter === 'premium') return price >= 500;
-      return true;
-    });
-  }, [products, activeFilter]);
+  const spotlight = useMemo(() => {
+    if (spotlightProductId) {
+      return sortedProducts.find((p) => p.id === spotlightProductId) || sortedProducts[0] || null;
+    }
+    return sortedProducts[0] || null;
+  }, [sortedProducts, spotlightProductId]);
 
-  const spotlight = filteredProducts[0];
-  const gridProducts = filteredProducts.slice(0, 12);
+  const gridProducts = sortedProducts.slice(0, 12);
 
   return (
     <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: '120px' }}>
@@ -223,53 +215,6 @@ export default function NewArrivals() {
         </div>
       </section>
 
-      {/* Filter Bar */}
-      <section
-        style={{
-          borderTop: '1px solid #E5E5E5',
-          borderBottom: '1px solid #E5E5E5',
-          backgroundColor: '#FAFAFA',
-        }}
-      >
-        <div
-          style={{
-            maxWidth: '1400px',
-            margin: '0 auto',
-            padding: `20px clamp(16px, 4vw, 48px)`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '16px',
-          }}
-        >
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            {filterOptions.map((option) => (
-              <button
-                key={option.id}
-                onClick={() => setActiveFilter(option.id)}
-                style={{
-                  padding: '10px 24px',
-                  border: activeFilter === option.id ? 'none' : '1px solid #E5E5E5',
-                  backgroundColor: activeFilter === option.id ? '#0A0A0A' : '#FFFFFF',
-                  color: activeFilter === option.id ? '#FFFFFF' : '#0A0A0A',
-                  fontSize: '12px',
-                  fontWeight: 500,
-                  letterSpacing: '1px',
-                  textTransform: 'uppercase',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                }}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-          <p style={{ fontSize: '14px', color: '#666666' }}>
-            {filteredProducts.length} {filteredProducts.length === 1 ? 'artwork' : 'artworks'}
-          </p>
-        </div>
-      </section>
 
       {/* Products Grid */}
       <section style={{ maxWidth: '1400px', margin: '0 auto', padding: `clamp(32px, 6vw, 60px) clamp(16px, 4vw, 48px) clamp(48px, 8vw, 80px)` }}>
@@ -335,25 +280,9 @@ export default function NewArrivals() {
             >
               No artworks found
             </p>
-            <p style={{ fontSize: '15px', color: '#666666', marginBottom: '24px' }}>
-              Try adjusting your filters to find what you're looking for.
+            <p style={{ fontSize: '15px', color: '#666666' }}>
+              Check back soon for new arrivals.
             </p>
-            <button
-              onClick={() => setActiveFilter('all')}
-              style={{
-                padding: '14px 32px',
-                backgroundColor: '#0A0A0A',
-                color: '#FFFFFF',
-                border: 'none',
-                fontSize: '12px',
-                fontWeight: 600,
-                letterSpacing: '1px',
-                textTransform: 'uppercase',
-                cursor: 'pointer',
-              }}
-            >
-              Clear Filters
-            </button>
           </div>
         ) : (
           <div

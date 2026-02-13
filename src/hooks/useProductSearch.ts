@@ -40,11 +40,18 @@ export function useProductSearch() {
     setError(null);
 
     try {
-      // Use ilike for basic text search since full-text search requires additional setup
+      // Sanitize query: escape PostgREST filter special chars
+      const sanitized = query.replace(/[%_\\.,()]/g, '');
+      if (!sanitized.trim()) {
+        setResults([]);
+        setLoading(false);
+        return;
+      }
+
       const { data, error: searchError } = await supabase
         .from('products')
         .select('id, title, slug, price, image_url')
-        .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
+        .or(`title.ilike.%${sanitized}%,description.ilike.%${sanitized}%`)
         .in('status', ['published', 'sold'])
         .limit(10);
 

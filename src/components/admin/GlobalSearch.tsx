@@ -41,6 +41,13 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
       return;
     }
 
+    // Sanitize query: strip PostgREST filter special chars
+    const sanitized = searchQuery.replace(/[%_\\.,()]/g, '');
+    if (!sanitized.trim()) {
+      setResults([]);
+      return;
+    }
+
     setLoading(true);
     const searchResults: SearchResult[] = [];
 
@@ -49,7 +56,7 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
       const { data: products } = await supabase
         .from('products')
         .select('id, title, slug, price')
-        .ilike('title', `%${searchQuery}%`)
+        .ilike('title', `%${sanitized}%`)
         .limit(5);
 
       if (products) {
@@ -68,7 +75,7 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
       const { data: orders } = await supabase
         .from('orders')
         .select('id, order_number, customer_name, total_amount')
-        .or(`order_number.ilike.%${searchQuery}%,customer_name.ilike.%${searchQuery}%,customer_email.ilike.%${searchQuery}%`)
+        .or(`order_number.ilike.%${sanitized}%,customer_name.ilike.%${sanitized}%,customer_email.ilike.%${sanitized}%`)
         .limit(5);
 
       if (orders) {
@@ -92,7 +99,7 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
           rating,
           products:product_id (title)
         `)
-        .or(`customer_name.ilike.%${searchQuery}%,customer_email.ilike.%${searchQuery}%`)
+        .or(`customer_name.ilike.%${sanitized}%,customer_email.ilike.%${sanitized}%`)
         .limit(5);
 
       if (reviews) {

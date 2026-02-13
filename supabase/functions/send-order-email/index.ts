@@ -1,4 +1,5 @@
-import { corsHeaders } from '../_shared/cors.ts';
+import { getCorsHeaders } from '../_shared/cors.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 interface OrderItem {
   productTitle: string;
@@ -41,8 +42,18 @@ const printTypeLabels: Record<string, string> = {
   framed: 'Framed Print',
 };
 
+// Escape HTML to prevent XSS in email templates
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 function formatPrice(amount: number, currency: string): string {
-  return `${amount.toLocaleString()} ${currency}`;
+  return `${amount.toLocaleString()} ${escapeHtml(currency)}`;
 }
 
 function buildItemsTable(order: Order): string {
@@ -51,11 +62,11 @@ function buildItemsTable(order: Order): string {
       (item) => `
       <tr>
         <td style="padding: 12px 0; border-bottom: 1px solid #eee; font-family: Georgia, serif; font-size: 14px; color: #333;">
-          ${item.productTitle}<br/>
-          <span style="color: #888; font-size: 12px;">${printTypeLabels[item.printType] || item.printType} &bull; ${item.sizeLabel}</span>
+          ${escapeHtml(item.productTitle)}<br/>
+          <span style="color: #888; font-size: 12px;">${escapeHtml(printTypeLabels[item.printType] || item.printType)} &bull; ${escapeHtml(item.sizeLabel)}</span>
         </td>
         <td style="padding: 12px 0; border-bottom: 1px solid #eee; text-align: center; font-family: Georgia, serif; font-size: 14px; color: #333;">
-          ${item.quantity}
+          ${Number(item.quantity)}
         </td>
         <td style="padding: 12px 0; border-bottom: 1px solid #eee; text-align: right; font-family: Georgia, serif; font-size: 14px; color: #333;">
           ${formatPrice(item.unitPrice * item.quantity, order.currency)}
@@ -114,10 +125,10 @@ function buildAddressSection(order: Order): string {
         <td style="padding: 16px 20px; background-color: #f9f9f9; border-radius: 4px;">
           <p style="margin: 0 0 4px; font-family: Georgia, serif; font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Shipping Address</p>
           <p style="margin: 0; font-family: Georgia, serif; font-size: 14px; color: #333; line-height: 1.6;">
-            ${order.customer_name}<br/>
-            ${addr.address}<br/>
-            ${addr.city}, ${addr.postalCode}<br/>
-            ${addr.country}
+            ${escapeHtml(order.customer_name)}<br/>
+            ${escapeHtml(addr.address)}<br/>
+            ${escapeHtml(addr.city)}, ${escapeHtml(addr.postalCode)}<br/>
+            ${escapeHtml(addr.country)}
           </p>
         </td>
       </tr>
@@ -137,7 +148,7 @@ function buildEmailBody(
         subject: `Order Received — ${orderNum}`,
         bodyContent: `
           <p style="font-family: Georgia, serif; font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 16px;">
-            Thank you for your order, ${order.customer_name}!
+            Thank you for your order, ${escapeHtml(order.customer_name)}!
           </p>
           <p style="font-family: Georgia, serif; font-size: 14px; color: #666; line-height: 1.6; margin: 0 0 24px;">
             We've received your order and will begin processing it shortly. You'll receive another email when your order is confirmed.
@@ -153,7 +164,7 @@ function buildEmailBody(
         subject: `Order Confirmed — ${orderNum}`,
         bodyContent: `
           <p style="font-family: Georgia, serif; font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 16px;">
-            Great news, ${order.customer_name}!
+            Great news, ${escapeHtml(order.customer_name)}!
           </p>
           <p style="font-family: Georgia, serif; font-size: 14px; color: #666; line-height: 1.6; margin: 0 0 24px;">
             Your order has been confirmed and is being prepared. We'll notify you once it ships.
@@ -168,7 +179,7 @@ function buildEmailBody(
         subject: `Order Shipped — ${orderNum}`,
         bodyContent: `
           <p style="font-family: Georgia, serif; font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 16px;">
-            Your order is on its way, ${order.customer_name}!
+            Your order is on its way, ${escapeHtml(order.customer_name)}!
           </p>
           <p style="font-family: Georgia, serif; font-size: 14px; color: #666; line-height: 1.6; margin: 0 0 24px;">
             Your order has been shipped and is heading to you.
@@ -180,7 +191,7 @@ function buildEmailBody(
             <tr>
               <td style="padding: 16px 20px; background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 4px;">
                 <p style="margin: 0 0 4px; font-family: Georgia, serif; font-size: 12px; color: #1e40af; text-transform: uppercase; letter-spacing: 1px;">Tracking Number</p>
-                <p style="margin: 0; font-family: Georgia, serif; font-size: 16px; color: #1e40af; font-weight: bold;">${trackingNumber}</p>
+                <p style="margin: 0; font-family: Georgia, serif; font-size: 16px; color: #1e40af; font-weight: bold;">${escapeHtml(trackingNumber || '')}</p>
               </td>
             </tr>
           </table>`
@@ -196,7 +207,7 @@ function buildEmailBody(
         subject: `Order Delivered — ${orderNum}`,
         bodyContent: `
           <p style="font-family: Georgia, serif; font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 16px;">
-            Your order has been delivered, ${order.customer_name}!
+            Your order has been delivered, ${escapeHtml(order.customer_name)}!
           </p>
           <p style="font-family: Georgia, serif; font-size: 14px; color: #666; line-height: 1.6; margin: 0 0 24px;">
             We hope you love your new artwork. If you have any questions, feel free to reach out to us.
@@ -210,7 +221,7 @@ function buildEmailBody(
         subject: `Order Cancelled — ${orderNum}`,
         bodyContent: `
           <p style="font-family: Georgia, serif; font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 16px;">
-            Your order has been cancelled, ${order.customer_name}.
+            Your order has been cancelled, ${escapeHtml(order.customer_name)}.
           </p>
           <p style="font-family: Georgia, serif; font-size: 14px; color: #666; line-height: 1.6; margin: 0 0 24px;">
             Order ${orderNum} has been cancelled. If you did not request this cancellation or have any questions, please contact us.
@@ -285,6 +296,8 @@ function buildEmail(
 }
 
 Deno.serve(async (req: Request) => {
+  const corsHeaders = getCorsHeaders(req);
+
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -299,6 +312,56 @@ Deno.serve(async (req: Request) => {
         JSON.stringify({ success: false, error: 'Missing order or emailType' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    const validEmailTypes = ['order_placed', 'order_confirmed', 'order_shipped', 'order_delivered', 'order_cancelled'];
+    if (!validEmailTypes.includes(emailType)) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid emailType' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Admin-only email types require authentication
+    if (emailType !== 'order_placed') {
+      const authHeader = req.headers.get('Authorization');
+      if (!authHeader) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Authentication required' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Verify the JWT and check admin role
+      const supabaseAdmin = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+
+      if (authError || !user) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Invalid token' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Check admin role
+      const { data: roleData } = await supabaseAdmin
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+
+      if (!roleData) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Admin access required' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     if (!order.customer_email) {

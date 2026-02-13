@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { useProducts } from '../hooks/useProducts';
+import { useBestsellers } from '../hooks/useFeaturedSections';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { useLanguage } from '../hooks/useLanguage';
 import { useCurrency } from '../hooks/useCurrency';
@@ -22,37 +22,19 @@ const mapProductToCard = (product: Product): ProductCardProps => ({
 });
 
 export default function TopSellers() {
-  const { products, loading } = useProducts();
-  const [activeFilter, setActiveFilter] = useState('all');
+  const { products, spotlightProductId, loading } = useBestsellers();
   const { isMobile } = useBreakpoint();
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
 
-  const filterOptions = useMemo(() => [
-    { id: 'all', label: t('topSellers.filterAll') },
-    { id: 'under200', label: t('topSellers.filterUnder200') },
-    { id: 'under500', label: t('topSellers.filterUnder500') },
-    { id: 'premium', label: t('topSellers.filterPremium') },
-  ], [t]);
+  const spotlight = useMemo(() => {
+    if (spotlightProductId) {
+      return products.find((p) => p.id === spotlightProductId) || products[0] || null;
+    }
+    return products[0] || null;
+  }, [products, spotlightProductId]);
 
-  const filteredProducts = useMemo(() => {
-    // Sort by sales/popularity - using price as a proxy for now
-    // In a real app, you'd sort by actual sales data
-    const sorted = [...products].sort(
-      (a, b) => Number(b.price) - Number(a.price)
-    );
-
-    return sorted.filter((product) => {
-      const price = Number(product.price) || 0;
-      if (activeFilter === 'under200') return price < 200;
-      if (activeFilter === 'under500') return price < 500;
-      if (activeFilter === 'premium') return price >= 500;
-      return true;
-    });
-  }, [products, activeFilter]);
-
-  const spotlight = filteredProducts[0];
-  const gridProducts = filteredProducts.slice(0, 12);
+  const gridProducts = products.slice(0, 12);
 
   const whyChooseUsItems = useMemo(() => [
     {
@@ -243,54 +225,6 @@ export default function TopSellers() {
         </div>
       </section>
 
-      {/* Filter Bar */}
-      <section
-        style={{
-          borderTop: '1px solid #E5E5E5',
-          borderBottom: '1px solid #E5E5E5',
-          backgroundColor: '#FAFAFA',
-        }}
-      >
-        <div
-          style={{
-            maxWidth: '1400px',
-            margin: '0 auto',
-            padding: `20px clamp(16px, 4vw, 48px)`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '16px',
-          }}
-        >
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            {filterOptions.map((option) => (
-              <button
-                key={option.id}
-                onClick={() => setActiveFilter(option.id)}
-                style={{
-                  padding: '10px 24px',
-                  border: activeFilter === option.id ? 'none' : '1px solid #E5E5E5',
-                  backgroundColor: activeFilter === option.id ? '#0A0A0A' : '#FFFFFF',
-                  color: activeFilter === option.id ? '#FFFFFF' : '#0A0A0A',
-                  fontSize: '12px',
-                  fontWeight: 500,
-                  letterSpacing: '1px',
-                  textTransform: 'uppercase',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                }}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-          <p style={{ fontSize: '14px', color: '#666666' }}>
-            {filteredProducts.length} {filteredProducts.length === 1 ? t('topSellers.artwork') : t('topSellers.artworks')}
-          </p>
-        </div>
-      </section>
-
       {/* Products Grid */}
       <section style={{ maxWidth: '1400px', margin: '0 auto', padding: `clamp(32px, 6vw, 60px) clamp(16px, 4vw, 48px) clamp(48px, 8vw, 80px)` }}>
         {loading ? (
@@ -355,25 +289,9 @@ export default function TopSellers() {
             >
               {t('topSellers.noArtworks')}
             </p>
-            <p style={{ fontSize: '15px', color: '#666666', marginBottom: '24px' }}>
+            <p style={{ fontSize: '15px', color: '#666666' }}>
               {t('topSellers.noArtworksMessage')}
             </p>
-            <button
-              onClick={() => setActiveFilter('all')}
-              style={{
-                padding: '14px 32px',
-                backgroundColor: '#0A0A0A',
-                color: '#FFFFFF',
-                border: 'none',
-                fontSize: '12px',
-                fontWeight: 600,
-                letterSpacing: '1px',
-                textTransform: 'uppercase',
-                cursor: 'pointer',
-              }}
-            >
-              {t('topSellers.clearFilters')}
-            </button>
           </div>
         ) : (
           <div

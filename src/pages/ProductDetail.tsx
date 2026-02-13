@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useProduct } from '../hooks/useProducts';
 import { useCart } from '../hooks/useCart';
@@ -17,10 +17,10 @@ import { type PrintType } from '../config/printOptions';
 
 // Adjust these per frame color to position the artwork on each livingroom photo
 const FRAME_DIMENSIONS: Record<string, { top: string; left: string; width: string; height: string }> = {
-  gold:   { top: '18.3%', left: '55.1%', width: '16.7%', height: '27%' },
-  silver: { top: '18.4%', left: '55.1%', width: '16.2%', height: '27%' },
-  white:  { top: '18.3%', left: '55.1%', width: '16.7%', height: '27%' },
-  black:  { top: '18.3%', left: '54.8%', width: '17%', height: '26.8%' },
+  gold:   { top: '7.3%', left: '48.9%', width: '46.6%', height: '63%' },
+  silver: { top: '8.6%', left: '49%', width: '47.7%', height: '61.9%' },
+  white:  { top: '7.3%', left: '48.9%', width: '46.6%', height: '63%' },
+  black:  { top: '8%', left: '48.9%', width: '46.5%', height: '62.4%' },
 };
 
 export default function ProductDetail() {
@@ -36,7 +36,26 @@ export default function ProductDetail() {
   const [selectedSizeId, setSelectedSizeId] = useState<string>('50x70');
   const [addedToCart, setAddedToCart] = useState(false);
   const [frameColor, setFrameColor] = useState<string>('gold');
+  const [imageLoading, setImageLoading] = useState(false);
+  const loadStartRef = useRef<number>(0);
   const { isMobile } = useBreakpoint();
+
+  const MIN_LOADING_MS = 250;
+
+  const startImageLoading = useCallback(() => {
+    loadStartRef.current = Date.now();
+    setImageLoading(true);
+  }, []);
+
+  const onImageLoaded = useCallback(() => {
+    const elapsed = Date.now() - loadStartRef.current;
+    const remaining = MIN_LOADING_MS - elapsed;
+    if (remaining > 0) {
+      setTimeout(() => setImageLoading(false), remaining);
+    } else {
+      setImageLoading(false);
+    }
+  }, []);
 
   // Get image URL based on selected print type
   const getImageForType = (type: PrintType): string | null => {
@@ -181,47 +200,61 @@ export default function ProductDetail() {
                 <div style={{ position: 'relative' }}>
                   {/* Canvas — full image */}
                   {selectedPrintType === 'canvas' && (
-                    <div onClick={handleImageClick} style={{ cursor: 'zoom-in' }}>
+                    <div onClick={imageLoading ? undefined : handleImageClick} style={{ cursor: imageLoading ? 'default' : 'zoom-in', position: 'relative' }}>
                       <img
                         src={currentImage}
                         alt={product.title}
                         style={{ width: '100%', aspectRatio: '3/4', objectFit: 'cover', display: 'block' }}
+                        onLoad={onImageLoaded}
                       />
+                      {imageLoading && (
+                        <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(2px)' }}>
+                          <div style={{ width: '36px', height: '36px', border: '3px solid #E5E5E5', borderTopColor: '#B8860B', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                        </div>
+                      )}
                     </div>
                   )}
 
                   {/* Roll — image with white sides */}
                   {selectedPrintType === 'roll' && (
                     <div
-                      onClick={handleImageClick}
+                      onClick={imageLoading ? undefined : handleImageClick}
                       style={{
-                        cursor: 'zoom-in',
+                        cursor: imageLoading ? 'default' : 'zoom-in',
                         backgroundColor: '#f5f5f3',
                         padding: '8%',
                         aspectRatio: '3/4',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        position: 'relative',
                       }}
                     >
                       <img
                         src={currentImage}
                         alt={`${product.title} – roll`}
                         style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
+                        onLoad={onImageLoaded}
                       />
+                      {imageLoading && (
+                        <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(2px)' }}>
+                          <div style={{ width: '36px', height: '36px', border: '3px solid #E5E5E5', borderTopColor: '#B8860B', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                        </div>
+                      )}
                     </div>
                   )}
 
                   {/* Framed — livingroom mockup */}
                   {selectedPrintType === 'framed' && (
                     <div
-                      onClick={handleImageClick}
-                      style={{ cursor: 'zoom-in', position: 'relative', width: '100%', overflow: 'hidden' }}
+                      onClick={imageLoading ? undefined : handleImageClick}
+                      style={{ cursor: imageLoading ? 'default' : 'zoom-in', position: 'relative', width: '100%', overflow: 'hidden' }}
                     >
                       <img
                         src={`/livingroom${frameColor}.webp`}
                         alt="Room interior"
                         style={{ width: '100%', display: 'block' }}
+                        onLoad={onImageLoaded}
                       />
                       <div
                         style={{
@@ -241,6 +274,31 @@ export default function ProductDetail() {
                           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                         />
                       </div>
+                      {/* Loading overlay */}
+                      {imageLoading && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backdropFilter: 'blur(2px)',
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: '36px',
+                              height: '36px',
+                              border: '3px solid #E5E5E5',
+                              borderTopColor: '#B8860B',
+                              borderRadius: '50%',
+                              animation: 'spin 0.8s linear infinite',
+                            }}
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -404,6 +462,9 @@ export default function ProductDetail() {
                   <VariantSelector
                     printType={selectedPrintType}
                     onSelectionChange={(printType, sizeId, _price, newFrameColor) => {
+                      const typeChanged = printType !== selectedPrintType;
+                      const frameChanged = newFrameColor && newFrameColor !== frameColor;
+                      if (typeChanged || frameChanged) startImageLoading();
                       setSelectedPrintType(printType);
                       setSelectedSizeId(sizeId);
                       if (newFrameColor) setFrameColor(newFrameColor);

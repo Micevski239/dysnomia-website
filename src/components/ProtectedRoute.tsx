@@ -6,7 +6,7 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, loading } = useAuth();
+  const { user, isAdmin, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -22,6 +22,17 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   if (!user) {
     return <Navigate to="/admin" state={{ from: location }} replace />;
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-surface">
+        <div className="flex flex-col items-center text-center p-8">
+          <p className="text-lg font-medium text-red-600 mb-2">Access Denied</p>
+          <p className="text-muted text-sm">You do not have admin privileges.</p>
+        </div>
+      </div>
+    );
   }
 
   return <>{children}</>;
