@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 
 export type Currency = 'EUR' | 'MKD';
 
@@ -38,27 +38,27 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     }
   }, [currency]);
 
-  const setCurrency = (newCurrency: Currency) => {
+  const setCurrency = useCallback((newCurrency: Currency) => {
     setCurrencyState(newCurrency);
-  };
+  }, []);
 
-  const convertPrice = (priceInMKD: number): number => {
+  const convertPrice = useCallback((priceInMKD: number): number => {
     if (currency === 'MKD') {
       return priceInMKD;
     }
     // Convert to EUR
     return Math.round((priceInMKD / MKD_TO_EUR_RATE) * 100) / 100;
-  };
+  }, [currency]);
 
-  const formatPrice = (priceInMKD: number): string => {
-    const convertedPrice = convertPrice(priceInMKD);
+  const formatPrice = useCallback((priceInMKD: number): string => {
+    const convertedPrice = currency === 'MKD' ? priceInMKD : Math.round((priceInMKD / MKD_TO_EUR_RATE) * 100) / 100;
 
     if (currency === 'MKD') {
       return `${convertedPrice.toLocaleString()} MKD`;
     }
 
     return `€${convertedPrice.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  };
+  }, [currency]);
 
   const currencySymbol = currency === 'EUR' ? '€' : 'MKD';
 

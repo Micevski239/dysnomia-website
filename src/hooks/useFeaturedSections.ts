@@ -18,22 +18,24 @@ export function useBestsellers() {
     setError(null);
 
     try {
-      // Fetch spotlight setting
-      const { data: section } = await supabase
-        .from('featured_sections')
-        .select('spotlight_product_id')
-        .eq('section_key', 'bestsellers')
-        .single();
+      // Fetch spotlight and bestsellers in parallel
+      const [sectionResult, bestsellersResult] = await Promise.all([
+        supabase
+          .from('featured_sections')
+          .select('spotlight_product_id')
+          .eq('section_key', 'bestsellers')
+          .single(),
+        supabase
+          .from('bestseller_products')
+          .select('display_order, product:products(id, title, slug, description, price, image_url, status, created_at, updated_at)')
+          .order('display_order', { ascending: true }),
+      ]);
 
+      const section = sectionResult.data;
       setSpotlightProductId(section?.spotlight_product_id ?? null);
 
-      // Fetch curated bestsellers joined with products
-      const { data: bestsellers, error: bErr } = await supabase
-        .from('bestseller_products')
-        .select('display_order, product:products(*)')
-        .order('display_order', { ascending: true });
-
-      if (bErr) throw bErr;
+      const bestsellers = bestsellersResult.data;
+      if (bestsellersResult.error) throw bestsellersResult.error;
 
       // Supabase returns joined data; product may be an object or array depending on the relationship
       const curated = (bestsellers || [])
@@ -50,7 +52,7 @@ export function useBestsellers() {
         // Fallback: top 12 by price
         const { data: fallback, error: fErr } = await supabase
           .from('products')
-          .select('*')
+          .select('id, title, slug, description, price, image_url, status, created_at, updated_at')
           .in('status', ['published', 'sold'])
           .order('price', { ascending: false })
           .limit(12);

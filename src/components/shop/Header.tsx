@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, memo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { SearchIcon, HeartIcon, UserIcon, BagIcon, MenuIcon, CloseIcon } from './Icons';
 import SearchModal from './SearchModal';
@@ -11,7 +11,7 @@ interface HeaderProps {
   wishlistCount?: number;
 }
 
-export default function Header({ cartCount = 0, wishlistCount = 0 }: HeaderProps) {
+export default memo(function Header({ cartCount = 0, wishlistCount = 0 }: HeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -30,11 +30,19 @@ export default function Header({ cartCount = 0, wishlistCount = 0 }: HeaderProps
     { label: t('common.aboutUs'), href: '/about' },
   ], [t]);
 
+  // Throttled scroll listener
+  const ticking = useRef(false);
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      if (!ticking.current) {
+        ticking.current = true;
+        requestAnimationFrame(() => {
+          setIsScrolled(window.scrollY > 50);
+          ticking.current = false;
+        });
+      }
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -155,7 +163,7 @@ export default function Header({ cartCount = 0, wishlistCount = 0 }: HeaderProps
             </button>
 
             <Link
-              to="/wishlist"
+              to="/account/wishlist"
               style={{
                 position: 'relative',
                 color: textColor,
@@ -430,4 +438,4 @@ export default function Header({ cartCount = 0, wishlistCount = 0 }: HeaderProps
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </header>
   );
-}
+});

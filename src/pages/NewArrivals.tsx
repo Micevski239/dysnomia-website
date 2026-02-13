@@ -94,7 +94,7 @@ export default function NewArrivals() {
             </p>
             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
               <Link
-                to="/artworks"
+                to="/shop"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -168,6 +168,8 @@ export default function NewArrivals() {
               <img
                 src={spotlight.image_url || FALLBACK_IMAGE}
                 alt={spotlight.title}
+                loading="lazy"
+                decoding="async"
                 style={{
                   width: '100%',
                   height: '100%',

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 export interface CartItem {
   productId: string;
@@ -51,10 +51,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [items]);
 
-  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+  const itemCount = useMemo(() => items.reduce((sum, item) => sum + item.quantity, 0), [items]);
+  const totalPrice = useMemo(() => items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0), [items]);
 
-  const addItem = (newItem: Omit<CartItem, 'quantity'> & { quantity?: number }) => {
+  const addItem = useCallback((newItem: Omit<CartItem, 'quantity'> & { quantity?: number }) => {
     const quantity = newItem.quantity ?? 1;
     const key = getItemKey(newItem.productId, newItem.printType, newItem.sizeId);
 
@@ -76,18 +76,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
       // Add new item
       return [...currentItems, { ...newItem, quantity }];
     });
-  };
+  }, []);
 
-  const removeItem = (productId: string, printType: string, sizeId: string) => {
+  const removeItem = useCallback((productId: string, printType: string, sizeId: string) => {
     const key = getItemKey(productId, printType, sizeId);
     setItems((currentItems) =>
       currentItems.filter(
         (item) => getItemKey(item.productId, item.printType, item.sizeId) !== key
       )
     );
-  };
+  }, []);
 
-  const updateQuantity = (productId: string, printType: string, sizeId: string, quantity: number) => {
+  const updateQuantity = useCallback((productId: string, printType: string, sizeId: string, quantity: number) => {
     if (quantity <= 0) {
       removeItem(productId, printType, sizeId);
       return;
@@ -101,11 +101,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
           : item
       )
     );
-  };
+  }, [removeItem]);
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setItems([]);
-  };
+  }, []);
 
   return (
     <CartContext.Provider

@@ -52,12 +52,24 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
     const searchResults: SearchResult[] = [];
 
     try {
-      // Search products
-      const { data: products } = await supabase
-        .from('products')
-        .select('id, title, slug, price')
-        .ilike('title', `%${sanitized}%`)
-        .limit(5);
+      // Run all three searches in parallel
+      const [{ data: products }, { data: orders }, { data: reviews }] = await Promise.all([
+        supabase
+          .from('products')
+          .select('id, title, slug, price')
+          .ilike('title', `%${sanitized}%`)
+          .limit(5),
+        supabase
+          .from('orders')
+          .select('id, order_number, customer_name, total_amount')
+          .or(`order_number.ilike.%${sanitized}%,customer_name.ilike.%${sanitized}%,customer_email.ilike.%${sanitized}%`)
+          .limit(5),
+        supabase
+          .from('reviews')
+          .select('id, customer_name, rating, products:product_id (title)')
+          .or(`customer_name.ilike.%${sanitized}%,customer_email.ilike.%${sanitized}%`)
+          .limit(5),
+      ]);
 
       if (products) {
         searchResults.push(
@@ -71,13 +83,6 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
         );
       }
 
-      // Search orders
-      const { data: orders } = await supabase
-        .from('orders')
-        .select('id, order_number, customer_name, total_amount')
-        .or(`order_number.ilike.%${sanitized}%,customer_name.ilike.%${sanitized}%,customer_email.ilike.%${sanitized}%`)
-        .limit(5);
-
       if (orders) {
         searchResults.push(
           ...orders.map((o) => ({
@@ -89,18 +94,6 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
           }))
         );
       }
-
-      // Search reviews
-      const { data: reviews } = await supabase
-        .from('reviews')
-        .select(`
-          id,
-          customer_name,
-          rating,
-          products:product_id (title)
-        `)
-        .or(`customer_name.ilike.%${sanitized}%,customer_email.ilike.%${sanitized}%`)
-        .limit(5);
 
       if (reviews) {
         searchResults.push(

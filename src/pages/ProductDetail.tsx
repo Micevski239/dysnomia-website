@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useProduct } from '../hooks/useProducts';
 import { useCart } from '../hooks/useCart';
@@ -14,6 +14,7 @@ import StarRating from '../components/shop/StarRating';
 import { useReviews } from '../hooks/useReviews';
 import { productContent } from '../config/productContent';
 import { type PrintType } from '../config/printOptions';
+import { supabase } from '../lib/supabase';
 
 // Adjust these per frame color to position the artwork on each livingroom photo
 const FRAME_DIMENSIONS: Record<string, { top: string; left: string; width: string; height: string }> = {
@@ -21,6 +22,14 @@ const FRAME_DIMENSIONS: Record<string, { top: string; left: string; width: strin
   silver: { top: '8.6%', left: '49%', width: '47.7%', height: '61.9%' },
   white:  { top: '7.3%', left: '48.9%', width: '46.6%', height: '63%' },
   black:  { top: '8%', left: '48.9%', width: '46.5%', height: '62.4%' },
+};
+
+// Kids bedroom mockup dimensions — same shape, tunable per image
+const KIDS_FRAME_DIMENSIONS: Record<string, { top: string; left: string; width: string; height: string }> = {
+  gold:   { top: '21%', left: '69.2%', width: '18.6%', height: '39.2%' },
+  silver: { top: '21%', left: '69.15%', width: '18.8%', height: '39.1%' },
+  white:  { top: '20.9%', left: '69.15%', width: '18.8%', height: '39%' },
+  black:  { top: '21%', left: '69%', width: '19.1%', height: '39.1%' },
 };
 
 export default function ProductDetail() {
@@ -39,6 +48,29 @@ export default function ProductDetail() {
   const [imageLoading, setImageLoading] = useState(false);
   const loadStartRef = useRef<number>(0);
   const { isMobile } = useBreakpoint();
+  const [isKidsCollection, setIsKidsCollection] = useState(false);
+  const [collectionName, setCollectionName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!product) return;
+    supabase
+      .from('collection_products')
+      .select('collection:collections(slug,name)')
+      .eq('product_id', product.id)
+      .then(({ data }) => {
+        const collections = (data || []).flatMap((r: any) => {
+          const c = r.collection;
+          return Array.isArray(c) ? c : [c].filter(Boolean);
+        });
+        setIsKidsCollection(collections.some((c: any) => c.slug === 'kid'));
+        if (collections.length > 0) {
+          setCollectionName(collections[0].name);
+        }
+      });
+  }, [product?.id]);
+
+  const roomPrefix = isKidsCollection ? '/kids' : '/livingroom';
+  const frameDims = isKidsCollection ? KIDS_FRAME_DIMENSIONS : FRAME_DIMENSIONS;
 
   const MIN_LOADING_MS = 250;
 
@@ -251,7 +283,7 @@ export default function ProductDetail() {
                       style={{ cursor: imageLoading ? 'default' : 'zoom-in', position: 'relative', width: '100%', overflow: 'hidden' }}
                     >
                       <img
-                        src={`/livingroom${frameColor}.webp`}
+                        src={`${roomPrefix}${frameColor}.webp`}
                         alt="Room interior"
                         style={{ width: '100%', display: 'block' }}
                         onLoad={onImageLoaded}
@@ -259,11 +291,11 @@ export default function ProductDetail() {
                       <div
                         style={{
                           position: 'absolute',
-                          top: FRAME_DIMENSIONS[frameColor].top,
-                          left: FRAME_DIMENSIONS[frameColor].left,
+                          top: frameDims[frameColor].top,
+                          left: frameDims[frameColor].left,
                           transform: 'translateX(-50%)',
-                          width: FRAME_DIMENSIONS[frameColor].width,
-                          height: FRAME_DIMENSIONS[frameColor].height,
+                          width: frameDims[frameColor].width,
+                          height: frameDims[frameColor].height,
                           boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.2)',
                           overflow: 'hidden',
                         }}
@@ -393,18 +425,18 @@ export default function ProductDetail() {
                         {view === 'framed' && (
                           <div style={{ position: 'relative', width: '100%', height: '100%' }}>
                             <img
-                              src={`/livingroom${frameColor}.webp`}
+                              src={`${roomPrefix}${frameColor}.webp`}
                               alt="Room interior"
                               style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                             />
                             <div
                               style={{
                                 position: 'absolute',
-                                top: FRAME_DIMENSIONS[frameColor].top,
-                                left: FRAME_DIMENSIONS[frameColor].left,
+                                top: frameDims[frameColor].top,
+                                left: frameDims[frameColor].left,
                                 transform: 'translateX(-50%)',
-                                width: FRAME_DIMENSIONS[frameColor].width,
-                                height: FRAME_DIMENSIONS[frameColor].height,
+                                width: frameDims[frameColor].width,
+                                height: frameDims[frameColor].height,
                                 overflow: 'hidden',
                               }}
                             >
@@ -431,9 +463,11 @@ export default function ProductDetail() {
 
           {/* Details */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <p style={{ color: '#B8860B', fontSize: '14px', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '8px', fontWeight: 500 }}>
-              Original Artwork
-            </p>
+            {collectionName && (
+              <p style={{ color: '#B8860B', fontSize: '14px', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '8px', fontWeight: 500 }}>
+                {collectionName}
+              </p>
+            )}
 
             <h1 style={{ fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 300, color: '#1a1a1a', marginBottom: '12px' }}>
               {product.title}

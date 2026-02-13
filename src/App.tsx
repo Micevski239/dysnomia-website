@@ -5,20 +5,20 @@ import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { CurrencyProvider } from './context/CurrencyContext';
-import AdminLayout from './components/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import ShopLayoutWrapper from './components/shop/ShopLayoutWrapper';
 import ScrollToTop from './components/ScrollToTop';
-import ShopHome from './pages/ShopHome';
-import Shop from './pages/Shop';
-import Collections from './pages/Collections';
-import CollectionShowcase from './pages/CollectionShowcase';
-import NewArrivals from './pages/NewArrivals';
-import TopSellers from './pages/TopSellers';
-import About from './pages/About';
 import { PageErrorBoundary } from './components/ErrorBoundary';
 
 // Lazy loaded components for code splitting
+const ShopHome = lazy(() => import('./pages/ShopHome'));
+const Shop = lazy(() => import('./pages/Shop'));
+const Collections = lazy(() => import('./pages/Collections'));
+const CollectionShowcase = lazy(() => import('./pages/CollectionShowcase'));
+const NewArrivals = lazy(() => import('./pages/NewArrivals'));
+const TopSellers = lazy(() => import('./pages/TopSellers'));
+const About = lazy(() => import('./pages/About'));
+const AdminLayout = lazy(() => import('./components/AdminLayout'));
 const ProductDetail = lazy(() => import('./pages/ProductDetail'));
 const Login = lazy(() => import('./pages/admin/Login'));
 const Dashboard = lazy(() => import('./pages/admin/Dashboard'));

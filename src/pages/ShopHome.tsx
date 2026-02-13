@@ -1,9 +1,9 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { Hero, ProductCarousel, USPSection, GalleryTour, BrandStory } from '../components/shop';
 import type { ProductCardProps } from '../components/shop';
 import { useProducts } from '../hooks/useProducts';
 import { useLanguage } from '../hooks/useLanguage';
-import { supabase } from '../lib/supabase';
+import { useProductCollectionMap } from '../hooks/useProductCollectionMap';
 import type { Product } from '../types';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=533&fit=crop';
@@ -21,27 +21,9 @@ const mapProductToCard = (product: Product, collectionName?: string): ProductCar
 });
 
 export default function ShopHome() {
-  const { products, loading } = useProducts();
+  const { products, loading } = useProducts(false, { limit: 10 });
   const { t } = useLanguage();
-  const [productCollectionMap, setProductCollectionMap] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    async function fetchProductCollections() {
-      const { data } = await supabase
-        .from('collection_products')
-        .select('product_id, collection:collections(title)');
-      if (data) {
-        const map: Record<string, string> = {};
-        for (const row of data as { product_id: string; collection: { title: string }[] | null }[]) {
-          if (row.collection?.[0]?.title) {
-            map[row.product_id] = row.collection[0].title;
-          }
-        }
-        setProductCollectionMap(map);
-      }
-    }
-    fetchProductCollections();
-  }, []);
+  const productCollectionMap = useProductCollectionMap();
 
   const featuredProducts = useMemo(() => {
     const featured = products.filter((product) => product.is_featured);
@@ -59,7 +41,7 @@ export default function ShopHome() {
       {loading ? (
         <FeaturedCarouselSkeleton />
       ) : featuredProducts.length > 0 ? (
-        <ProductCarousel title={t('home.featuredArtworks')} viewAllLink="/artworks" products={featuredProducts} />
+        <ProductCarousel title={t('home.featuredArtworks')} viewAllLink="/shop" products={featuredProducts} />
       ) : (
         <section style={{ padding: '60px 0', backgroundColor: '#FFFFFF' }}>
           <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 48px', textAlign: 'center' }}>

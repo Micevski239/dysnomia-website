@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { InstagramIcon, FacebookIcon } from './Icons';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
@@ -20,7 +21,7 @@ const footerLinks = {
   ]
 };
 
-export default function Footer() {
+export default memo(function Footer() {
   const { isMobile, isTablet } = useBreakpoint();
 
   const linkStyle: React.CSSProperties = {
@@ -226,4 +227,4 @@ export default function Footer() {
       </div>
     </footer>
   );
-}
+});

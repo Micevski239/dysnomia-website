@@ -160,6 +160,7 @@ export default function CollectionShowcase() {
             <img
               src={heroImage}
               alt={collection?.title || 'Collection cover'}
+              decoding="async"
               style={{
                 width: '100%',
                 height: '100%',
@@ -270,7 +271,7 @@ export default function CollectionShowcase() {
               This collection doesn't have any artworks linked yet.
             </p>
             <Link
-              to="/artworks"
+              to="/shop"
               style={{
                 display: 'inline-block',
                 padding: '14px 36px',

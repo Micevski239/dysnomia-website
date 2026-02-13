@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import ProductCard from './ProductCard';
 import type { ProductCardProps } from './ProductCard';
@@ -26,8 +26,8 @@ export default function ProductCarousel({
   const totalItems = products.length;
   const totalPages = Math.ceil(totalItems / itemsPerView);
 
-  // Create extended products array for infinite loop effect
-  const extendedProducts = [...products, ...products, ...products];
+  // Create extended products array for infinite loop effect (memoized)
+  const extendedProducts = useMemo(() => [...products, ...products, ...products], [products]);
 
   // Calculate card width dynamically from container
   const getCardWidth = useCallback(() => {

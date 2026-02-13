@@ -48,6 +48,8 @@ const RoomMockup = memo(function RoomMockup({ artworkImage, artworkTitle }: Room
       <img
         src="/room-preview.jpg"
         alt="Room interior"
+        loading="lazy"
+        decoding="async"
         style={{
           position: 'absolute',
           inset: 0,
@@ -73,6 +75,8 @@ const RoomMockup = memo(function RoomMockup({ artworkImage, artworkTitle }: Room
         <img
           src={artworkImage}
           alt={`${artworkTitle} in room`}
+          loading="lazy"
+          decoding="async"
           style={{
             width: '100%',
             height: '100%',

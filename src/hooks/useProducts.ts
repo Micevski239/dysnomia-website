@@ -25,7 +25,7 @@ export function useProducts(includeUnpublished = false, options?: Omit<UseProduc
 
     let query = supabase
       .from('products')
-      .select('*', { count: 'exact' })
+      .select('id, title, slug, description, price, image_url, status, created_at, updated_at', { count: 'exact' })
       .order('created_at', { ascending: false });
 
     if (!includeUnpublished) {

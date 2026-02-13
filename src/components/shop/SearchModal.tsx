@@ -252,6 +252,8 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         <img
                           src={product.image_url}
                           alt={product.title}
+                          loading="lazy"
+                          decoding="async"
                           style={{
                             width: '100%',
                             height: '100%',

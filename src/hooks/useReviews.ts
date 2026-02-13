@@ -21,7 +21,7 @@ export function useReviews(productId: string | undefined) {
     try {
       const { data, error } = await supabase
         .from('reviews')
-        .select('*')
+        .select('id, product_id, customer_name, customer_email, rating, title, content, is_approved, created_at')
         .eq('product_id', productId)
         .eq('is_approved', true)
         .order('created_at', { ascending: false });
@@ -98,10 +98,7 @@ export function useAllReviews(showPendingOnly = false) {
     try {
       let query = supabase
         .from('reviews')
-        .select(`
-          *,
-          products:product_id (title)
-        `)
+        .select('id, product_id, customer_name, customer_email, rating, title, content, is_approved, created_at, products:product_id (title)')
         .order('created_at', { ascending: false });
 
       if (showPendingOnly) {

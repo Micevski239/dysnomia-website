@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 
 export type Language = 'en' | 'mk';
 
@@ -442,11 +442,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     }
   }, [language]);
 
-  const setLanguage = (lang: Language) => {
+  const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang);
-  };
+  }, []);
 
-  const t = (key: string): string => {
+  const t = useCallback((key: string): string => {
     const parts = key.split('.');
     if (parts.length !== 2) return key;
 
@@ -455,7 +455,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
     if (!namespaceTranslations) return key;
     return namespaceTranslations[translationKey] ?? key;
-  };
+  }, [language]);
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>

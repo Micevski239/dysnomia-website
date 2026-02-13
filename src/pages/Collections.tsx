@@ -13,8 +13,23 @@ export default function CollectionsPage() {
   const renderState = () => {
     if (loading) {
       return (
-        <div style={{ textAlign: 'center', padding: '80px 0', color: '#666666' }}>
-          Loading collections...
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+            gap: 'clamp(12px, 2vw, 24px)'
+          }}
+        >
+          {Array.from({ length: isMobile ? 4 : 8 }).map((_, i) => (
+            <div
+              key={i}
+              style={{
+                aspectRatio: '3/4',
+                backgroundColor: '#F5F5F5',
+                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              }}
+            />
+          ))}
         </div>
       );
     }
@@ -65,6 +80,8 @@ export default function CollectionsPage() {
               <img
                 src={coverImage}
                 alt={collection.title}
+                loading="lazy"
+                decoding="async"
                 style={{
                   position: 'absolute',
                   inset: 0,

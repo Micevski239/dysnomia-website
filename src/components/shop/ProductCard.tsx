@@ -1,8 +1,10 @@
-import { useState, memo, useMemo } from 'react';
+import { useState, memo, useMemo, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { HeartIcon } from './Icons';
-import RoomMockup from './RoomMockup';
 import { useCurrency } from '../../hooks/useCurrency';
+import { useWishlist } from '../../hooks/useWishlist';
+
+const RoomMockup = lazy(() => import('./RoomMockup'));
 import { priceMatrix } from '../../config/printOptions';
 
 export interface ProductCardProps {
@@ -17,8 +19,6 @@ export interface ProductCardProps {
   badge?: 'sale' | 'new' | 'artist' | 'limited' | 'bestseller';
   discount?: number;
   sizes?: string[];
-  isWishlisted?: boolean;
-  onWishlistToggle?: (id: string) => void;
   showRoomPreview?: boolean;
 }
 
@@ -43,13 +43,13 @@ const ProductCard = memo(function ProductCard({
   badge,
   discount,
   sizes = ['50x70 cm', '70x100 cm', '100x150 cm'],
-  isWishlisted = false,
-  onWishlistToggle,
   showRoomPreview = true
 }: ProductCardProps) {
   const [selectedSize, setSelectedSize] = useState(sizes[0]);
   const [isHovered, setIsHovered] = useState(false);
   const { currency } = useCurrency();
+  const { isInWishlist, toggle } = useWishlist();
+  const wishlisted = isInWishlist(id);
 
   // Get price from static price matrix based on selected size
   // Using 'canvas' as default print type for carousel display
@@ -64,18 +64,20 @@ const ProductCard = memo(function ProductCard({
     return priceInMKD;
   }, [selectedSize, currency]);
 
-  // Format price based on currency
-  const formatDisplayPrice = (amount: number) => {
+  // Memoize Intl.NumberFormat to avoid expensive constructor per render
+  const eurFormatter = useMemo(() => new Intl.NumberFormat('en-EU', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }), []);
+
+  const formattedPrice = useMemo(() => {
     if (currency === 'EUR') {
-      return new Intl.NumberFormat('en-EU', {
-        style: 'currency',
-        currency: 'EUR',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-      }).format(amount);
+      return eurFormatter.format(displayPrice);
     }
-    return `${Math.round(amount).toLocaleString()} MKD`;
-  };
+    return `${Math.round(displayPrice).toLocaleString()} MKD`;
+  }, [currency, displayPrice, eurFormatter]);
 
   return (
     <div
@@ -114,6 +116,8 @@ const ProductCard = memo(function ProductCard({
           <img
             src={image}
             alt={title}
+            loading="lazy"
+            decoding="async"
             style={{
               width: '100%',
               height: '100%',
@@ -123,17 +127,19 @@ const ProductCard = memo(function ProductCard({
           />
         </div>
 
-        {/* Room Preview on Hover */}
-        {showRoomPreview && (
+        {/* Room Preview on Hover - only mount when hovered */}
+        {showRoomPreview && isHovered && (
           <div
             style={{
               position: 'absolute',
               inset: 0,
-              opacity: isHovered ? 1 : 0,
+              opacity: 1,
               transition: 'opacity 0.4s ease'
             }}
           >
-            <RoomMockup artworkImage={image} artworkTitle={title} />
+            <Suspense fallback={null}>
+              <RoomMockup artworkImage={image} artworkTitle={title} />
+            </Suspense>
           </div>
         )}
 
@@ -239,10 +245,10 @@ const ProductCard = memo(function ProductCard({
         <button
           onClick={(e) => {
             e.preventDefault();
-            onWishlistToggle?.(id);
+            toggle({ productId: id, productTitle: title, productSlug: slug, imageUrl: image });
           }}
-          aria-label={isWishlisted ? `Remove ${title} from wishlist` : `Add ${title} to wishlist`}
-          aria-pressed={isWishlisted}
+          aria-label={wishlisted ? `Remove ${title} from wishlist` : `Add ${title} to wishlist`}
+          aria-pressed={wishlisted}
           style={{
             position: 'absolute',
             top: '12px',
@@ -254,11 +260,11 @@ const ProductCard = memo(function ProductCard({
             cursor: 'pointer',
             transition: 'all 0.3s',
             opacity: isHovered ? 1 : 0,
-            color: isWishlisted ? '#FBBE63' : '#0A0A0A',
+            color: wishlisted ? '#FBBE63' : '#0A0A0A',
             zIndex: 2
           }}
         >
-          <HeartIcon className="w-4 h-4" filled={isWishlisted} />
+          <HeartIcon className="w-4 h-4" filled={wishlisted} />
         </button>
       </Link>
 
@@ -291,7 +297,7 @@ const ProductCard = memo(function ProductCard({
         {/* Price - From static price matrix based on size */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
           <span style={{ fontSize: '13px', color: '#0A0A0A', fontWeight: 500 }}>
-            {formatDisplayPrice(displayPrice)}
+            {formattedPrice}
           </span>
         </div>
 
@@ -304,7 +310,8 @@ const ProductCard = memo(function ProductCard({
               aria-pressed={selectedSize === size}
               style={{
                 fontSize: '10px',
-                padding: '4px 8px',
+                padding: '6px 10px',
+                minHeight: '32px',
                 border: selectedSize === size ? '1px solid #0A0A0A' : '1px solid #E5E5E5',
                 backgroundColor: selectedSize === size ? '#0A0A0A' : '#FFFFFF',
                 color: selectedSize === size ? '#FFFFFF' : '#0A0A0A',

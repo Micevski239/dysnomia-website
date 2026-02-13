@@ -4,6 +4,7 @@ import ProductCard from '../components/shop/ProductCard';
 import type { ProductCardProps } from '../components/shop/ProductCard';
 import { useProducts } from '../hooks/useProducts';
 import { useCollections } from '../hooks/useCollections';
+import { useProductCollectionMap } from '../hooks/useProductCollectionMap';
 import { supabase } from '../lib/supabase';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 
@@ -32,29 +33,10 @@ export default function Shop() {
   const [showOnSale, setShowOnSale] = useState(initialSale);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [collectionProductIds, setCollectionProductIds] = useState<Set<string> | null>(null);
-  const [productCollectionMap, setProductCollectionMap] = useState<Record<string, string>>({});
   const { products, loading, error, refetch } = useProducts();
   const { collections } = useCollections();
+  const productCollectionMap = useProductCollectionMap();
   const { isMobileOrTablet } = useBreakpoint();
-
-  // Build product → collection name lookup
-  useEffect(() => {
-    async function fetchProductCollections() {
-      const { data } = await supabase
-        .from('collection_products')
-        .select('product_id, collection:collections(title)');
-      if (data) {
-        const map: Record<string, string> = {};
-        for (const row of data as { product_id: string; collection: { title: string }[] | null }[]) {
-          if (row.collection?.[0]?.title) {
-            map[row.product_id] = row.collection[0].title;
-          }
-        }
-        setProductCollectionMap(map);
-      }
-    }
-    fetchProductCollections();
-  }, []);
 
   // Fetch product IDs for selected collections
   const fetchCollectionProducts = useCallback(async (collectionIds: Set<string>) => {
