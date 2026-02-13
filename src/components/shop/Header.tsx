@@ -61,7 +61,7 @@ export default memo(function Header({ cartCount = 0, wishlistCount = 0 }: Header
     <header
       style={{
         position: isMobile ? 'sticky' : 'fixed',
-        top: isMobile ? 0 : '35px',
+        top: '35px',
         left: 0,
         right: 0,
         zIndex: 40,
@@ -304,7 +304,7 @@ export default memo(function Header({ cartCount = 0, wishlistCount = 0 }: Header
           maxWidth: '80vw',
           backgroundColor: '#FFFFFF',
           boxShadow: '4px 0 20px rgba(0,0,0,0.15)',
-          padding: '24px',
+          padding: '56px 24px 24px',
           transform: mobileMenuOpen ? 'translateX(0)' : 'translateX(-100%)',
           transition: 'transform 0.3s ease-in-out',
           zIndex: 50,

@@ -139,12 +139,11 @@ export default function GalleryTour() {
                   <h3
                     style={{
                       fontFamily: "'Playfair Display', Georgia, serif",
-                      fontSize: '24px',
+                      fontSize: isMobile ? '18px' : '24px',
                       color: '#FFFFFF',
                       fontWeight: 500,
                       marginBottom: isMobile ? '0' : '8px',
                       letterSpacing: '1px',
-                      lineHeight: 1.15,
                     }}
                   >
                     {collection.title}

@@ -43,14 +43,16 @@ export default function ShopLayout({ cartCount = 0, wishlistCount = 0 }: ShopLay
         Skip to main content
       </a>
 
-      {/* Announcement Bar: fixed on desktop, normal flow on mobile */}
-      {isMobile ? (
+      {/* Announcement Bar: fixed on desktop, sticky on mobile */}
+      <div style={{
+        position: isMobile ? 'sticky' : 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 50,
+      }}>
         <AnnouncementBar />
-      ) : (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50 }}>
-          <AnnouncementBar />
-        </div>
-      )}
+      </div>
 
       {/* Header */}
       <Header cartCount={cartCount} wishlistCount={wishlistCount} />
