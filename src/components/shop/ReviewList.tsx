@@ -159,7 +159,7 @@ export default function ReviewList({
                 </p>
               )}
 
-              <p style={{ fontSize: '13px', color: '#6b6b6b' }}>— {review.customer_name}</p>
+              <p style={{ fontSize: '13px', color: '#6b6b6b' }}>- {review.customer_name}</p>
             </div>
           ))}
         </div>

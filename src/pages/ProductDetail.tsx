@@ -4,6 +4,7 @@ import { useProduct } from '../hooks/useProducts';
 import { useCart } from '../hooks/useCart';
 import { useWishlist } from '../hooks/useWishlist';
 import { useLanguage } from '../hooks/useLanguage';
+import { localize } from '../lib/localize';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import Accordion from '../components/ui/Accordion';
 import SizeGuideModal from '../components/shop/SizeGuideModal';
@@ -24,7 +25,7 @@ const FRAME_DIMENSIONS: Record<string, { top: string; left: string; width: strin
   black:  { top: '8%', left: '48.9%', width: '46.5%', height: '62.4%' },
 };
 
-// Kids bedroom mockup dimensions — same shape, tunable per image
+// Kids bedroom mockup dimensions - same shape, tunable per image
 const KIDS_FRAME_DIMENSIONS: Record<string, { top: string; left: string; width: string; height: string }> = {
   gold:   { top: '21%', left: '69.2%', width: '18.6%', height: '39.2%' },
   silver: { top: '21%', left: '69.15%', width: '18.8%', height: '39.1%' },
@@ -37,7 +38,7 @@ export default function ProductDetail() {
   const { product, loading, error } = useProduct(slug || '');
   const { addToCart } = useCart();
   const { isInWishlist, toggle: toggleWishlist } = useWishlist();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -230,7 +231,7 @@ export default function ProductDetail() {
               <>
                 {/* Main big image */}
                 <div style={{ position: 'relative' }}>
-                  {/* Canvas — full image */}
+                  {/* Canvas - full image */}
                   {selectedPrintType === 'canvas' && (
                     <div onClick={imageLoading ? undefined : handleImageClick} style={{ cursor: imageLoading ? 'default' : 'zoom-in', position: 'relative' }}>
                       <img
@@ -247,7 +248,7 @@ export default function ProductDetail() {
                     </div>
                   )}
 
-                  {/* Roll — image with white sides */}
+                  {/* Roll - image with white sides */}
                   {selectedPrintType === 'roll' && (
                     <div
                       onClick={imageLoading ? undefined : handleImageClick}
@@ -276,7 +277,7 @@ export default function ProductDetail() {
                     </div>
                   )}
 
-                  {/* Framed — livingroom mockup */}
+                  {/* Framed - livingroom mockup */}
                   {selectedPrintType === 'framed' && (
                     <div
                       onClick={imageLoading ? undefined : handleImageClick}
@@ -470,7 +471,7 @@ export default function ProductDetail() {
             )}
 
             <h1 style={{ fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 300, color: '#1a1a1a', marginBottom: '12px' }}>
-              {product.title}
+              {localize(product.title, product.title_mk, language)}
             </h1>
 
             {/* Rating Display */}
@@ -592,13 +593,13 @@ export default function ProductDetail() {
             <div>
               <Accordion title="Description" defaultOpen={true}>
                 <p style={{ color: '#4a4a4a', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
-                  {product.description || 'No description available.'}
+                  {localize(product.description, product.description_mk, language) || 'No description available.'}
                 </p>
               </Accordion>
 
               <Accordion title="Details">
                 <p style={{ color: '#4a4a4a', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
-                  {product.details || 'No additional details available.'}
+                  {localize(product.details, product.details_mk, language) || 'No additional details available.'}
                 </p>
               </Accordion>
 

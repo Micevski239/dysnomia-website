@@ -6,13 +6,14 @@ import { useLanguage } from '../hooks/useLanguage';
 import { useCurrency } from '../hooks/useCurrency';
 import ProductCard from '../components/shop/ProductCard';
 import type { ProductCardProps } from '../components/shop/ProductCard';
+import { localize } from '../lib/localize';
 import type { Product } from '../types';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1000&h=1400&fit=crop';
 
-const mapProductToCard = (product: Product): ProductCardProps => ({
+const mapProductToCard = (product: Product, language = 'en'): ProductCardProps => ({
   id: product.id,
-  title: product.title,
+  title: localize(product.title, product.title_mk, language),
   slug: product.slug,
   brand: 'dysnomia',
   price: Number(product.price) || 0,
@@ -24,7 +25,7 @@ const mapProductToCard = (product: Product): ProductCardProps => ({
 export default function TopSellers() {
   const { products, spotlightProductId, loading } = useBestsellers();
   const { isMobile } = useBreakpoint();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { formatPrice } = useCurrency();
 
   const spotlight = useMemo(() => {
@@ -177,7 +178,7 @@ export default function TopSellers() {
             >
               <img
                 src={spotlight.image_url || FALLBACK_IMAGE}
-                alt={spotlight.title}
+                alt={localize(spotlight.title, spotlight.title_mk, language)}
                 style={{
                   width: '100%',
                   height: '100%',
@@ -216,7 +217,7 @@ export default function TopSellers() {
                     marginBottom: '8px',
                   }}
                 >
-                  {spotlight.title}
+                  {localize(spotlight.title, spotlight.title_mk, language)}
                 </h3>
                 <p style={{ fontSize: '16px' }}>{formatPrice(Number(spotlight.price) || 0)}</p>
               </div>
@@ -302,7 +303,7 @@ export default function TopSellers() {
             }}
           >
             {gridProducts.map((product) => (
-              <ProductCard key={product.id} {...mapProductToCard(product)} />
+              <ProductCard key={product.id} {...mapProductToCard(product, language)} />
             ))}
           </div>
         )}

@@ -184,7 +184,7 @@ export default function Shipping() {
             within 48 hours with photos of the damage. We'll send a replacement at no extra cost.
           </p>
           <a
-            href="mailto:hello@dysnomia.art"
+            href="mailto:contact_dysnomia@yahoo.com"
             style={{
               display: 'inline-block',
               padding: '12px 24px',

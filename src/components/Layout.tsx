@@ -118,8 +118,8 @@ export default function Layout() {
                 Contact
               </h4>
               <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', marginBottom: '8px' }}>Inquiries & Commissions</p>
-              <a href="mailto:hello@dysnomia.art" style={{ color: '#B8860B', fontSize: '14px', textDecoration: 'none' }}>
-                hello@dysnomia.art
+              <a href="mailto:contact_dysnomia@yahoo.com" style={{ color: '#B8860B', fontSize: '14px', textDecoration: 'none' }}>
+                contact_dysnomia@yahoo.com
               </a>
             </div>
           </div>

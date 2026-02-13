@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { useProducts } from '../hooks/useProducts';
 import { useNewArrivalsSpotlight } from '../hooks/useFeaturedSections';
 import { useBreakpoint } from '../hooks/useBreakpoint';
+import { useLanguage } from '../hooks/useLanguage';
+import { localize } from '../lib/localize';
 import ProductCard from '../components/shop/ProductCard';
 import type { ProductCardProps } from '../components/shop/ProductCard';
 import type { Product } from '../types';
@@ -12,9 +14,9 @@ const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1541961017774-22349e4a
 const formatPrice = (value: number) =>
   new Intl.NumberFormat('en-EU', { style: 'currency', currency: 'EUR' }).format(value);
 
-const mapProductToCard = (product: Product): ProductCardProps => ({
+const mapProductToCard = (product: Product, language = 'en'): ProductCardProps => ({
   id: product.id,
-  title: product.title,
+  title: localize(product.title, product.title_mk, language),
   slug: product.slug,
   brand: 'dysnomia',
   price: Number(product.price) || 0,
@@ -27,6 +29,7 @@ export default function NewArrivals() {
   const { products, loading } = useProducts();
   const { spotlightProductId } = useNewArrivalsSpotlight();
   const { isMobile } = useBreakpoint();
+  const { language } = useLanguage();
 
   const sortedProducts = useMemo(() => {
     return [...products].sort(
@@ -167,7 +170,7 @@ export default function NewArrivals() {
             >
               <img
                 src={spotlight.image_url || FALLBACK_IMAGE}
-                alt={spotlight.title}
+                alt={localize(spotlight.title, spotlight.title_mk, language)}
                 loading="lazy"
                 decoding="async"
                 style={{
@@ -208,7 +211,7 @@ export default function NewArrivals() {
                     marginBottom: '8px',
                   }}
                 >
-                  {spotlight.title}
+                  {localize(spotlight.title, spotlight.title_mk, language)}
                 </h3>
                 <p style={{ fontSize: '16px' }}>{formatPrice(Number(spotlight.price) || 0)}</p>
               </div>
@@ -295,7 +298,7 @@ export default function NewArrivals() {
             }}
           >
             {gridProducts.map((product) => (
-              <ProductCard key={product.id} {...mapProductToCard(product)} />
+              <ProductCard key={product.id} {...mapProductToCard(product, language)} />
             ))}
           </div>
         )}

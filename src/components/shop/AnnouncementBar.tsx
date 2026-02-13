@@ -1,31 +1,17 @@
 import { useState, useEffect } from 'react';
-
-const announcements = [
-  {
-    text: 'Welcome to ',
-    highlight: 'Dysnomia Art Gallery',
-    suffix: ' — Where Art Meets Lifestyle',
-    link: '#about'
-  },
-  {
-    text: 'New Collection: ',
-    highlight: 'Limited Edition Artworks',
-    suffix: ' — Explore Now',
-    link: '#collections'
-  },
-  {
-    text: 'Free shipping on orders over ',
-    highlight: '€100',
-    suffix: ' — Eco-friendly packaging',
-    link: '#shipping'
-  }
-];
+import { useAnnouncements } from '../../hooks/useAnnouncements';
+import { useLanguage } from '../../hooks/useLanguage';
 
 export default function AnnouncementBar() {
+  const { announcements, loading } = useAnnouncements(true);
+  const { language } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
+  const isMk = language === 'mk';
 
   useEffect(() => {
+    if (announcements.length <= 1) return;
+
     const interval = setInterval(() => {
       setIsVisible(false);
       setTimeout(() => {
@@ -35,7 +21,20 @@ export default function AnnouncementBar() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [announcements.length]);
+
+  if (loading || announcements.length === 0) {
+    return (
+      <div
+        style={{
+          width: '100%',
+          backgroundColor: '#0A0A0A',
+          borderBottom: '1px solid #1A1A1A',
+          height: '35px'
+        }}
+      />
+    );
+  }
 
   const current = announcements[currentIndex];
 
@@ -49,7 +48,7 @@ export default function AnnouncementBar() {
       }}
     >
       <a
-        href={current.link}
+        href={current.link || '#'}
         style={{
           height: '100%',
           display: 'flex',
@@ -70,9 +69,9 @@ export default function AnnouncementBar() {
             opacity: isVisible ? 1 : 0
           }}
         >
-          {current.text}
-          <strong style={{ fontWeight: 700, color: '#FBBE63' }}>{current.highlight}</strong>
-          {current.suffix}
+          {(isMk && current.text_mk) || current.text}
+          <strong style={{ fontWeight: 700, color: '#FBBE63' }}>{(isMk && current.highlight_mk) || current.highlight}</strong>
+          {(isMk && current.suffix_mk) || current.suffix}
         </span>
       </a>
     </div>

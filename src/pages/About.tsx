@@ -1,59 +1,46 @@
 import { Link } from 'react-router-dom';
 import { useBreakpoint } from '../hooks/useBreakpoint';
+import { useLanguage } from '../hooks/useLanguage';
 
-const VALUES = [
-  {
-    title: 'Original Design',
-    description:
-      'Every piece in our collection is thoughtfully designed to stand out. We celebrate creativity and originality, offering artworks that bring a unique character to any space.',
-    icon: (
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-      </svg>
-    ),
-  },
-  {
-    title: 'Quality Materials',
-    description:
-      'We use only premium materials in our artworks and decorative pieces. From fine papers to carefully selected frames, quality is at the heart of everything we create.',
-    icon: (
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-      </svg>
-    ),
-  },
-  {
-    title: 'Eco-Friendly Production',
-    description:
-      'Sustainability matters to us. We prioritize eco-conscious production methods and materials, ensuring our art is gentle on the planet while beautiful in your home.',
-    icon: (
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M12 22c4-4 8-7.5 8-12a8 8 0 10-16 0c0 4.5 4 8 8 12z" />
-        <circle cx="12" cy="10" r="3" />
-      </svg>
-    ),
-  },
-  {
-    title: 'Crafted with Care',
-    description:
-      'Each artwork is crafted with attention to detail and passion. We believe that art should be made with intention, bringing warmth and inspiration into every home.',
-    icon: (
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
-      </svg>
-    ),
-  },
+const VALUE_ICONS = [
+  (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M16 8h-2a3 3 0 000 6h0a3 3 0 010 6H8M12 2v2m0 16v2" />
+    </svg>
+  ),
+  (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="12" y1="18" x2="12" y2="12" />
+      <line x1="9" y1="15" x2="15" y2="15" />
+    </svg>
+  ),
+  (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+      <circle cx="8.5" cy="8.5" r="1.5" />
+      <polyline points="21 15 16 10 5 21" />
+    </svg>
+  ),
+  (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  ),
 ];
 
-const STATS = [
-  { number: '500+', label: 'Artworks Created' },
-  { number: '12', label: 'Countries Shipped' },
-  { number: '100%', label: 'Eco-Friendly Materials' },
-  { number: '2018', label: 'Year Founded' },
+const VALUE_KEYS: Array<{ title: string; desc: string }> = [
+  { title: 'about.affordableArt', desc: 'about.affordableArtDesc' },
+  { title: 'about.madeToOrder', desc: 'about.madeToOrderDesc' },
+  { title: 'about.transformSpace', desc: 'about.transformSpaceDesc' },
+  { title: 'about.boldExpression', desc: 'about.boldExpressionDesc' },
 ];
 
 export default function About() {
   const { isMobile } = useBreakpoint();
+  const { t } = useLanguage();
 
   return (
     <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: '120px' }}>
@@ -78,7 +65,7 @@ export default function About() {
                 marginBottom: '20px',
               }}
             >
-              About Us
+              {t('about.label')}
             </p>
             <h1
               style={{
@@ -90,7 +77,7 @@ export default function About() {
                 marginBottom: '28px',
               }}
             >
-              Where Art, Design & Lifestyle Come Together
+              {t('about.heroTitle')}
             </h1>
             <p
               style={{
@@ -100,8 +87,7 @@ export default function About() {
                 marginBottom: '24px',
               }}
             >
-              Dysnomia Art Gallery is a modern space where art, design, and lifestyle come together.
-              We offer unique artworks and decorative pieces crafted with care, style, and high-quality materials.
+              {t('about.heroP1')}
             </p>
             <p
               style={{
@@ -111,8 +97,7 @@ export default function About() {
                 marginBottom: '40px',
               }}
             >
-              With a focus on aesthetics, eco-friendly production, and original design,
-              Dysnomia brings beauty and inspiration into every home.
+              {t('about.heroP2')}
             </p>
             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
               <Link
@@ -132,7 +117,7 @@ export default function About() {
                   transition: 'all 0.3s',
                 }}
               >
-                Explore Artworks
+                {t('about.exploreArtworks')}
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
@@ -154,7 +139,7 @@ export default function About() {
                   transition: 'all 0.3s',
                 }}
               >
-                View Collections
+                {t('about.viewCollections')}
               </Link>
             </div>
           </div>
@@ -196,7 +181,7 @@ export default function About() {
                   marginBottom: '8px',
                 }}
               >
-                Our Mission
+                {t('about.ourMission')}
               </p>
               <p
                 style={{
@@ -206,54 +191,10 @@ export default function About() {
                   lineHeight: 1.5,
                 }}
               >
-                "To bring beauty and inspiration into every home through thoughtfully crafted art."
+                {t('about.missionQuote')}
               </p>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section
-        style={{
-          backgroundColor: '#0A0A0A',
-          padding: `clamp(40px, 6vw, 60px) clamp(16px, 4vw, 48px)`,
-        }}
-      >
-        <div
-          style={{
-            maxWidth: '1400px',
-            margin: '0 auto',
-            display: 'grid',
-            gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
-            gap: 'clamp(16px, 3vw, 32px)',
-            textAlign: 'center',
-          }}
-        >
-          {STATS.map((stat) => (
-            <div key={stat.label}>
-              <p
-                style={{
-                  fontFamily: "'Playfair Display', Georgia, serif",
-                  fontSize: 'clamp(32px, 5vw, 48px)',
-                  color: '#FBBE63',
-                  marginBottom: '8px',
-                }}
-              >
-                {stat.number}
-              </p>
-              <p
-                style={{
-                  fontSize: '13px',
-                  letterSpacing: '2px',
-                  textTransform: 'uppercase',
-                  color: 'rgba(255,255,255,0.7)',
-                }}
-              >
-                {stat.label}
-              </p>
-            </div>
-          ))}
         </div>
       </section>
 
@@ -269,7 +210,7 @@ export default function About() {
               marginBottom: '16px',
             }}
           >
-            Our Values
+            {t('about.ourValues')}
           </p>
           <h2
             style={{
@@ -279,7 +220,7 @@ export default function About() {
               marginBottom: '20px',
             }}
           >
-            What We Stand For
+            {t('about.whatWeStandFor')}
           </h2>
           <p
             style={{
@@ -290,8 +231,7 @@ export default function About() {
               lineHeight: 1.7,
             }}
           >
-            Every piece we create reflects our commitment to quality, sustainability,
-            and original design. These are the principles that guide everything we do.
+            {t('about.valuesDescription')}
           </p>
         </div>
 
@@ -302,7 +242,7 @@ export default function About() {
             gap: 'clamp(16px, 3vw, 32px)',
           }}
         >
-          {VALUES.map((value) => (
+          {VALUE_KEYS.map((value, i) => (
             <div
               key={value.title}
               style={{
@@ -325,7 +265,7 @@ export default function About() {
                   color: '#FBBE63',
                 }}
               >
-                {value.icon}
+                {VALUE_ICONS[i]}
               </div>
               <h3
                 style={{
@@ -335,7 +275,7 @@ export default function About() {
                   marginBottom: '16px',
                 }}
               >
-                {value.title}
+                {t(value.title)}
               </h3>
               <p
                 style={{
@@ -344,7 +284,7 @@ export default function About() {
                   lineHeight: 1.7,
                 }}
               >
-                {value.description}
+                {t(value.desc)}
               </p>
             </div>
           ))}
@@ -391,7 +331,7 @@ export default function About() {
                 marginBottom: '20px',
               }}
             >
-              Our Story
+              {t('about.ourStory')}
             </p>
             <h2
               style={{
@@ -402,7 +342,7 @@ export default function About() {
                 lineHeight: 1.2,
               }}
             >
-              From Passion to Gallery
+              {t('about.fromPassion')}
             </h2>
             <p
               style={{
@@ -412,9 +352,7 @@ export default function About() {
                 marginBottom: '20px',
               }}
             >
-              Dysnomia started with a simple belief: everyone deserves to live surrounded by beauty.
-              What began as a small collection of curated artworks has grown into a gallery that
-              serves art lovers across the globe.
+              {t('about.storyP1')}
             </p>
             <p
               style={{
@@ -424,9 +362,7 @@ export default function About() {
                 marginBottom: '32px',
               }}
             >
-              Today, we continue to seek out unique pieces that blend modern aesthetics with timeless
-              appeal. Each artwork is selected not just for its beauty, but for its ability to
-              transform a space and inspire those who live with it.
+              {t('about.storyP2')}
             </p>
             <Link
               to="/collections"
@@ -444,7 +380,7 @@ export default function About() {
                 paddingBottom: '4px',
               }}
             >
-              Discover Our Collections
+              {t('about.discoverCollections')}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
@@ -473,7 +409,7 @@ export default function About() {
                 marginBottom: '20px',
               }}
             >
-              Get in Touch
+              {t('about.getInTouch')}
             </p>
             <h2
               style={{
@@ -483,7 +419,7 @@ export default function About() {
                 marginBottom: '24px',
               }}
             >
-              We'd Love to Hear From You
+              {t('about.loveToHear')}
             </h2>
             <p
               style={{
@@ -493,11 +429,10 @@ export default function About() {
                 marginBottom: '40px',
               }}
             >
-              Whether you have questions about our artworks, need help choosing the perfect piece
-              for your space, or want to discuss a custom project, we're here to help.
+              {t('about.contactDescription')}
             </p>
             <a
-              href="mailto:hello@dysnomia.gallery"
+              href="mailto:contact_dysnomia@yahoo.com"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -517,7 +452,7 @@ export default function About() {
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
                 <polyline points="22,6 12,13 2,6" />
               </svg>
-              Contact Us
+              {t('about.contactUs')}
             </a>
           </div>
 
@@ -538,9 +473,9 @@ export default function About() {
                   marginBottom: '8px',
                 }}
               >
-                Email
+                {t('about.email')}
               </p>
-              <p style={{ fontSize: '16px', color: '#0A0A0A' }}>hello@dysnomia.gallery</p>
+              <p style={{ fontSize: '16px', color: '#0A0A0A' }}>contact_dysnomia@yahoo.com</p>
             </div>
             <div style={{ marginBottom: '32px' }}>
               <p
@@ -552,12 +487,12 @@ export default function About() {
                   marginBottom: '8px',
                 }}
               >
-                Location
+                {t('about.location')}
               </p>
               <p style={{ fontSize: '16px', color: '#0A0A0A', lineHeight: 1.6 }}>
-                Skopje, North Macedonia
+                {t('about.locationValue')}
                 <br />
-                Shipping Worldwide
+                {t('about.shippingWorldwide')}
               </p>
             </div>
             <div>
@@ -570,11 +505,11 @@ export default function About() {
                   marginBottom: '12px',
                 }}
               >
-                Follow Us
+                {t('about.followUs')}
               </p>
               <div style={{ display: 'flex', gap: '16px' }}>
                 <a
-                  href="https://instagram.com"
+                  href="https://www.instagram.com/dysnomia_art.gallery666/"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
@@ -596,28 +531,7 @@ export default function About() {
                   </svg>
                 </a>
                 <a
-                  href="https://pinterest.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    width: '44px',
-                    height: '44px',
-                    border: '1px solid #E5E5E5',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#0A0A0A',
-                    textDecoration: 'none',
-                    transition: 'all 0.3s',
-                  }}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M8 12a4 4 0 118 0c0 2.5-1.5 5-4 7l-1-4" />
-                    <circle cx="12" cy="12" r="10" />
-                  </svg>
-                </a>
-                <a
-                  href="https://facebook.com"
+                  href="https://www.facebook.com/profile.php?id=61575933645818"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{

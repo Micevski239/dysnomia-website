@@ -120,8 +120,8 @@ export default function Privacy() {
             </h2>
             <p>
               If you have any questions about this Privacy Policy, please contact us at{' '}
-              <a href="mailto:hello@dysnomia.art" style={{ color: '#FBBE63', textDecoration: 'none' }}>
-                hello@dysnomia.art
+              <a href="mailto:contact_dysnomia@yahoo.com" style={{ color: '#FBBE63', textDecoration: 'none' }}>
+                contact_dysnomia@yahoo.com
               </a>
             </p>
           </section>

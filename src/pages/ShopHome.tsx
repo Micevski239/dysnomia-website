@@ -4,13 +4,14 @@ import type { ProductCardProps } from '../components/shop';
 import { useProducts } from '../hooks/useProducts';
 import { useLanguage } from '../hooks/useLanguage';
 import { useProductCollectionMap } from '../hooks/useProductCollectionMap';
+import { localize } from '../lib/localize';
 import type { Product } from '../types';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=533&fit=crop';
 
-const mapProductToCard = (product: Product, collectionName?: string): ProductCardProps => ({
+const mapProductToCard = (product: Product, collectionName?: string, language = 'en'): ProductCardProps => ({
   id: product.id,
-  title: product.title,
+  title: localize(product.title, product.title_mk, language),
   slug: product.slug,
   brand: collectionName || 'dysnomia',
   price: Number(product.price) || 0,
@@ -22,14 +23,14 @@ const mapProductToCard = (product: Product, collectionName?: string): ProductCar
 
 export default function ShopHome() {
   const { products, loading } = useProducts(false, { limit: 10 });
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const productCollectionMap = useProductCollectionMap();
 
   const featuredProducts = useMemo(() => {
     const featured = products.filter((product) => product.is_featured);
     const source = featured.length > 0 ? featured : products;
-    return source.slice(0, 10).map((p) => mapProductToCard(p, productCollectionMap[p.id]));
-  }, [products, productCollectionMap]);
+    return source.slice(0, 10).map((p) => mapProductToCard(p, productCollectionMap[p.id], language));
+  }, [products, productCollectionMap, language]);
 
 
   return (

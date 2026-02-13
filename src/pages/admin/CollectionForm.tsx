@@ -18,8 +18,10 @@ export default function CollectionForm() {
 
   const [formData, setFormData] = useState<CollectionFormData>({
     title: '',
+    title_mk: '',
     slug: '',
     description: '',
+    description_mk: '',
     display_order: 0,
     is_active: true,
     is_featured: false,
@@ -33,8 +35,10 @@ export default function CollectionForm() {
     if (collection && isEditing) {
       setFormData({
         title: collection.title,
+        title_mk: (collection as any).title_mk || '',
         slug: collection.slug,
         description: collection.description || '',
+        description_mk: (collection as any).description_mk || '',
         display_order: collection.display_order ?? 0,
         is_active: collection.is_active,
         is_featured: collection.is_featured,
@@ -192,6 +196,19 @@ export default function CollectionForm() {
             )}
           </div>
 
+          {/* Title MK */}
+          <div>
+            <Input
+              id="title_mk"
+              label="Title (Macedonian)"
+              placeholder="Наслов на колекцијата"
+              value={formData.title_mk || ''}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, title_mk: e.target.value }))
+              }
+            />
+          </div>
+
           {/* Slug */}
           <div>
             <Input
@@ -219,6 +236,18 @@ export default function CollectionForm() {
             value={formData.description}
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, description: e.target.value }))
+            }
+            rows={4}
+          />
+
+          {/* Description MK */}
+          <Textarea
+            id="description_mk"
+            label="Description (Macedonian)"
+            placeholder="Опис на колекцијата..."
+            value={formData.description_mk || ''}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, description_mk: e.target.value }))
             }
             rows={4}
           />

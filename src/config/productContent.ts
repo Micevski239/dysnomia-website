@@ -10,7 +10,7 @@ All artwork is carefully packaged to ensure safe delivery. Each piece is wrapped
 
 Returns are accepted within 14 days of delivery for items in original condition. Please contact us to initiate a return. Custom or commissioned pieces are final sale.`,
 
-  support: `For questions about a specific artwork, sizing, or shipping, please contact us at hello@dysnomia.art
+  support: `For questions about a specific artwork, sizing, or shipping, please contact us at contact_dysnomia@yahoo.com
 
 We typically respond within 24-48 hours.
 

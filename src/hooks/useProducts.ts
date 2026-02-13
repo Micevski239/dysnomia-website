@@ -25,7 +25,7 @@ export function useProducts(includeUnpublished = false, options?: Omit<UseProduc
 
     let query = supabase
       .from('products')
-      .select('id, title, slug, description, price, image_url, status, created_at, updated_at', { count: 'exact' })
+      .select('id, title, title_mk, slug, description, description_mk, price, image_url, status, created_at, updated_at', { count: 'exact' })
       .order('created_at', { ascending: false });
 
     if (!includeUnpublished) {
@@ -221,8 +221,10 @@ export function useProductMutations() {
         .from('products')
         .insert({
           title: formData.title,
+          title_mk: formData.title_mk || null,
           slug: formData.slug,
           description: formData.description || null,
+          description_mk: formData.description_mk || null,
           price: parseFloat(formData.price),
           image_url: imageUrl,
           image_url_canvas: imageUrlCanvas,
@@ -231,6 +233,7 @@ export function useProductMutations() {
           status: formData.status,
           product_code: formData.product_code || null,
           details: formData.details || null,
+          details_mk: formData.details_mk || null,
         })
         .select()
         .single();
@@ -292,8 +295,10 @@ export function useProductMutations() {
         .from('products')
         .update({
           title: formData.title,
+          title_mk: formData.title_mk || null,
           slug: formData.slug,
           description: formData.description || null,
+          description_mk: formData.description_mk || null,
           price: parseFloat(formData.price),
           image_url: imageUrl,
           image_url_canvas: imageUrlCanvas,
@@ -302,6 +307,7 @@ export function useProductMutations() {
           status: formData.status,
           product_code: formData.product_code || null,
           details: formData.details || null,
+          details_mk: formData.details_mk || null,
         })
         .eq('id', id)
         .select()

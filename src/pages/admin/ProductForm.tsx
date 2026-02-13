@@ -80,8 +80,10 @@ export default function ProductForm() {
 
   const [formData, setFormData] = useState<ProductFormData>({
     title: '',
+    title_mk: '',
     slug: '',
     description: '',
+    description_mk: '',
     price: '',
     status: 'draft',
     image: null,
@@ -90,6 +92,7 @@ export default function ProductForm() {
     image_framed: null,
     product_code: '',
     details: '',
+    details_mk: '',
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imagePreviews, setImagePreviews] = useState<{
@@ -109,8 +112,10 @@ export default function ProductForm() {
     if (product && isEditing) {
       setFormData({
         title: product.title,
+        title_mk: (product as any).title_mk || '',
         slug: product.slug,
         description: product.description || '',
+        description_mk: (product as any).description_mk || '',
         price: product.price.toString(),
         status: product.status,
         image: null,
@@ -119,6 +124,7 @@ export default function ProductForm() {
         image_framed: null,
         product_code: product.product_code || '',
         details: product.details || '',
+        details_mk: (product as any).details_mk || '',
       });
       setImagePreview(product.image_url);
       setImagePreviews({
@@ -462,6 +468,21 @@ export default function ProductForm() {
             {fieldErrors.title && <p style={errorTextStyle}>{fieldErrors.title}</p>}
           </div>
 
+          {/* Title MK */}
+          <div>
+            <label htmlFor="title_mk" style={labelStyle}>Title (Macedonian)</label>
+            <input
+              id="title_mk"
+              type="text"
+              placeholder="Наслов на производот"
+              value={formData.title_mk || ''}
+              onChange={(e) => setFormData((prev) => ({ ...prev, title_mk: e.target.value }))}
+              style={inputStyle}
+              onFocus={(e) => { e.currentTarget.style.borderColor = '#B8860B'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(184,134,11,0.1)'; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = '#E5E5E5'; e.currentTarget.style.boxShadow = 'none'; }}
+            />
+          </div>
+
           {/* Slug */}
           <div>
             <label htmlFor="slug" style={labelStyle}>URL Slug</label>
@@ -505,6 +526,25 @@ export default function ProductForm() {
             />
           </div>
 
+          {/* Description MK */}
+          <div>
+            <label htmlFor="description_mk" style={labelStyle}>Description (Macedonian)</label>
+            <textarea
+              id="description_mk"
+              placeholder="Опис на делото..."
+              value={formData.description_mk || ''}
+              onChange={(e) => setFormData((prev) => ({ ...prev, description_mk: e.target.value }))}
+              rows={5}
+              style={{
+                ...inputStyle,
+                minHeight: '140px',
+                resize: 'vertical' as const,
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = '#B8860B'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(184,134,11,0.1)'; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = '#E5E5E5'; e.currentTarget.style.boxShadow = 'none'; }}
+            />
+          </div>
+
           {/* Product Code */}
           <div>
             <label htmlFor="product_code" style={labelStyle}>Product Code</label>
@@ -529,6 +569,24 @@ export default function ProductForm() {
               placeholder="Additional product details (materials, dimensions, care instructions...)"
               value={formData.details || ''}
               onChange={(e) => setFormData((prev) => ({ ...prev, details: e.target.value }))}
+              rows={4}
+              style={{
+                ...inputStyle,
+                minHeight: '120px',
+                resize: 'vertical' as const,
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = '#B8860B'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(184,134,11,0.1)'; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = '#E5E5E5'; e.currentTarget.style.boxShadow = 'none'; }}
+            />
+          </div>
+          {/* Details MK */}
+          <div>
+            <label htmlFor="details_mk" style={labelStyle}>Details (Macedonian)</label>
+            <textarea
+              id="details_mk"
+              placeholder="Дополнителни детали за производот..."
+              value={formData.details_mk || ''}
+              onChange={(e) => setFormData((prev) => ({ ...prev, details_mk: e.target.value }))}
               rows={4}
               style={{
                 ...inputStyle,

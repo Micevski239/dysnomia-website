@@ -3,27 +3,28 @@ import { Link } from 'react-router-dom';
 import { useCollections } from '../../hooks/useCollections';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
+import { localize } from '../../lib/localize';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=800&h=1000&fit=crop';
 
 export default function GalleryTour() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const { collections, loading } = useCollections(true);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { isMobile } = useBreakpoint();
 
   const visibleCollections = useMemo(() => {
     if (!collections.length) return [];
     return collections.map((collection) => ({
       id: collection.id,
-      title: collection.title || 'Untitled',
-      subtitle: collection.is_featured ? t('home.featuredSeries') : t('home.curatedSet'),
-      description: collection.description || 'Discover the curation and explore the featured artworks.',
+      title: localize(collection.title, collection.title_mk, language) || 'Untitled',
+      subtitle: 'Collection',
+      description: localize(collection.description, collection.description_mk, language) || 'Discover the curation and explore the featured artworks.',
       image: collection.cover_image || collection.cover_image_url || FALLBACK_IMAGE,
       link: `/collections/${collection.slug}`,
       pieces: (collection as any).collection_products?.[0]?.count ?? 0,
     }));
-  }, [collections, t]);
+  }, [collections, t, language]);
 
   return (
     <section style={{ backgroundColor: '#FFFFFF', padding: isMobile ? '40px 0' : '80px 0' }}>
@@ -120,9 +121,11 @@ export default function GalleryTour() {
                         color: '#FBBE63',
                         letterSpacing: '2px',
                         textTransform: 'uppercase',
-                        marginBottom: '8px',
+                        marginBottom: hoveredId === collection.id ? '8px' : '0',
                         opacity: hoveredId === collection.id ? 1 : 0,
-                        transition: 'opacity 0.3s ease'
+                        maxHeight: hoveredId === collection.id ? '20px' : '0',
+                        overflow: 'hidden',
+                        transition: 'all 0.3s ease'
                       }}
                     >
                       {collection.subtitle}
@@ -165,7 +168,9 @@ export default function GalleryTour() {
                           alignItems: 'center',
                           justifyContent: 'space-between',
                           opacity: hoveredId === collection.id ? 1 : 0,
-                          transition: 'opacity 0.4s ease'
+                          maxHeight: hoveredId === collection.id ? '30px' : '0',
+                          overflow: 'hidden',
+                          transition: 'all 0.4s ease'
                         }}
                       >
                         <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', letterSpacing: '1px' }}>

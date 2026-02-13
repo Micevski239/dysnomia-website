@@ -5,6 +5,8 @@ import type { ProductCardProps } from '../components/shop/ProductCard';
 import { useProducts } from '../hooks/useProducts';
 import { useCollections } from '../hooks/useCollections';
 import { useProductCollectionMap } from '../hooks/useProductCollectionMap';
+import { useLanguage } from '../hooks/useLanguage';
+import { localize } from '../lib/localize';
 import { supabase } from '../lib/supabase';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 
@@ -36,6 +38,7 @@ export default function Shop() {
   const { products, loading, error, refetch } = useProducts();
   const { collections } = useCollections();
   const productCollectionMap = useProductCollectionMap();
+  const { language } = useLanguage();
   const { isMobileOrTablet } = useBreakpoint();
 
   // Fetch product IDs for selected collections
@@ -82,14 +85,14 @@ export default function Shop() {
     () =>
       (products || []).map((p) => ({
         id: p.id,
-        title: p.title,
+        title: localize(p.title, p.title_mk, language),
         slug: p.slug,
         price: p.price,
         image: p.image_url ?? '',
         brand: productCollectionMap[p.id] || 'dysnomia',
         showRoomPreview: true,
       })),
-    [products, productCollectionMap]
+    [products, productCollectionMap, language]
   );
 
   const filteredAndSortedProducts = useMemo(() => {
@@ -325,7 +328,7 @@ export default function Shop() {
                       onChange={() => toggleCollection(col.id)}
                       style={{ width: '16px', height: '16px', accentColor: '#FBBE63' }}
                     />
-                    {col.title}
+                    {localize(col.title, col.title_mk, language)}
                   </label>
                 ))}
               </div>

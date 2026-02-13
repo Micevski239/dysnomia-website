@@ -167,8 +167,10 @@ export function useCollectionMutations() {
 
       const payload = {
         title: formData.title,
+        title_mk: formData.title_mk || null,
         slug: formData.slug,
         description: formData.description || null,
+        description_mk: formData.description_mk || null,
         cover_image: coverUrl,
         display_order: Number(formData.display_order) || 0,
         is_active: formData.is_active,
@@ -218,8 +220,10 @@ export function useCollectionMutations() {
 
       const payload = {
         title: formData.title,
+        title_mk: formData.title_mk || null,
         slug: formData.slug,
         description: formData.description || null,
+        description_mk: formData.description_mk || null,
         cover_image: coverUrl,
         display_order: Number(formData.display_order) || 0,
         is_active: formData.is_active,

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useProductSearch } from '../../hooks/useProductSearch';
 import { useCurrency } from '../../hooks/useCurrency';
 import { useLanguage } from '../../hooks/useLanguage';
+import { localize } from '../../lib/localize';
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -14,7 +15,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const {
     results,
     loading,
@@ -251,7 +252,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       {product.image_url && (
                         <img
                           src={product.image_url}
-                          alt={product.title}
+                          alt={localize(product.title, (product as any).title_mk, language)}
                           loading="lazy"
                           decoding="async"
                           style={{
@@ -271,7 +272,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                           marginBottom: '4px',
                         }}
                       >
-                        {product.title}
+                        {localize(product.title, (product as any).title_mk, language)}
                       </p>
                       <p style={{ fontSize: '13px', color: '#B8860B' }}>
                         {formatPrice(product.price)}

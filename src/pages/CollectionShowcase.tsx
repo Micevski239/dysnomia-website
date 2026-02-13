@@ -5,8 +5,11 @@ import type { Collection, Product } from '../types';
 import ProductCard from '../components/shop/ProductCard';
 import type { ProductCardProps } from '../components/shop/ProductCard';
 import { useBreakpoint } from '../hooks/useBreakpoint';
+import { useLanguage } from '../hooks/useLanguage';
+import { localize } from '../lib/localize';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1000&h=1400&fit=crop';
+const PRODUCTS_PER_PAGE = 12;
 
 interface CollectionProductRow {
   product: Product | null;
@@ -18,7 +21,9 @@ export default function CollectionShowcase() {
   const [artworks, setArtworks] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(PRODUCTS_PER_PAGE);
   const { isMobile } = useBreakpoint();
+  const { language } = useLanguage();
 
   useEffect(() => {
     let isMounted = true;
@@ -82,15 +87,18 @@ export default function CollectionShowcase() {
     () =>
       artworks.map((p) => ({
         id: p.id,
-        title: p.title,
+        title: localize(p.title, p.title_mk, language),
         slug: p.slug,
         price: p.price,
         image: p.image_url ?? '',
-        brand: collection?.title || 'dysnomia',
+        brand: localize(collection?.title, collection?.title_mk, language) || 'dysnomia',
         showRoomPreview: true,
       })),
-    [artworks, collection]
+    [artworks, collection, language]
   );
+
+  const visibleProducts = useMemo(() => productCards.slice(0, visibleCount), [productCards, visibleCount]);
+  const hasMore = visibleCount < productCards.length;
 
   return (
     <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: '120px' }}>
@@ -127,9 +135,9 @@ export default function CollectionShowcase() {
                 marginBottom: '24px',
               }}
             >
-              {collection?.title || 'Collection'}
+              {localize(collection?.title, collection?.title_mk, language) || 'Collection'}
             </h1>
-            {collection?.description && (
+            {(collection?.description || collection?.description_mk) && (
               <p
                 style={{
                   fontSize: '17px',
@@ -139,7 +147,7 @@ export default function CollectionShowcase() {
                   marginBottom: '32px',
                 }}
               >
-                {collection.description}
+                {localize(collection?.description, collection?.description_mk, language)}
               </p>
             )}
             <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
@@ -159,7 +167,7 @@ export default function CollectionShowcase() {
           >
             <img
               src={heroImage}
-              alt={collection?.title || 'Collection cover'}
+              alt={localize(collection?.title, collection?.title_mk, language) || 'Collection cover'}
               decoding="async"
               style={{
                 width: '100%',
@@ -195,7 +203,7 @@ export default function CollectionShowcase() {
                   fontSize: '28px',
                 }}
               >
-                {collection?.title || 'Collection'}
+                {localize(collection?.title, collection?.title_mk, language) || 'Collection'}
               </h3>
             </div>
           </div>
@@ -209,7 +217,7 @@ export default function CollectionShowcase() {
             Collections
           </Link>
           <span>/</span>
-          <span style={{ color: '#0A0A0A', fontWeight: 600 }}>{collection?.title || '...'}</span>
+          <span style={{ color: '#0A0A0A', fontWeight: 600 }}>{localize(collection?.title, collection?.title_mk, language) || '...'}</span>
         </div>
       </div>
 
@@ -288,17 +296,51 @@ export default function CollectionShowcase() {
             </Link>
           </div>
         ) : (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(260px, 1fr))',
-              gap: isMobile ? '12px' : '32px',
-            }}
-          >
-            {productCards.map((product) => (
-              <ProductCard key={product.id} {...product} />
-            ))}
-          </div>
+          <>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(260px, 1fr))',
+                gap: isMobile ? '12px' : '32px',
+              }}
+            >
+              {visibleProducts.map((product) => (
+                <ProductCard key={product.id} {...product} />
+              ))}
+            </div>
+
+            {hasMore && (
+              <div style={{ textAlign: 'center', marginTop: '48px' }}>
+                <button
+                  onClick={() => setVisibleCount((prev) => prev + PRODUCTS_PER_PAGE)}
+                  style={{
+                    padding: '14px 48px',
+                    backgroundColor: '#0A0A0A',
+                    color: '#FFFFFF',
+                    border: '1px solid #0A0A0A',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    letterSpacing: '2px',
+                    textTransform: 'uppercase',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#FBBE63';
+                    e.currentTarget.style.borderColor = '#FBBE63';
+                    e.currentTarget.style.color = '#0A0A0A';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#0A0A0A';
+                    e.currentTarget.style.borderColor = '#0A0A0A';
+                    e.currentTarget.style.color = '#FFFFFF';
+                  }}
+                >
+                  Load More
+                </button>
+              </div>
+            )}
+          </>
         )}
       </section>
     </div>

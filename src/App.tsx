@@ -46,6 +46,7 @@ const OrdersList = lazy(() => import('./pages/admin/OrdersList'));
 const OrderDetail = lazy(() => import('./pages/admin/OrderDetail'));
 const ReviewsList = lazy(() => import('./pages/admin/ReviewsList'));
 const FeaturedManager = lazy(() => import('./pages/admin/FeaturedManager'));
+const Announcements = lazy(() => import('./pages/admin/Announcements'));
 
 // Support pages
 const Contact = lazy(() => import('./pages/Contact'));
@@ -165,6 +166,7 @@ function App() {
               <Route path="/admin/orders/:id" element={<OrderDetail />} />
               <Route path="/admin/reviews" element={<ReviewsList />} />
               <Route path="/admin/featured" element={<FeaturedManager />} />
+              <Route path="/admin/announcements" element={<Announcements />} />
             </Route>
           </Routes>
                 </Suspense>

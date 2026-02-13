@@ -44,7 +44,7 @@ const faqs = [
       },
       {
         q: 'How do I request a refund?',
-        a: 'Contact us at hello@dysnomia.art with your order number. Once we receive and inspect the returned item, we will process your refund within 5-7 business days.'
+        a: 'Contact us at contact_dysnomia@yahoo.com with your order number. Once we receive and inspect the returned item, we will process your refund within 5-7 business days.'
       },
       {
         q: 'What if my order arrives damaged?',

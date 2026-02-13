@@ -60,10 +60,10 @@ export default function Contact() {
               Email
             </h3>
             <a
-              href="mailto:hello@dysnomia.art"
+              href="mailto:contact_dysnomia@yahoo.com"
               style={{ fontSize: '15px', color: '#666666', textDecoration: 'none' }}
             >
-              hello@dysnomia.art
+              contact_dysnomia@yahoo.com
             </a>
           </div>
           <div style={{ textAlign: 'center' }}>
@@ -76,7 +76,10 @@ export default function Contact() {
             <h3 style={{ fontSize: '12px', letterSpacing: '2px', textTransform: 'uppercase', color: '#0A0A0A', marginBottom: '8px' }}>
               Follow Us
             </h3>
-            <p style={{ fontSize: '15px', color: '#666666' }}>@dysnomia.art</p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
+              <a href="https://www.instagram.com/dysnomia_art.gallery666/" target="_blank" rel="noopener noreferrer" style={{ fontSize: '15px', color: '#666666', textDecoration: 'none' }}>Instagram</a>
+              <a href="https://www.facebook.com/profile.php?id=61575933645818" target="_blank" rel="noopener noreferrer" style={{ fontSize: '15px', color: '#666666', textDecoration: 'none' }}>Facebook</a>
+            </div>
           </div>
         </div>
 

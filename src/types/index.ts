@@ -3,8 +3,10 @@ export type ProductStatus = 'draft' | 'published' | 'sold';
 export interface Product {
   id: string;
   title: string;
+  title_mk?: string | null;
   slug: string;
   description: string | null;
+  description_mk?: string | null;
   price: number;
   image_url: string | null;
   image_url_canvas?: string | null;
@@ -14,14 +16,17 @@ export interface Product {
   is_featured?: boolean;
   product_code?: string;
   details?: string | null;
+  details_mk?: string | null;
   created_at: string;
   updated_at: string;
 }
 
 export interface ProductFormData {
   title: string;
+  title_mk?: string;
   slug: string;
   description: string;
+  description_mk?: string;
   price: string;
   status: ProductStatus;
   image: File | null;
@@ -30,12 +35,15 @@ export interface ProductFormData {
   image_framed: File | null;
   product_code?: string;
   details?: string;
+  details_mk?: string;
 }
 
 export interface Collection {
   id: string;
   title: string;
+  title_mk?: string | null;
   description: string | null;
+  description_mk?: string | null;
   cover_image: string | null;
   cover_image_url?: string | null;
   slug: string;
@@ -48,8 +56,10 @@ export interface Collection {
 
 export interface CollectionFormData {
   title: string;
+  title_mk?: string;
   slug: string;
   description: string;
+  description_mk?: string;
   display_order: number;
   is_active: boolean;
   is_featured: boolean;

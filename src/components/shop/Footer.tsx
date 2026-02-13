@@ -107,7 +107,7 @@ export default memo(function Footer() {
 
             {/* Email */}
             <a
-              href="mailto:hello@dysnomia.art"
+              href="mailto:contact_dysnomia@yahoo.com"
               style={{
                 ...linkStyle,
                 display: 'flex',
@@ -117,13 +117,13 @@ export default memo(function Footer() {
               onMouseEnter={(e) => e.currentTarget.style.color = '#FBBE63'}
               onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
             >
-              hello@dysnomia.art
+              contact_dysnomia@yahoo.com
             </a>
 
             {/* Social Links */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '16px' }}>
               <a
-                href="https://instagram.com/dysnomia.art"
+                href="https://www.instagram.com/dysnomia_art.gallery666/"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
@@ -140,7 +140,7 @@ export default memo(function Footer() {
                 <InstagramIcon className="w-5 h-5" />
               </a>
               <a
-                href="https://facebook.com/dysnomia.art"
+                href="https://www.facebook.com/profile.php?id=61575933645818"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{

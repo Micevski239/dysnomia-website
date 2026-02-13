@@ -120,7 +120,7 @@ export default function FeaturedManager() {
           {selectedProducts.length > 0 && (
             <div>
               <p style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#999', marginBottom: '12px' }}>
-                Selected Products — Click star to set as spotlight
+                Selected Products - Click star to set as spotlight
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 {selectedProducts.map((product) => (

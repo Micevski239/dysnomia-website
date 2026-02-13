@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCollections } from '../hooks/useCollections';
 import { useBreakpoint } from '../hooks/useBreakpoint';
+import { useLanguage } from '../hooks/useLanguage';
+import { localize } from '../lib/localize';
 
 const placeholderImage = 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&h=1000&fit=crop';
 
@@ -9,6 +11,7 @@ export default function CollectionsPage() {
   const { collections, loading, error } = useCollections();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const { isMobile } = useBreakpoint();
+  const { language } = useLanguage();
 
   const renderState = () => {
     if (loading) {
@@ -79,7 +82,7 @@ export default function CollectionsPage() {
             >
               <img
                 src={coverImage}
-                alt={collection.title}
+                alt={localize(collection.title, collection.title_mk, language)}
                 loading="lazy"
                 decoding="async"
                 style={{
@@ -135,9 +138,9 @@ export default function CollectionsPage() {
                     letterSpacing: '1px'
                   }}
                 >
-                  {collection.title}
+                  {localize(collection.title, collection.title_mk, language)}
                 </h3>
-                {collection.description && (
+                {(collection.description || collection.description_mk) && (
                   <p
                     style={{
                       fontSize: '13px',
@@ -149,7 +152,7 @@ export default function CollectionsPage() {
                       overflow: 'hidden'
                     }}
                   >
-                    {collection.description}
+                    {localize(collection.description, collection.description_mk, language)}
                   </p>
                 )}
               </div>
