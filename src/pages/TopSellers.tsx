@@ -215,8 +215,8 @@ export default function TopSellers() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-              gap: '32px',
+              gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(260px, 1fr))',
+              gap: isMobile ? '16px' : '32px',
             }}
           >
             {Array.from({ length: 8 }).map((_, i) => (
@@ -281,8 +281,8 @@ export default function TopSellers() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-              gap: '32px',
+              gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(260px, 1fr))',
+              gap: isMobile ? '16px' : '32px',
             }}
           >
             {gridProducts.map((product) => (

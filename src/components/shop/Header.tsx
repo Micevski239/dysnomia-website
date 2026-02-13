@@ -68,7 +68,8 @@ export default memo(function Header({ cartCount = 0, wishlistCount = 0 }: Header
         transition: 'all 0.3s',
         backgroundColor: headerBg,
         borderBottom: `1px solid ${borderColor}`,
-        height: '47px'
+        height: '47px',
+        ...(isMobile ? { marginBottom: '-82px' } : {})
       }}
     >
       <div

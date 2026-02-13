@@ -164,7 +164,7 @@ export default function CollectionsPage() {
   };
 
   return (
-    <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: '120px' }}>
+    <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: isMobile ? '44px' : '120px' }}>
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: `0 clamp(16px, 4vw, 48px) clamp(40px, 8vw, 80px)` }}>
         <div style={{ textAlign: 'center', marginBottom: '56px' }}>
           <p

@@ -47,7 +47,7 @@ export default function NewArrivals() {
   const gridProducts = sortedProducts.slice(0, 12);
 
   return (
-    <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: '120px' }}>
+    <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: isMobile ? '100px' : '120px' }}>
       {/* Hero Section */}
       <section style={{ maxWidth: '1400px', margin: '0 auto', padding: `0 clamp(16px, 4vw, 48px) clamp(40px, 8vw, 80px)` }}>
         <div
@@ -226,8 +226,8 @@ export default function NewArrivals() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-              gap: '32px',
+              gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(260px, 1fr))',
+              gap: isMobile ? '16px' : '32px',
             }}
           >
             {Array.from({ length: 8 }).map((_, i) => (
@@ -292,8 +292,8 @@ export default function NewArrivals() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-              gap: '32px',
+              gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(260px, 1fr))',
+              gap: isMobile ? '16px' : '32px',
             }}
           >
             {gridProducts.map((product) => (

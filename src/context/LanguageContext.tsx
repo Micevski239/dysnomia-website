@@ -351,6 +351,12 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
       published: 'Published',
       minuteRead: 'min read',
     },
+    contact: {
+      subtitle: 'Get in Touch',
+      title: 'Contact Us',
+      description: 'Have a question or need assistance? Reach out to us through any of the channels below.',
+      email: 'Email',
+    },
   },
   mk: {
     common: {
@@ -687,6 +693,12 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
       draft: 'Нацрт',
       published: 'Објавено',
       minuteRead: 'мин читање',
+    },
+    contact: {
+      subtitle: 'Контактирајте Нè',
+      title: 'Контакт',
+      description: 'Имате прашање или ви треба помош? Контактирајте нè преку било кој од каналите подолу.',
+      email: 'Е-пошта',
     },
   },
 };
