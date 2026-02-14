@@ -53,8 +53,6 @@ const BlogAdmin = lazy(() => import('./pages/admin/BlogAdmin'));
 
 // Support pages
 const Contact = lazy(() => import('./pages/Contact'));
-const FAQ = lazy(() => import('./pages/FAQ'));
-const Privacy = lazy(() => import('./pages/Privacy'));
 const Shipping = lazy(() => import('./pages/Shipping'));
 
 // Loading fallback component
@@ -116,8 +114,6 @@ function App() {
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPostPage />} />
               <Route path="/contact" element={<Contact />} />
-              <Route path="/faq" element={<FAQ />} />
-              <Route path="/privacy" element={<Privacy />} />
               <Route path="/shipping" element={<Shipping />} />
               <Route path="/posters" element={<ShopHome />} />
               <Route path="/frames" element={<ShopHome />} />

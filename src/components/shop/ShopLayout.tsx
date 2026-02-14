@@ -11,7 +11,7 @@ interface ShopLayoutProps {
 }
 
 export default function ShopLayout({ cartCount = 0, wishlistCount = 0 }: ShopLayoutProps) {
-  const { isMobile } = useBreakpoint();
+  const { isMobileOrTablet } = useBreakpoint();
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -45,7 +45,7 @@ export default function ShopLayout({ cartCount = 0, wishlistCount = 0 }: ShopLay
 
       {/* Announcement Bar: fixed on desktop, sticky on mobile */}
       <div style={{
-        position: isMobile ? 'sticky' : 'fixed',
+        position: isMobileOrTablet ? 'sticky' : 'fixed',
         top: 0,
         left: 0,
         right: 0,

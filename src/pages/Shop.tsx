@@ -39,7 +39,7 @@ export default function Shop() {
   const { collections } = useCollections();
   const productCollectionMap = useProductCollectionMap();
   const { language, t } = useLanguage();
-  const { isMobileOrTablet } = useBreakpoint();
+  const { isMobile, isMobileOrTablet } = useBreakpoint();
 
   // Fetch product IDs for selected collections
   const fetchCollectionProducts = useCallback(async (collectionIds: Set<string>) => {
@@ -159,14 +159,14 @@ export default function Shop() {
   const hasActiveFilters = selectedCollections.size > 0 || priceFilter !== 'all' || showOnSale;
 
   return (
-    <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: '120px' }}>
+    <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: isMobileOrTablet ? '100px' : '120px' }}>
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: `0 clamp(16px, 4vw, 48px) clamp(40px, 8vw, 80px)` }}>
         {/* Page Header */}
-        <div style={{ marginBottom: '48px' }}>
+        <div style={{ marginBottom: isMobileOrTablet ? '24px' : '48px' }}>
           <h1
             style={{
               fontFamily: "'Playfair Display', Georgia, serif",
-              fontSize: '42px',
+              fontSize: isMobileOrTablet ? '28px' : '42px',
               color: '#0A0A0A',
               letterSpacing: '2px',
               marginBottom: '12px'
@@ -174,7 +174,7 @@ export default function Shop() {
           >
             {t('shop.shopTitle')} <span style={{ color: '#FBBE63' }}>{t('shop.shopTitleAccent')}</span>
           </h1>
-          <p style={{ fontSize: '15px', color: '#666666', maxWidth: '600px' }}>
+          <p style={{ fontSize: isMobileOrTablet ? '14px' : '15px', color: '#666666', maxWidth: '600px' }}>
             {t('shop.shopDescription')}
           </p>
         </div>
@@ -182,70 +182,84 @@ export default function Shop() {
         {/* Toolbar */}
         <div
           style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
             marginBottom: '32px',
             paddingBottom: '16px',
             borderBottom: '1px solid #E5E5E5'
           }}
         >
-          {/* Mobile Filter Toggle */}
-          <button
-            onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
+          <div
             style={{
-              display: isMobileOrTablet ? 'flex' : 'none',
+              display: 'flex',
+              justifyContent: 'space-between',
               alignItems: 'center',
-              gap: '8px',
-              padding: '10px 16px',
-              backgroundColor: '#FFFFFF',
-              border: '1px solid #E5E5E5',
-              cursor: 'pointer',
-              fontSize: '12px',
-              fontWeight: 600,
-              letterSpacing: '1px',
-              textTransform: 'uppercase'
             }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="4" y1="6" x2="20" y2="6" />
-              <line x1="4" y1="12" x2="20" y2="12" />
-              <line x1="4" y1="18" x2="20" y2="18" />
-            </svg>
-            {t('shop.filters')}
-          </button>
-
-          {/* Results Count */}
-          <p style={{ fontSize: '13px', color: '#666666' }}>
-            {filteredAndSortedProducts.length} {filteredAndSortedProducts.length === 1 ? t('shop.artwork') : t('shop.artworks')}
-          </p>
-
-          {/* Sort Dropdown */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <label style={{ fontSize: '12px', color: '#666666', letterSpacing: '1px' }}>
-              {t('shop.sortBy')}
-            </label>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
+            {/* Mobile Filter Toggle */}
+            <button
+              onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
               style={{
-                padding: '8px 32px 8px 12px',
-                fontSize: '13px',
-                border: '1px solid #E5E5E5',
+                display: isMobileOrTablet ? 'flex' : 'none',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 16px',
                 backgroundColor: '#FFFFFF',
+                border: '1px solid #E5E5E5',
                 cursor: 'pointer',
-                appearance: 'none',
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'right 10px center'
+                fontSize: '12px',
+                fontWeight: 600,
+                letterSpacing: '1px',
+                textTransform: 'uppercase'
               }}
             >
-              <option value="newest">{t('shop.sortNewest')}</option>
-              <option value="price-low">{t('shop.sortPriceLow')}</option>
-              <option value="price-high">{t('shop.sortPriceHigh')}</option>
-              <option value="name">{t('shop.sortName')}</option>
-            </select>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="4" y1="6" x2="20" y2="6" />
+                <line x1="4" y1="12" x2="20" y2="12" />
+                <line x1="4" y1="18" x2="20" y2="18" />
+              </svg>
+              {t('shop.filters')}
+            </button>
+
+            {/* Results Count - inline on desktop, below on mobile */}
+            {!isMobileOrTablet && (
+              <p style={{ fontSize: '13px', color: '#666666' }}>
+                {filteredAndSortedProducts.length} {filteredAndSortedProducts.length === 1 ? t('shop.artwork') : t('shop.artworks')}
+              </p>
+            )}
+
+            {/* Sort Dropdown */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <label style={{ fontSize: '12px', color: '#666666', letterSpacing: '1px', display: isMobileOrTablet ? 'none' : 'block' }}>
+                {t('shop.sortBy')}
+              </label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                style={{
+                  padding: '8px 32px 8px 12px',
+                  fontSize: '13px',
+                  border: '1px solid #E5E5E5',
+                  backgroundColor: '#FFFFFF',
+                  cursor: 'pointer',
+                  appearance: 'none',
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 10px center'
+                }}
+              >
+                <option value="newest">{t('shop.sortNewest')}</option>
+                <option value="price-low">{t('shop.sortPriceLow')}</option>
+                <option value="price-high">{t('shop.sortPriceHigh')}</option>
+                <option value="name">{t('shop.sortName')}</option>
+              </select>
+            </div>
           </div>
+
+          {/* Results Count - separate row on mobile/tablet */}
+          {isMobileOrTablet && (
+            <p style={{ fontSize: '12px', color: '#666666', marginTop: '10px' }}>
+              {filteredAndSortedProducts.length} {filteredAndSortedProducts.length === 1 ? t('shop.artwork') : t('shop.artworks')}
+            </p>
+          )}
         </div>
 
         {/* Main Content */}
@@ -258,7 +272,7 @@ export default function Shop() {
               display: isMobileOrTablet ? (mobileFiltersOpen ? 'block' : 'none') : 'block',
               ...(isMobileOrTablet && mobileFiltersOpen ? {
                 position: 'fixed',
-                top: '82px',
+                top: isMobileOrTablet ? '47px' : '82px',
                 left: 0,
                 right: 0,
                 bottom: 0,
@@ -441,12 +455,12 @@ export default function Shop() {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-                  gap: '32px'
+                  gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(260px, 1fr))',
+                  gap: isMobile ? '16px' : '32px'
                 }}
               >
                 {[...Array(8)].map((_, i) => (
-                  <div key={i} style={{ width: '260px' }}>
+                  <div key={i}>
                     <div
                       style={{
                         aspectRatio: '3/4',
@@ -600,8 +614,8 @@ export default function Shop() {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-                  gap: '32px'
+                  gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(260px, 1fr))',
+                  gap: isMobile ? '16px' : '32px'
                 }}
               >
                 {visibleProducts.map((product) => (

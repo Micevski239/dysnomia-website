@@ -109,11 +109,12 @@ function BlogCard({ post, language, t }: { post: BlogPost; language: string; t: 
 
 export default function Blog() {
   const { posts, loading } = useBlogPosts();
-  const { isMobile } = useBreakpoint();
+  const { isMobile, isMobileOrTablet } = useBreakpoint();
   const { language, t } = useLanguage();
 
   const spotlight = useMemo(() => posts[0] || null, [posts]);
   const gridPosts = useMemo(() => posts.slice(1), [posts]);
+  const visiblePosts = useMemo(() => (isMobile ? posts : gridPosts), [isMobile, posts, gridPosts]);
 
   const spotlightTitle = spotlight ? localize(spotlight.title, spotlight.title_mk, language) : '';
   const spotlightExcerpt = spotlight ? localize(spotlight.excerpt, spotlight.excerpt_mk, language) : '';
@@ -121,7 +122,7 @@ export default function Blog() {
   const spotlightReadTime = estimateReadTime(spotlightContent);
 
   return (
-    <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: '120px' }}>
+    <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: isMobileOrTablet ? '100px' : '120px' }}>
       {/* Hero Section */}
       <section style={{ maxWidth: '1400px', margin: '0 auto', padding: `0 clamp(16px, 4vw, 48px) clamp(40px, 8vw, 80px)` }}>
         <div
@@ -168,7 +169,7 @@ export default function Blog() {
             >
               {t('blog.heroDescription')}
             </p>
-            {spotlight && (
+            {!isMobile && spotlight && (
               <Link
                 to={`/blog/${spotlight.slug}`}
                 style={{
@@ -203,7 +204,7 @@ export default function Blog() {
           </div>
 
           {/* Featured Post Image */}
-          {spotlight && (
+          {!isMobile && spotlight && (
             <Link
               to={`/blog/${spotlight.slug}`}
               style={{
@@ -292,8 +293,8 @@ export default function Blog() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-              gap: '32px',
+              gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(260px, 1fr))',
+              gap: isMobile ? '12px' : '32px',
             }}
           >
             {Array.from({ length: 8 }).map((_, i) => (
@@ -333,23 +334,21 @@ export default function Blog() {
               {t('blog.noPostsMessage')}
             </p>
           </div>
-        ) : gridPosts.length > 0 ? (
+        ) : visiblePosts.length > 0 ? (
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-              gap: '32px',
+              gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(260px, 1fr))',
+              gap: isMobile ? '12px' : '32px',
             }}
           >
-            {gridPosts.map((post) => (
+            {visiblePosts.map((post) => (
               <BlogCard key={post.id} post={post} language={language} t={t} />
             ))}
           </div>
         ) : null}
       </section>
 
-      {/* Gold Accent Line */}
-      <div style={{ height: '4px', backgroundColor: '#FBBE63' }} />
     </div>
   );
 }

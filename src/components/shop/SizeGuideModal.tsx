@@ -91,44 +91,17 @@ export default function SizeGuideModal({ isOpen, onClose }: SizeGuideModalProps)
           Size Guide
         </h2>
 
-        <div style={{ color: '#4a4a4a', lineHeight: 1.7 }}>
-          <p style={{ marginBottom: '16px' }}>
-            All artwork dimensions are provided in the product details section. Measurements are given in centimeters (cm) unless otherwise specified.
-          </p>
-
-          <h3
-            style={{
-              fontSize: '14px',
-              fontWeight: 600,
-              color: '#1a1a1a',
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              marginTop: '24px',
-              marginBottom: '12px',
-            }}
-          >
-            How to Measure
-          </h3>
-          <p style={{ marginBottom: '16px' }}>
-            Height × Width dimensions refer to the artwork itself, not including any frame or mounting. If framing is included, additional dimensions will be noted.
-          </p>
-
-          <h3
-            style={{
-              fontSize: '14px',
-              fontWeight: 600,
-              color: '#1a1a1a',
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              marginTop: '24px',
-              marginBottom: '12px',
-            }}
-          >
-            Need Help?
-          </h3>
-          <p>
-            If you need specific measurements or have questions about sizing, please don't hesitate to contact us.
-          </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <img
+            src="/sizeguide1.webp"
+            alt="Size guide 1"
+            style={{ width: '100%', display: 'block' }}
+          />
+          <img
+            src="/sizeguide2.webp"
+            alt="Size guide 2"
+            style={{ width: '100%', display: 'block' }}
+          />
         </div>
       </div>
     </div>

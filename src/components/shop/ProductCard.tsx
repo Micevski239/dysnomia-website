@@ -313,10 +313,9 @@ const ProductCard = memo(function ProductCard({
               onClick={() => setSelectedSize(size)}
               aria-pressed={selectedSize === size}
               style={{
-                fontSize: '10px',
-                padding: '6px 10px',
-                width: isMobile ? '84px' : 'auto',
-                minHeight: '32px',
+                fontSize: isMobile ? '9px' : '10px',
+                padding: isMobile ? '5px 6px' : '6px 10px',
+                minHeight: isMobile ? '28px' : '32px',
                 boxSizing: 'border-box',
                 border: selectedSize === size ? '1px solid #0A0A0A' : '1px solid #E5E5E5',
                 backgroundColor: selectedSize === size ? '#0A0A0A' : '#FFFFFF',

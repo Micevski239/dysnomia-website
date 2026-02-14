@@ -27,7 +27,7 @@ const mapProductToCard = (product: Product, language = 'en'): ProductCardProps =
 export default function NewArrivals() {
   const { products, loading } = useProducts();
   const { spotlightProductId } = useNewArrivalsSpotlight();
-  const { isMobile } = useBreakpoint();
+  const { isMobile, isMobileOrTablet } = useBreakpoint();
   const { language, t } = useLanguage();
   const { formatPrice } = useCurrency();
 
@@ -47,7 +47,7 @@ export default function NewArrivals() {
   const gridProducts = sortedProducts.slice(0, 12);
 
   return (
-    <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: isMobile ? '100px' : '120px' }}>
+    <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: isMobileOrTablet ? '100px' : '120px' }}>
       {/* Hero Section */}
       <section style={{ maxWidth: '1400px', margin: '0 auto', padding: `0 clamp(16px, 4vw, 48px) clamp(40px, 8vw, 80px)` }}>
         <div

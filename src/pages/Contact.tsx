@@ -3,7 +3,7 @@ import { useBreakpoint } from '../hooks/useBreakpoint';
 
 export default function Contact() {
   const { t } = useLanguage();
-  const { isMobile } = useBreakpoint();
+  const { isMobile, isMobileOrTablet } = useBreakpoint();
 
   const cards = [
     {
@@ -36,23 +36,13 @@ export default function Contact() {
       value: 'Dysnomia Art Gallery',
       href: 'https://www.facebook.com/profile.php?id=61575933645818',
     },
-    {
-      label: 'TikTok',
-      icon: (
-        <svg style={{ width: '28px', height: '28px' }} fill="currentColor" viewBox="0 0 24 24">
-          <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 0010.86 4.46V13a8.16 8.16 0 005.58 2.18v-3.45a4.85 4.85 0 01-3.77-1.81V6.69h3.77z" />
-        </svg>
-      ),
-      value: '@dysnomia_art',
-      href: 'https://www.tiktok.com/@dysnomia_art',
-    },
   ];
 
   return (
-    <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: isMobile ? '100px' : '120px' }}>
-      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 clamp(16px, 4vw, 48px) clamp(48px, 8vw, 80px)' }}>
+    <div style={{ backgroundColor: '#FFFFFF', paddingTop: isMobileOrTablet ? '100px' : '120px' }}>
+      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 clamp(16px, 4vw, 48px) clamp(28px, 6vw, 48px)' }}>
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: 'clamp(32px, 6vw, 64px)' }}>
+        <div style={{ textAlign: 'center', marginBottom: 'clamp(20px, 5vw, 40px)' }}>
           <p
             style={{
               fontSize: '12px',
@@ -83,8 +73,8 @@ export default function Contact() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(2, 1fr)',
-            gap: isMobile ? '16px' : '24px',
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+            gap: isMobile ? '12px' : '20px',
           }}
         >
           {cards.map((card) => (
@@ -98,7 +88,7 @@ export default function Contact() {
                 flexDirection: 'column',
                 alignItems: 'center',
                 textAlign: 'center',
-                padding: isMobile ? '24px 16px' : '40px 24px',
+                padding: isMobile ? '18px 14px' : '28px 20px',
                 backgroundColor: '#FAFAFA',
                 border: '1px solid #E5E5E5',
                 textDecoration: 'none',
@@ -111,7 +101,7 @@ export default function Contact() {
                 e.currentTarget.style.borderColor = '#E5E5E5';
               }}
             >
-              <div style={{ color: '#FBBE63', marginBottom: '16px' }}>
+              <div style={{ color: '#FBBE63', marginBottom: '12px' }}>
                 {card.icon}
               </div>
               <h3
@@ -134,8 +124,6 @@ export default function Contact() {
         </div>
       </div>
 
-      {/* Gold Accent Line */}
-      <div style={{ height: '4px', backgroundColor: '#FBBE63', marginTop: 'clamp(48px, 8vw, 80px)' }} />
     </div>
   );
 }

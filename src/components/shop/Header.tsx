@@ -19,7 +19,7 @@ export default memo(function Header({ cartCount = 0, wishlistCount = 0 }: Header
   const { language, setLanguage, t } = useLanguage();
   const { currency, setCurrency } = useCurrency();
   const { user } = useAuthContext();
-  const { isMobile } = useBreakpoint();
+  const { isMobileOrTablet } = useBreakpoint();
 
   const navItems = useMemo(() => [
     { label: t('common.home'), href: '/' },
@@ -60,7 +60,7 @@ export default memo(function Header({ cartCount = 0, wishlistCount = 0 }: Header
   return (
     <header
       style={{
-        position: isMobile ? 'sticky' : 'fixed',
+        position: isMobileOrTablet ? 'sticky' : 'fixed',
         top: '35px',
         left: 0,
         right: 0,
@@ -69,7 +69,7 @@ export default memo(function Header({ cartCount = 0, wishlistCount = 0 }: Header
         backgroundColor: headerBg,
         borderBottom: `1px solid ${borderColor}`,
         height: '47px',
-        ...(isMobile ? { marginBottom: '-82px' } : {})
+        ...(isMobileOrTablet ? { marginBottom: '-82px' } : {})
       }}
     >
       <div

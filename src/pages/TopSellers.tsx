@@ -24,7 +24,7 @@ const mapProductToCard = (product: Product, language = 'en'): ProductCardProps =
 
 export default function TopSellers() {
   const { products, spotlightProductId, loading } = useBestsellers();
-  const { isMobile } = useBreakpoint();
+  const { isMobile, isMobileOrTablet } = useBreakpoint();
   const { t, language } = useLanguage();
   const { formatPrice } = useCurrency();
 
@@ -39,7 +39,7 @@ export default function TopSellers() {
 
 
   return (
-    <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: '120px' }}>
+    <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: isMobileOrTablet ? '100px' : '120px' }}>
       {/* Hero Section */}
       <section style={{ maxWidth: '1400px', margin: '0 auto', padding: `0 clamp(16px, 4vw, 48px) clamp(40px, 8vw, 80px)` }}>
         <div

@@ -16,9 +16,7 @@ const footerLinks = {
   ],
   support: [
     { labelKey: 'about.contactUs', href: '/contact' },
-    { labelKey: 'footer.shippingDelivery', href: '/shipping' },
-    { labelKey: 'footer.faq', href: '/faq' },
-    { labelKey: 'footer.privacyPolicy', href: '/privacy' }
+    { labelKey: 'footer.shippingDelivery', href: '/shipping' }
   ]
 };
 

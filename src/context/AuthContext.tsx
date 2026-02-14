@@ -20,6 +20,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    const resetAuthState = () => {
+      setSession(null);
+      setUser(null);
+      setIsAdmin(false);
+    };
+
     async function checkAdmin(_userId: string) {
       const { data, error } = await supabase.rpc('is_admin');
       if (error) {
@@ -29,15 +35,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAdmin(data === true);
     }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkAdmin(session.user.id).then(() => setLoading(false));
-      } else {
-        setIsAdmin(false);
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session?.user) {
+        resetAuthState();
         setLoading(false);
+        return;
       }
+
+      // Validate persisted session token; stale local sessions can cause 403s on protected tables.
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError || !userData.user) {
+        await supabase.auth.signOut();
+        resetAuthState();
+        setLoading(false);
+        return;
+      }
+
+      setSession(session);
+      setUser(userData.user);
+      await checkAdmin(userData.user.id);
+      setLoading(false);
     });
 
     const {
@@ -48,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (session?.user) {
         checkAdmin(session.user.id).then(() => setLoading(false));
       } else {
-        setIsAdmin(false);
+        resetAuthState();
         setLoading(false);
       }
     });
