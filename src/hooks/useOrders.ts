@@ -131,6 +131,21 @@ export function useOrders() {
     }
   };
 
+  const deleteOrder = async (id: string): Promise<{ error: string | null }> => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      return { error: null };
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete order';
+      return { error: errorMessage };
+    }
+  };
+
   return {
     createOrder,
     getOrder,
@@ -138,6 +153,7 @@ export function useOrders() {
     updateOrderStatus,
     updateTrackingNumber,
     addOrderNote,
+    deleteOrder,
     loading,
     error,
   };

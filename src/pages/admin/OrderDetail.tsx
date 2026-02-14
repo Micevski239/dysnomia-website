@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useOrderDetail, useOrders } from '../../hooks/useOrders';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 import { sendOrderEmail } from '../../lib/sendOrderEmail';
@@ -33,10 +33,12 @@ const statusFlow: OrderStatus[] = ['pending', 'confirmed', 'shipped', 'delivered
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { order, loading, error, refetch } = useOrderDetail(id);
-  const { updateOrderStatus, updateTrackingNumber, addOrderNote } = useOrders();
+  const { updateOrderStatus, updateTrackingNumber, addOrderNote, deleteOrder } = useOrders();
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [notes, setNotes] = useState('');
   const [showNotesForm, setShowNotesForm] = useState(false);
   const [trackingNumber, setTrackingNumber] = useState('');
@@ -673,6 +675,97 @@ export default function OrderDetail() {
                   {order.status === 'cancelled' && ' (Current)'}
                 </button>
               </div>
+            </div>
+          </div>
+
+          {/* Delete Order */}
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              border: '1px solid #fecaca',
+              borderRadius: '8px',
+              marginTop: '24px',
+            }}
+          >
+            <div
+              style={{
+                padding: '20px',
+                borderBottom: '1px solid #fecaca',
+              }}
+            >
+              <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#dc2626' }}>Danger Zone</h2>
+            </div>
+            <div style={{ padding: '20px' }}>
+              {!showDeleteConfirm ? (
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    backgroundColor: '#ffffff',
+                    color: '#dc2626',
+                    border: '1px solid #fecaca',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Delete Order
+                </button>
+              ) : (
+                <div>
+                  <p style={{ fontSize: '14px', color: '#dc2626', marginBottom: '12px' }}>
+                    Are you sure? This will permanently delete order {order.order_number}.
+                  </p>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={async () => {
+                        setIsUpdating(true);
+                        const { error } = await deleteOrder(order.id);
+                        if (error) {
+                          setUpdateError(error);
+                          setIsUpdating(false);
+                        } else {
+                          navigate('/admin/orders');
+                        }
+                      }}
+                      disabled={isUpdating}
+                      style={{
+                        flex: 1,
+                        padding: '10px 16px',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        backgroundColor: '#dc2626',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: isUpdating ? 'not-allowed' : 'pointer',
+                        opacity: isUpdating ? 0.7 : 1,
+                      }}
+                    >
+                      {isUpdating ? 'Deleting...' : 'Yes, Delete'}
+                    </button>
+                    <button
+                      onClick={() => setShowDeleteConfirm(false)}
+                      disabled={isUpdating}
+                      style={{
+                        flex: 1,
+                        padding: '10px 16px',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        backgroundColor: '#ffffff',
+                        color: '#4a4a4a',
+                        border: '1px solid #e5e5e5',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
