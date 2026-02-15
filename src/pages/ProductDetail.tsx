@@ -549,9 +549,25 @@ export default function ProductDetail() {
               </Accordion>
 
               <Accordion title={t('product.details')}>
-                <p style={{ color: '#4a4a4a', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
-                  {localize(product.details, product.details_mk, language) || 'No additional details available.'}
-                </p>
+                {(() => {
+                  const text = localize(product.details, product.details_mk, language);
+                  if (!text) return <p style={{ color: '#4a4a4a', lineHeight: 1.7 }}>No additional details available.</p>;
+                  const lines = text.split('\n').filter((l: string) => l.trim());
+                  return (
+                    <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {lines.map((line: string, i: number) => {
+                        const colonIdx = line.indexOf(':');
+                        if (colonIdx === -1) return <li key={i} style={{ color: '#4a4a4a', fontSize: '14px', lineHeight: 1.6 }}>{line}</li>;
+                        return (
+                          <li key={i} style={{ color: '#4a4a4a', fontSize: '14px', lineHeight: 1.6 }}>
+                            <span style={{ fontWeight: 600, color: '#1a1a1a' }}>{line.slice(0, colonIdx)}:</span>
+                            {line.slice(colonIdx + 1)}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  );
+                })()}
               </Accordion>
 
               <Accordion title={t('product.deliveryReturns')}>
