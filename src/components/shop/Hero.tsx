@@ -22,7 +22,7 @@ export default function Hero() {
           inset: 0,
           backgroundImage: 'url(/logo.webp)',
           backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          backgroundPosition: 'center 0%',
           backgroundRepeat: 'no-repeat'
         }}
       />
