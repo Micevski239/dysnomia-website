@@ -1,7 +1,6 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useProducts } from '../hooks/useProducts';
-import { useNewArrivalsSpotlight } from '../hooks/useFeaturedSections';
+import { supabase } from '../lib/supabase';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { useLanguage } from '../hooks/useLanguage';
 import { useCurrency } from '../hooks/useCurrency';
@@ -13,6 +12,9 @@ import { getPrice } from '../config/printOptions';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1000&h=1400&fit=crop';
 
+interface CollectionProductRow {
+  product: Product | null;
+}
 
 const mapProductToCard = (product: Product, language = 'en'): ProductCardProps => ({
   id: product.id,
@@ -25,27 +27,53 @@ const mapProductToCard = (product: Product, language = 'en'): ProductCardProps =
   sizes: ['50x70 cm', '70x100 cm', '100x150 cm'],
 });
 
-export default function NewArrivals() {
-  const { products, loading } = useProducts();
-  const { spotlightProductId } = useNewArrivalsSpotlight();
+export default function KidsPictures() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const { isMobile, isMobileOrTablet } = useBreakpoint();
   const { language, t } = useLanguage();
   const { formatPrice } = useCurrency();
 
-  const sortedProducts = useMemo(() => {
-    return [...products].sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
-  }, [products]);
+  useEffect(() => {
+    let isMounted = true;
 
-  const spotlight = useMemo(() => {
-    if (spotlightProductId) {
-      return sortedProducts.find((p) => p.id === spotlightProductId) || sortedProducts[0] || null;
+    async function loadKidsProducts() {
+      setLoading(true);
+
+      const { data: collectionData } = await supabase
+        .from('collections')
+        .select('id')
+        .eq('slug', 'kid')
+        .single();
+
+      if (!collectionData || !isMounted) {
+        setLoading(false);
+        return;
+      }
+
+      const { data: mappingData } = await supabase
+        .from('collection_products')
+        .select('product:products(*)')
+        .eq('collection_id', collectionData.id)
+        .order('added_at', { ascending: false })
+        .returns<CollectionProductRow[]>();
+
+      if (!isMounted) return;
+
+      const mappedProducts = (mappingData || [])
+        .map((row) => row.product)
+        .filter((product): product is Product => Boolean(product));
+
+      setProducts(mappedProducts);
+      setLoading(false);
     }
-    return sortedProducts[0] || null;
-  }, [sortedProducts, spotlightProductId]);
 
-  const gridProducts = sortedProducts.slice(0, 12);
+    loadKidsProducts();
+    return () => { isMounted = false; };
+  }, []);
+
+  const spotlight = useMemo(() => products[0] || null, [products]);
+  const gridProducts = products.slice(0, 12);
 
   return (
     <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: isMobileOrTablet ? '100px' : '120px' }}>
@@ -70,7 +98,7 @@ export default function NewArrivals() {
                 marginBottom: '16px',
               }}
             >
-              {t('newArrivals.title')}
+              {t('kidsPictures.title')}
             </p>
             <h1
               style={{
@@ -82,7 +110,7 @@ export default function NewArrivals() {
                 marginBottom: '24px',
               }}
             >
-              {t('newArrivals.heroTitle')} <span style={{ color: '#FBBE63' }}>{t('newArrivals.heroTitleAccent')}</span>
+              {t('kidsPictures.heroTitle')} <span style={{ color: '#FBBE63' }}>{t('kidsPictures.heroTitleAccent')}</span>
             </h1>
             <p
               style={{
@@ -93,7 +121,7 @@ export default function NewArrivals() {
                 marginBottom: '32px',
               }}
             >
-              {t('newArrivals.heroDescription')}
+              {t('kidsPictures.heroDescription')}
             </p>
             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
               <Link
@@ -121,7 +149,7 @@ export default function NewArrivals() {
                   e.currentTarget.style.color = '#FFFFFF';
                 }}
               >
-                {t('newArrivals.browseAll')}
+                {t('kidsPictures.browseAll')}
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
@@ -150,7 +178,7 @@ export default function NewArrivals() {
                   e.currentTarget.style.borderColor = '#E5E5E5';
                 }}
               >
-                {t('newArrivals.viewCollections')}
+                {t('kidsPictures.viewCollections')}
               </Link>
             </div>
           </div>
@@ -202,7 +230,7 @@ export default function NewArrivals() {
                     color: '#FBBE63',
                   }}
                 >
-                  {t('newArrivals.featured')}
+                  {t('kidsPictures.featured')}
                 </p>
                 <h3
                   style={{
@@ -220,7 +248,6 @@ export default function NewArrivals() {
         </div>
       </section>
 
-
       {/* Products Grid */}
       <section style={{ maxWidth: '1400px', margin: '0 auto', padding: `clamp(32px, 6vw, 60px) clamp(16px, 4vw, 48px) clamp(48px, 8vw, 80px)` }}>
         {loading ? (
@@ -233,36 +260,10 @@ export default function NewArrivals() {
           >
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i}>
-                <div
-                  style={{
-                    aspectRatio: '3/4',
-                    backgroundColor: '#F5F5F5',
-                    marginBottom: '12px',
-                  }}
-                />
-                <div
-                  style={{
-                    height: '12px',
-                    width: '60%',
-                    backgroundColor: '#F5F5F5',
-                    marginBottom: '8px',
-                  }}
-                />
-                <div
-                  style={{
-                    height: '16px',
-                    width: '80%',
-                    backgroundColor: '#F5F5F5',
-                    marginBottom: '8px',
-                  }}
-                />
-                <div
-                  style={{
-                    height: '14px',
-                    width: '40%',
-                    backgroundColor: '#F5F5F5',
-                  }}
-                />
+                <div style={{ aspectRatio: '3/4', backgroundColor: '#F5F5F5', marginBottom: '12px' }} />
+                <div style={{ height: '12px', width: '60%', backgroundColor: '#F5F5F5', marginBottom: '8px' }} />
+                <div style={{ height: '16px', width: '80%', backgroundColor: '#F5F5F5', marginBottom: '8px' }} />
+                <div style={{ height: '14px', width: '40%', backgroundColor: '#F5F5F5' }} />
               </div>
             ))}
           </div>
@@ -283,10 +284,10 @@ export default function NewArrivals() {
                 marginBottom: '12px',
               }}
             >
-              {t('newArrivals.noArtworks')}
+              {t('kidsPictures.noArtworks')}
             </p>
             <p style={{ fontSize: '15px', color: '#666666' }}>
-              {t('newArrivals.noArtworksMessage')}
+              {t('kidsPictures.noArtworksMessage')}
             </p>
           </div>
         ) : (

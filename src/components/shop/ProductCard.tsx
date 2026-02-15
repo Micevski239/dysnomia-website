@@ -1,12 +1,11 @@
-import { useState, memo, useMemo, lazy, Suspense } from 'react';
+import { useState, memo, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { HeartIcon } from './Icons';
 import { useCurrency } from '../../hooks/useCurrency';
 import { useWishlist } from '../../hooks/useWishlist';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
-
-const RoomMockup = lazy(() => import('./RoomMockup'));
+import RoomMockup from './RoomMockup';
 import { priceMatrix } from '../../config/printOptions';
 
 export interface ProductCardProps {
@@ -108,13 +107,27 @@ const ProductCard = memo(function ProductCard({
           transition: 'border-color 0.3s'
         }}
       >
-        {/* Regular Image */}
+        {/* Room Preview - always rendered underneath, revealed on hover */}
+        {showRoomPreview && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              opacity: isHovered ? 1 : 0,
+              transition: 'opacity 0.4s ease',
+            }}
+          >
+            <RoomMockup artworkImage={image} artworkTitle={title} />
+          </div>
+        )}
+
+        {/* Regular Image - on top, fades out on hover */}
         <div
           style={{
             position: 'absolute',
             inset: 0,
             opacity: isHovered && showRoomPreview ? 0 : 1,
-            transition: 'opacity 0.4s ease'
+            transition: 'opacity 0.4s ease',
           }}
         >
           <img
@@ -126,26 +139,10 @@ const ProductCard = memo(function ProductCard({
               width: '100%',
               height: '100%',
               objectFit: 'contain',
-              padding: '16px'
+              padding: '16px',
             }}
           />
         </div>
-
-        {/* Room Preview on Hover - only mount when hovered */}
-        {showRoomPreview && isHovered && (
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              opacity: 1,
-              transition: 'opacity 0.4s ease'
-            }}
-          >
-            <Suspense fallback={null}>
-              <RoomMockup artworkImage={image} artworkTitle={title} />
-            </Suspense>
-          </div>
-        )}
 
         {/* Badges */}
         {badge === 'sale' && discount && (

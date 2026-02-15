@@ -97,7 +97,7 @@ export default function ProductDetail() {
       case 'canvas':
         return product.image_url_canvas || product.image_url;
       case 'roll':
-        return product.image_url_roll || product.image_url;
+        return product.image_url_canvas || product.image_url;
       case 'framed':
         return product.image_url_framed || product.image_url;
       default:
@@ -231,42 +231,13 @@ export default function ProductDetail() {
               <>
                 {/* Main big image */}
                 <div style={{ position: 'relative' }}>
-                  {/* Canvas - full image */}
-                  {selectedPrintType === 'canvas' && (
+                  {/* Canvas / Roll - full image */}
+                  {(selectedPrintType === 'canvas' || selectedPrintType === 'roll') && (
                     <div onClick={imageLoading ? undefined : handleImageClick} style={{ cursor: imageLoading ? 'default' : 'zoom-in', position: 'relative' }}>
                       <img
                         src={currentImage}
                         alt={product.title}
                         style={{ width: '100%', aspectRatio: '3/4', objectFit: 'cover', display: 'block' }}
-                        onLoad={onImageLoaded}
-                      />
-                      {imageLoading && (
-                        <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(2px)' }}>
-                          <div style={{ width: '36px', height: '36px', border: '3px solid #E5E5E5', borderTopColor: '#B8860B', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Roll - image with white sides */}
-                  {selectedPrintType === 'roll' && (
-                    <div
-                      onClick={imageLoading ? undefined : handleImageClick}
-                      style={{
-                        cursor: imageLoading ? 'default' : 'zoom-in',
-                        backgroundColor: '#f5f5f3',
-                        padding: '8%',
-                        aspectRatio: '3/4',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        position: 'relative',
-                      }}
-                    >
-                      <img
-                        src={currentImage}
-                        alt={`${product.title} – roll`}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
                         onLoad={onImageLoaded}
                       />
                       {imageLoading && (
@@ -393,33 +364,13 @@ export default function ProductDetail() {
                           transition: 'border-color 0.15s ease',
                         }}
                       >
-                        {/* Canvas thumbnail */}
-                        {view === 'canvas' && (
+                        {/* Canvas / Roll thumbnail */}
+                        {(view === 'canvas' || view === 'roll') && (
                           <img
                             src={currentImage}
                             alt={product.title}
                             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                           />
-                        )}
-
-                        {/* Roll thumbnail */}
-                        {view === 'roll' && (
-                          <div style={{
-                            width: '100%',
-                            height: '100%',
-                            backgroundColor: '#f5f5f3',
-                            padding: '10%',
-                            boxSizing: 'border-box',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}>
-                            <img
-                              src={currentImage}
-                              alt={`${product.title} – roll`}
-                              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
-                            />
-                          </div>
                         )}
 
                         {/* Framed thumbnail */}
@@ -497,9 +448,9 @@ export default function ProductDetail() {
                   <VariantSelector
                     printType={selectedPrintType}
                     onSelectionChange={(printType, sizeId, _price, newFrameColor) => {
-                      const typeChanged = printType !== selectedPrintType;
+                      const switchesToOrFromFramed = (printType === 'framed') !== (selectedPrintType === 'framed');
                       const frameChanged = newFrameColor && newFrameColor !== frameColor;
-                      if (typeChanged || frameChanged) startImageLoading();
+                      if (switchesToOrFromFramed || frameChanged) startImageLoading();
                       setSelectedPrintType(printType);
                       setSelectedSizeId(sizeId);
                       if (newFrameColor) setFrameColor(newFrameColor);

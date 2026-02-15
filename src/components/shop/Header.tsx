@@ -26,6 +26,7 @@ export default memo(function Header({ cartCount = 0, wishlistCount = 0 }: Header
     { label: t('common.shop'), href: '/shop' },
     { label: t('common.collections'), href: '/collections' },
     { label: t('common.newArrivals'), href: '/new-arrivals' },
+    { label: t('common.kidsPictures'), href: '/kids-pictures' },
     { label: t('common.topSellers'), href: '/top-sellers' },
     { label: t('common.blog'), href: '/blog' },
     { label: t('common.aboutUs'), href: '/about' },

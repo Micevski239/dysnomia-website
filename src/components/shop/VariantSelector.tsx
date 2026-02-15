@@ -225,14 +225,13 @@ export default function VariantSelector({ printType, onSelectionChange }: Varian
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
           {printSizes.map((size) => {
             const isSelected = selectedSize === size.id;
-            const price = getPrice(selectedType, size.id);
             return (
               <button
                 key={size.id}
                 type="button"
                 onClick={() => handleSizeChange(size.id)}
                 style={{
-                  padding: '10px 16px',
+                  padding: '10px 12px',
                   fontSize: '13px',
                   fontWeight: 500,
                   border: isSelected ? '2px solid #B8860B' : '1px solid #e5e5e5',
@@ -241,24 +240,10 @@ export default function VariantSelector({ printType, onSelectionChange }: Varian
                   color: isSelected ? '#B8860B' : '#4a4a4a',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '4px',
-                  minWidth: '100px',
                   position: 'relative',
                 }}
               >
-                <span>{size.label}</span>
-                <span
-                  style={{
-                    fontSize: '11px',
-                    color: isSelected ? '#B8860B' : '#6b6b6b',
-                    fontWeight: 400,
-                  }}
-                >
-                  {formatPrice(price)}
-                </span>
+                {size.label}
                 {isSelected && (
                   <span
                     style={{

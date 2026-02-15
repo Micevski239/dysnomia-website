@@ -8,6 +8,7 @@ import ProductCard from '../components/shop/ProductCard';
 import type { ProductCardProps } from '../components/shop/ProductCard';
 import { localize } from '../lib/localize';
 import type { Product } from '../types';
+import { getPrice } from '../config/printOptions';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1000&h=1400&fit=crop';
 
@@ -202,7 +203,7 @@ export default function TopSellers() {
                 >
                   {localize(spotlight.title, spotlight.title_mk, language)}
                 </h3>
-                <p style={{ fontSize: '16px' }}>{formatPrice(Number(spotlight.price) || 0)}</p>
+                <p style={{ fontSize: '16px' }}>{formatPrice(getPrice('canvas', '50x70'))}</p>
               </div>
             </Link>
           )}

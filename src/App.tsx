@@ -16,6 +16,7 @@ const Shop = lazy(() => import('./pages/Shop'));
 const Collections = lazy(() => import('./pages/Collections'));
 const CollectionShowcase = lazy(() => import('./pages/CollectionShowcase'));
 const NewArrivals = lazy(() => import('./pages/NewArrivals'));
+const KidsPictures = lazy(() => import('./pages/KidsPictures'));
 const TopSellers = lazy(() => import('./pages/TopSellers'));
 const About = lazy(() => import('./pages/About'));
 const AdminLayout = lazy(() => import('./components/AdminLayout'));
@@ -118,6 +119,7 @@ function App() {
               <Route path="/posters" element={<ShopHome />} />
               <Route path="/frames" element={<ShopHome />} />
               <Route path="/new-arrivals" element={<NewArrivals />} />
+              <Route path="/kids-pictures" element={<KidsPictures />} />
               <Route path="/top-sellers" element={<TopSellers />} />
               <Route path="/kids" element={<ShopHome />} />
               <Route path="/inspiration" element={<ShopHome />} />
