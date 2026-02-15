@@ -48,6 +48,7 @@ const ProductCard = memo(function ProductCard({
 }: ProductCardProps) {
   const [selectedSize, setSelectedSize] = useState(sizes[0]);
   const [isHovered, setIsHovered] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const { currency } = useCurrency();
   const { isInWishlist, toggle } = useWishlist();
   const { t } = useLanguage();
@@ -135,11 +136,14 @@ const ProductCard = memo(function ProductCard({
             alt={title}
             loading="lazy"
             decoding="async"
+            onLoad={() => setImageLoaded(true)}
             style={{
               width: '100%',
               height: '100%',
               objectFit: 'contain',
               padding: '16px',
+              opacity: imageLoaded ? 1 : 0,
+              transition: 'opacity 0.4s ease',
             }}
           />
         </div>

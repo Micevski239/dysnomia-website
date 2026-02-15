@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import type { Collection, Product } from '../types';
@@ -82,6 +82,10 @@ export default function CollectionShowcase() {
   }, [slug]);
 
   const heroImage = useMemo(() => collection?.cover_image || collection?.cover_image_url || FALLBACK_IMAGE, [collection]);
+  const [heroLoaded, setHeroLoaded] = useState(false);
+
+  // Reset loaded state when collection changes
+  useEffect(() => { setHeroLoaded(false); }, [slug]);
 
   const productCards: ProductCardProps[] = useMemo(
     () =>
@@ -169,10 +173,13 @@ export default function CollectionShowcase() {
               src={heroImage}
               alt={localize(collection?.title, collection?.title_mk, language) || 'Collection cover'}
               decoding="async"
+              onLoad={() => setHeroLoaded(true)}
               style={{
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
+                opacity: heroLoaded ? 1 : 0,
+                transition: 'opacity 0.4s ease',
               }}
             />
             <div

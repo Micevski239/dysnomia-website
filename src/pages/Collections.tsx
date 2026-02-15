@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useCollections } from '../hooks/useCollections';
 import { useBreakpoint } from '../hooks/useBreakpoint';
@@ -10,6 +10,10 @@ const placeholderImage = 'https://images.unsplash.com/photo-1500530855697-b586d8
 export default function CollectionsPage() {
   const { collections, loading, error } = useCollections();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
+  const onImageLoad = useCallback((id: string) => {
+    setLoadedImages((prev) => new Set(prev).add(id));
+  }, []);
   const { isMobile, isMobileOrTablet } = useBreakpoint();
   const { language, t } = useLanguage();
 
@@ -85,14 +89,16 @@ export default function CollectionsPage() {
                 alt={localize(collection.title, collection.title_mk, language)}
                 loading="lazy"
                 decoding="async"
+                onLoad={() => onImageLoad(collection.id)}
                 style={{
                   position: 'absolute',
                   inset: 0,
                   width: '100%',
                   height: '100%',
                   objectFit: 'cover',
-                  transition: 'transform 0.6s ease',
-                  transform: isHovered ? 'scale(1.08)' : 'scale(1)'
+                  transition: 'transform 0.6s ease, opacity 0.4s ease',
+                  transform: isHovered ? 'scale(1.08)' : 'scale(1)',
+                  opacity: loadedImages.has(collection.id) ? 1 : 0,
                 }}
               />
               <div
