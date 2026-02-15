@@ -74,8 +74,8 @@ export default function VariantSelector({ printType, onSelectionChange }: Varian
                 type="button"
                 onClick={() => handleTypeChange(type.id)}
                 style={{
-                  padding: '12px 20px',
-                  fontSize: '14px',
+                  padding: '10px 12px',
+                  fontSize: '13px',
                   fontWeight: 500,
                   border: isSelected ? '2px solid #B8860B' : '1px solid #e5e5e5',
                   borderRadius: '4px',
@@ -155,8 +155,8 @@ export default function VariantSelector({ printType, onSelectionChange }: Varian
                   type="button"
                   onClick={() => handleFrameColorChange(color.id)}
                   style={{
-                    padding: '12px 20px',
-                    fontSize: '14px',
+                    padding: '10px 12px',
+                    fontSize: '13px',
                     fontWeight: 500,
                     border: isSelected ? '2px solid #B8860B' : '1px solid #e5e5e5',
                     borderRadius: '4px',
@@ -293,7 +293,7 @@ export default function VariantSelector({ printType, onSelectionChange }: Varian
           alignItems: 'center',
         }}
       >
-        <span style={{ fontSize: '14px', color: '#4a4a4a' }}>{t('product.price')}:</span>
+        <span style={{ fontSize: '13px', color: '#4a4a4a' }}>{t('product.price')}:</span>
         <span
           style={{
             fontSize: '24px',
