@@ -4,7 +4,6 @@ import { HeartIcon } from './Icons';
 import { useCurrency } from '../../hooks/useCurrency';
 import { useWishlist } from '../../hooks/useWishlist';
 import { useLanguage } from '../../hooks/useLanguage';
-import { useBreakpoint } from '../../hooks/useBreakpoint';
 import RoomMockup from './RoomMockup';
 import { priceMatrix } from '../../config/printOptions';
 
@@ -23,15 +22,6 @@ export interface ProductCardProps {
   showRoomPreview?: boolean;
 }
 
-// Map display sizes to config size IDs
-const SIZE_TO_ID: Record<string, string> = {
-  '50x70 cm': '50x70',
-  '60x90 cm': '60x90',
-  '70x100 cm': '70x100',
-  '80x120 cm': '80x120',
-  '100x150 cm': '100x150',
-};
-
 const ProductCard = memo(function ProductCard({
   id,
   title,
@@ -43,30 +33,24 @@ const ProductCard = memo(function ProductCard({
   hoverImage: _hoverImage,
   badge,
   discount,
-  sizes = ['50x70 cm', '70x100 cm', '100x150 cm'],
   showRoomPreview = true
 }: ProductCardProps) {
-  const [selectedSize, setSelectedSize] = useState(sizes[0]);
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const { currency } = useCurrency();
   const { isInWishlist, toggle } = useWishlist();
   const { t } = useLanguage();
-  const { isMobile } = useBreakpoint();
   const wishlisted = isInWishlist(id);
 
-  // Get price from static price matrix based on selected size
-  // Using 'canvas' as default print type for carousel display
+  // Get price from static price matrix using default size (50x70 canvas)
   const displayPrice = useMemo(() => {
-    const sizeId = SIZE_TO_ID[selectedSize] || '50x70';
-    const priceInMKD = priceMatrix.canvas[sizeId] || priceMatrix.canvas['50x70'];
+    const priceInMKD = priceMatrix.canvas['50x70'];
 
-    // Convert to EUR if needed (approximate rate: 1 EUR = 61.5 MKD)
     if (currency === 'EUR') {
       return priceInMKD / 61.5;
     }
     return priceInMKD;
-  }, [selectedSize, currency]);
+  }, [currency]);
 
   // Memoize Intl.NumberFormat to avoid expensive constructor per render
   const eurFormatter = useMemo(() => new Intl.NumberFormat('en-EU', {
@@ -306,34 +290,6 @@ const ProductCard = memo(function ProductCard({
           </span>
         </div>
 
-        {/* Size Options */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }} role="group" aria-label="Size options">
-          {sizes.map((size) => (
-            <button
-              key={size}
-              onClick={() => setSelectedSize(size)}
-              aria-pressed={selectedSize === size}
-              style={{
-                fontSize: isMobile ? '9px' : '10px',
-                padding: isMobile ? '5px 6px' : '6px 10px',
-                minHeight: isMobile ? '28px' : '32px',
-                boxSizing: 'border-box',
-                border: selectedSize === size ? '1px solid #0A0A0A' : '1px solid #E5E5E5',
-                backgroundColor: selectedSize === size ? '#0A0A0A' : '#FFFFFF',
-                color: selectedSize === size ? '#FFFFFF' : '#0A0A0A',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                textAlign: 'center',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {size}
-            </button>
-          ))}
-        </div>
       </div>
     </div>
   );
