@@ -57,33 +57,10 @@ const Contact = lazy(() => import('./pages/Contact'));
 const Shipping = lazy(() => import('./pages/Shipping'));
 
 // Loading fallback component
+import DysnomiaLoader from './components/shop/DysnomiaLoader';
+
 function PageLoader() {
-  return (
-    <div
-      style={{
-        minHeight: '60vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <div
-        style={{
-          width: '40px',
-          height: '40px',
-          border: '3px solid #E5E5E5',
-          borderTopColor: '#FBBE63',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
-        }}
-      />
-      <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
-    </div>
-  );
+  return <DysnomiaLoader />;
 }
 
 function App() {

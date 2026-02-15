@@ -26,8 +26,62 @@
     <title>Dysnomia Art Gallery</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <style>
+      @keyframes dysnomia-reveal {
+        0% { opacity: 0; transform: translateY(8px); }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes dysnomia-line {
+        0% { width: 0; }
+        100% { width: 60px; }
+      }
+      #initial-loader {
+        position: fixed;
+        inset: 0;
+        background: #0A0A0A;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+      #initial-loader .logo-text {
+        display: flex;
+        gap: 4px;
+      }
+      #initial-loader .logo-text span {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 28px;
+        font-weight: 600;
+        color: #FBBE63;
+        letter-spacing: 6px;
+        opacity: 0;
+        animation: dysnomia-reveal 0.3s ease forwards;
+      }
+      #initial-loader .accent-line {
+        height: 2px;
+        background: #FBBE63;
+        margin-top: 16px;
+        animation: dysnomia-line 0.5s ease 0.5s forwards;
+        width: 0;
+      }
+    </style>
   </head>
   <body>
+    <div id="initial-loader">
+      <div class="logo-text">
+        <span style="animation-delay:0.05s">D</span>
+        <span style="animation-delay:0.1s">Y</span>
+        <span style="animation-delay:0.15s">S</span>
+        <span style="animation-delay:0.2s">N</span>
+        <span style="animation-delay:0.25s">O</span>
+        <span style="animation-delay:0.3s">M</span>
+        <span style="animation-delay:0.35s">I</span>
+        <span style="animation-delay:0.4s">A</span>
+      </div>
+      <div class="accent-line"></div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

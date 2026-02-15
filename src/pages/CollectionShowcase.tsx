@@ -7,8 +7,8 @@ import type { ProductCardProps } from '../components/shop/ProductCard';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { useLanguage } from '../hooks/useLanguage';
 import { localize } from '../lib/localize';
+import DysnomiaLoader from '../components/shop/DysnomiaLoader';
 
-const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1000&h=1400&fit=crop';
 const PRODUCTS_PER_PAGE = 12;
 
 interface CollectionProductRow {
@@ -81,7 +81,7 @@ export default function CollectionShowcase() {
     };
   }, [slug]);
 
-  const heroImage = useMemo(() => collection?.cover_image || collection?.cover_image_url || FALLBACK_IMAGE, [collection]);
+  const heroImage = useMemo(() => collection?.cover_image || collection?.cover_image_url || '', [collection]);
   const [heroLoaded, setHeroLoaded] = useState(false);
 
   // Reset loaded state when collection changes
@@ -103,6 +103,14 @@ export default function CollectionShowcase() {
 
   const visibleProducts = useMemo(() => productCards.slice(0, visibleCount), [productCards, visibleCount]);
   const hasMore = visibleCount < productCards.length;
+
+  if (loading) {
+    return (
+      <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: isMobileOrTablet ? '100px' : '120px' }}>
+        <DysnomiaLoader />
+      </div>
+    );
+  }
 
   return (
     <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: isMobileOrTablet ? '100px' : '120px' }}>
