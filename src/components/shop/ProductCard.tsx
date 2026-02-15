@@ -26,7 +26,7 @@ const ProductCard = memo(function ProductCard({
   id,
   title,
   slug,
-  brand = 'dysnomia',
+  brand = 'canvas',
   price: _price,
   originalPrice: _originalPrice,
   image,
@@ -39,7 +39,7 @@ const ProductCard = memo(function ProductCard({
   const [imageLoaded, setImageLoaded] = useState(false);
   const { currency } = useCurrency();
   const { isInWishlist, toggle } = useWishlist();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const wishlisted = isInWishlist(id);
 
   // Get price from static price matrix using default size (50x70 canvas)
@@ -283,8 +283,11 @@ const ProductCard = memo(function ProductCard({
           </h3>
         </Link>
 
-        {/* Price - From static price matrix based on size */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+        {/* Price */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '8px' }}>
+          <span style={{ fontSize: '12px', color: '#666666' }}>
+            {language === 'mk' ? 'Само за' : 'As low as'}
+          </span>
           <span style={{ fontSize: '13px', color: '#0A0A0A', fontWeight: 500 }}>
             {formattedPrice}
           </span>
