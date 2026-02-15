@@ -1,6 +1,6 @@
 const ALLOWED_ORIGINS = [
-  'https://dysnomia.art',
-  'https://www.dysnomia.art',
+  'https://dysnomiagallery.com',
+  'https://www.dysnomiagallery.com',
 ];
 
 // In development, also allow localhost

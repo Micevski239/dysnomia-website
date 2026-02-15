@@ -392,6 +392,7 @@ Deno.serve(async (req: Request) => {
       body: JSON.stringify({
         from: fromEmail,
         to: [order.customer_email],
+        bcc: [Deno.env.get('ADMIN_EMAIL') || 'contact_dysnomia@yahoo.com'],
         subject,
         html,
       }),
