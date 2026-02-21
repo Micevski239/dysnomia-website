@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useRef, useEffect } from 'react';
 import { useLanguage } from '../../hooks/useLanguage';
 
 // Room templates for the product detail page
@@ -35,6 +35,29 @@ interface RoomMockupProps {
 // Simple room preview for product cards - uses real room photo
 const RoomMockup = memo(function RoomMockup({ artworkImage, artworkTitle, isKidsRoom = false }: RoomMockupProps) {
   const { t } = useLanguage();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const rafRef = useRef<number>(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(() => {
+        const el = containerRef.current;
+        const img = imgRef.current;
+        if (!el || !img) return;
+        const rect = el.getBoundingClientRect();
+        // Move the image to counteract the scroll so it appears fixed
+        img.style.transform = `translateY(${-rect.top}px)`;
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
 
   const roomImage = isKidsRoom ? '/roomcursor.webp' : '/room-preview.jpg';
   const artworkPosition = isKidsRoom
@@ -43,6 +66,7 @@ const RoomMockup = memo(function RoomMockup({ artworkImage, artworkTitle, isKids
 
   return (
     <div
+      ref={containerRef}
       style={{
         position: 'relative',
         width: '100%',
@@ -52,17 +76,19 @@ const RoomMockup = memo(function RoomMockup({ artworkImage, artworkTitle, isKids
     >
       {/* Room Photo Background */}
       <img
+        ref={imgRef}
         src={roomImage}
         alt="Room interior"
         loading="lazy"
         decoding="async"
         style={{
           position: 'absolute',
-          inset: 0,
+          left: 0,
           width: '100%',
-          height: '100%',
+          height: '100vh',
           objectFit: 'cover',
-          objectPosition: isKidsRoom ? 'left center' : 'center center'
+          objectPosition: isKidsRoom ? 'left center' : 'center center',
+          willChange: 'transform',
         }}
       />
 
