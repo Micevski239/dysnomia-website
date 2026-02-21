@@ -35,6 +35,14 @@ const KIDS_FRAME_DIMENSIONS: Record<string, { top: string; left: string; width: 
   black:  { top: '21%', left: '69%', width: '19.1%', height: '39.1%' },
 };
 
+// Kids thumbnail dimensions - tunable separately from the main image
+const KIDS_THUMB_DIMENSIONS: Record<string, { top: string; left: string; width: string; height: string }> = {
+  gold:   { top: '21%', left: '78.2%', width: '27%', height: '39.2%' },
+  silver: { top: '21%', left: '69.15%', width: '18.8%', height: '39.1%' },
+  white:  { top: '20.9%', left: '69.15%', width: '18.8%', height: '39%' },
+  black:  { top: '21%', left: '69%', width: '19.1%', height: '39.1%' },
+};
+
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
   const { product, loading, error } = useProduct(slug || '');
@@ -402,23 +410,28 @@ export default function ProductDetail() {
                               alt="Room interior"
                               style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                             />
-                            <div
-                              style={{
-                                position: 'absolute',
-                                top: frameDims[frameColor].top,
-                                left: frameDims[frameColor].left,
-                                transform: 'translateX(-50%)',
-                                width: frameDims[frameColor].width,
-                                height: frameDims[frameColor].height,
-                                overflow: 'hidden',
-                              }}
-                            >
-                              <img
-                                src={currentImage}
-                                alt={`${product.title} – framed`}
-                                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                              />
-                            </div>
+                            {(() => {
+                              const thumbDims = isKidsCollection ? KIDS_THUMB_DIMENSIONS : frameDims;
+                              return (
+                                <div
+                                  style={{
+                                    position: 'absolute',
+                                    top: thumbDims[frameColor].top,
+                                    left: thumbDims[frameColor].left,
+                                    transform: 'translateX(-50%)',
+                                    width: thumbDims[frameColor].width,
+                                    height: thumbDims[frameColor].height,
+                                    overflow: 'hidden',
+                                  }}
+                                >
+                                  <img
+                                    src={currentImage}
+                                    alt={`${product.title} – framed`}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                                  />
+                                </div>
+                              );
+                            })()}
                           </div>
                         )}
                       </button>
