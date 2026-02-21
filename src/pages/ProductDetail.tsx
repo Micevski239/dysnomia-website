@@ -12,9 +12,11 @@ import VariantSelector from '../components/shop/VariantSelector';
 import ImageLightbox from '../components/shop/ImageLightbox';
 import ReviewList from '../components/shop/ReviewList';
 import StarRating from '../components/shop/StarRating';
+import ProductCard from '../components/shop/ProductCard';
 import { useReviews } from '../hooks/useReviews';
 import { productContent } from '../config/productContent';
 import { type PrintType } from '../config/printOptions';
+import { type Product } from '../types';
 import { supabase } from '../lib/supabase';
 
 // Adjust these per frame color to position the artwork on each livingroom photo
@@ -51,15 +53,17 @@ export default function ProductDetail() {
   const { isMobile } = useBreakpoint();
   const [isKidsCollection, setIsKidsCollection] = useState(false);
   const [collectionData, setCollectionData] = useState<{ title: string; title_mk?: string } | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     if (!product) return;
     supabase
       .from('collection_products')
-      .select('collection:collections(slug,title,title_mk)')
+      .select('collection_id, collection:collections(slug,title,title_mk)')
       .eq('product_id', product.id)
       .then(({ data }) => {
-        const collections = (data || []).flatMap((r: any) => {
+        const rows = data || [];
+        const collections = rows.flatMap((r: any) => {
           const c = r.collection;
           return Array.isArray(c) ? c : [c].filter(Boolean);
         });
@@ -67,6 +71,23 @@ export default function ProductDetail() {
         if (collections.length > 0) {
           setCollectionData({ title: collections[0].title, title_mk: collections[0].title_mk });
         }
+
+        // Fetch related products from the same collection
+        const collectionId = rows[0]?.collection_id;
+        if (!collectionId) return;
+        supabase
+          .from('collection_products')
+          .select('product:products(*)')
+          .eq('collection_id', collectionId)
+          .neq('product_id', product.id)
+          .limit(5)
+          .then(({ data: relData }) => {
+            const products = (relData || []).flatMap((r: any) => {
+              const p = r.product;
+              return Array.isArray(p) ? p : [p].filter(Boolean);
+            }).filter((p: Product) => p.status === 'published');
+            setRelatedProducts(products);
+          });
       });
   }, [product?.id]);
 
@@ -595,6 +616,42 @@ export default function ProductDetail() {
             onReviewSubmitted={refetchReviews}
           />
         </div>
+
+        {/* More from this collection */}
+        {relatedProducts.length > 0 && collectionData && (
+          <div style={{ marginTop: '80px', paddingTop: '48px', borderTop: '1px solid #e5e5e5' }}>
+            <h2 style={{
+              fontSize: 'clamp(20px, 3vw, 28px)',
+              fontWeight: 300,
+              color: '#1a1a1a',
+              marginBottom: '32px',
+              textAlign: 'center',
+              letterSpacing: '0.02em',
+            }}>
+              {language === 'mk' ? 'Повеќе од' : 'More from'}{' '}
+              {localize(collectionData.title, collectionData.title_mk, language)}
+            </h2>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile
+                ? 'repeat(2, 1fr)'
+                : 'repeat(4, 1fr)',
+              gap: isMobile ? '16px' : '24px',
+            }}>
+              {relatedProducts.slice(0, 4).map((p) => (
+                <ProductCard
+                  key={p.id}
+                  id={p.id}
+                  title={localize(p.title, p.title_mk, language)}
+                  slug={p.slug}
+                  price={p.price}
+                  image={p.image_url_canvas || p.image_url || ''}
+                  isKidsRoom={isKidsCollection}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Size Guide Modal */}

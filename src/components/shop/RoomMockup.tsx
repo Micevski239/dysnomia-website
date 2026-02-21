@@ -29,11 +29,17 @@ export const ROOM_TEMPLATES = [
 interface RoomMockupProps {
   artworkImage: string;
   artworkTitle: string;
+  isKidsRoom?: boolean;
 }
 
 // Simple room preview for product cards - uses real room photo
-const RoomMockup = memo(function RoomMockup({ artworkImage, artworkTitle }: RoomMockupProps) {
+const RoomMockup = memo(function RoomMockup({ artworkImage, artworkTitle, isKidsRoom = false }: RoomMockupProps) {
   const { t } = useLanguage();
+
+  const roomImage = isKidsRoom ? '/roomcursor.webp' : '/room-preview.jpg';
+  const artworkPosition = isKidsRoom
+    ? { top: '21%', left: '60%', width: '35%', height: '35%' }
+    : { top: '11.5%', left: '66.4%', width: '45.5%', height: '46%' };
 
   return (
     <div
@@ -46,7 +52,7 @@ const RoomMockup = memo(function RoomMockup({ artworkImage, artworkTitle }: Room
     >
       {/* Room Photo Background */}
       <img
-        src="/room-preview.jpg"
+        src={roomImage}
         alt="Room interior"
         loading="lazy"
         decoding="async"
@@ -55,7 +61,8 @@ const RoomMockup = memo(function RoomMockup({ artworkImage, artworkTitle }: Room
           inset: 0,
           width: '100%',
           height: '100%',
-          objectFit: 'cover'
+          objectFit: 'cover',
+          objectPosition: isKidsRoom ? 'left center' : 'center center'
         }}
       />
 
@@ -63,11 +70,11 @@ const RoomMockup = memo(function RoomMockup({ artworkImage, artworkTitle }: Room
       <div
         style={{
           position: 'absolute',
-          top: '11.5%',
-          left: '66.4%',
+          top: artworkPosition.top,
+          left: artworkPosition.left,
           transform: 'translateX(-50%)',
-          width: '45.5%',
-          height: '46%',  // Adjust this % for artwork height
+          width: artworkPosition.width,
+          height: artworkPosition.height,
           boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.2)',
           overflow: 'hidden'
         }}

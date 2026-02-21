@@ -20,6 +20,7 @@ export interface ProductCardProps {
   discount?: number;
   sizes?: string[];
   showRoomPreview?: boolean;
+  isKidsRoom?: boolean;
 }
 
 const ProductCard = memo(function ProductCard({
@@ -33,7 +34,8 @@ const ProductCard = memo(function ProductCard({
   hoverImage: _hoverImage,
   badge,
   discount,
-  showRoomPreview = true
+  showRoomPreview = true,
+  isKidsRoom = false
 }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -102,7 +104,7 @@ const ProductCard = memo(function ProductCard({
               transition: 'opacity 0.4s ease',
             }}
           >
-            <RoomMockup artworkImage={image} artworkTitle={title} />
+            <RoomMockup artworkImage={image} artworkTitle={title} isKidsRoom={isKidsRoom} />
           </div>
         )}
 

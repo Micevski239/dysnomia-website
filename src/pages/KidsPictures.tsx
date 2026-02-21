@@ -25,6 +25,7 @@ const mapProductToCard = (product: Product, language = 'en'): ProductCardProps =
   image: product.image_url || FALLBACK_IMAGE,
   badge: 'new',
   sizes: ['50x70 cm', '70x100 cm', '100x150 cm'],
+  isKidsRoom: true,
 });
 
 export default function KidsPictures() {
