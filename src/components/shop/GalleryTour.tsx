@@ -27,7 +27,7 @@ export default function GalleryTour() {
   }, [collections, t, language]);
 
   return (
-    <section style={{ backgroundColor: '#FFFFFF', padding: isMobile ? '40px 0' : '80px 0' }}>
+    <section style={{ backgroundColor: '#FAFAFA', padding: isMobile ? '40px 0' : '80px 0' }}>
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: isMobile ? '0 16px' : '0 48px' }}>
         <div style={{ textAlign: 'center', marginBottom: isMobile ? '24px' : '56px' }}>
           <p style={{ fontSize: isMobile ? '10px' : '11px', color: '#666666', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '12px' }}>

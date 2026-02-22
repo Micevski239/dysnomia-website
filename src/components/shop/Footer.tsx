@@ -12,11 +12,13 @@ const footerLinks = {
     { labelKey: 'common.topSellers', href: '/top-sellers' }
   ],
   about: [
-    { labelKey: 'common.aboutUs', href: '/about' }
+    { labelKey: 'common.aboutDysnomia', href: '/about' },
+    { labelKey: 'common.ourProducts', href: '/shop' }
   ],
   support: [
     { labelKey: 'about.contactUs', href: '/contact' },
-    { labelKey: 'footer.shippingDelivery', href: '/shipping' }
+    { labelKey: 'footer.shippingPolicy', href: '/shipping' },
+    { labelKey: 'footer.returnPolicy', href: '/shipping' }
   ]
 };
 

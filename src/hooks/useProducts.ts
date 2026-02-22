@@ -3,6 +3,16 @@ import { supabase } from '../lib/supabase';
 import { validateImageFile } from '../lib/fileValidation';
 import type { Product, ProductFormData } from '../types';
 
+async function fetchCachedProducts(): Promise<Product[] | null> {
+  try {
+    const { data, error } = await supabase.functions.invoke('cached-products');
+    if (error) return null;
+    return data as Product[];
+  } catch {
+    return null;
+  }
+}
+
 interface UseProductsOptions {
   includeUnpublished?: boolean;
   limit?: number;
@@ -23,6 +33,23 @@ export function useProducts(includeUnpublished = false, options?: Omit<UseProduc
     setLoading(true);
     setError(null);
 
+    // For public queries without pagination, try cached edge function first
+    if (!includeUnpublished && !limit) {
+      const cached = await fetchCachedProducts();
+      if (cached) {
+        if (append) {
+          setProducts((prev) => [...prev, ...cached]);
+        } else {
+          setProducts(cached);
+        }
+        setTotalCount(cached.length);
+        setHasMore(false);
+        setLoading(false);
+        return;
+      }
+    }
+
+    // Fallback: direct Supabase query
     let query = supabase
       .from('products')
       .select('id, title, title_mk, slug, description, description_mk, price, image_url, status, created_at, updated_at', { count: 'exact' })
@@ -72,6 +99,22 @@ export function useProduct(slug: string) {
       setLoading(true);
       setError(null);
 
+      // Try cached edge function first
+      try {
+        const { data: cached, error: fnError } = await supabase.functions.invoke(
+          'cached-product',
+          { body: { slug } }
+        );
+        if (!fnError && cached && !('error' in cached) && isMounted) {
+          setProduct(cached as Product);
+          setLoading(false);
+          return;
+        }
+      } catch {
+        // Edge function unavailable — fall through to direct query
+      }
+
+      // Fallback: direct Supabase query
       const { data, error } = await supabase
         .from('products')
         .select('*')
@@ -150,6 +193,19 @@ export function useProductById(id: string | undefined) {
   }, [id]);
 
   return { product, loading, error };
+}
+
+async function invalidateProductCache(): Promise<void> {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      await supabase.functions.invoke('invalidate-cache', {
+        body: { type: 'products' },
+      });
+    }
+  } catch {
+    // Cache invalidation is best-effort
+  }
 }
 
 interface CurrentImages {
@@ -240,6 +296,7 @@ export function useProductMutations() {
 
       if (error) throw error;
 
+      await invalidateProductCache();
       setLoading(false);
       return { data, error: null };
     } catch (err) {
@@ -315,6 +372,7 @@ export function useProductMutations() {
 
       if (error) throw error;
 
+      await invalidateProductCache();
       setLoading(false);
       return { data, error: null };
     } catch (err) {
@@ -337,6 +395,7 @@ export function useProductMutations() {
 
       if (error) throw error;
 
+      await invalidateProductCache();
       setLoading(false);
       return { error: null };
     } catch (err) {

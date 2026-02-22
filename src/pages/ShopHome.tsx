@@ -53,11 +53,11 @@ export default function ShopHome() {
         </section>
       )}
 
-      {/* USP Section - Brand Values */}
-      <USPSection />
-
       {/* Gallery Tour Preview - Collection Showcase */}
       <GalleryTour />
+
+      {/* USP Section - Brand Values */}
+      <USPSection />
 
       {/* Brand Story - Dysnomia Narrative */}
       <BrandStory />

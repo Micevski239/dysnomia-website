@@ -4,6 +4,29 @@ import { supabase } from '../lib/supabase';
 import { validateImageFile } from '../lib/fileValidation';
 import type { Collection, CollectionFormData } from '../types';
 
+async function fetchCachedCollections(): Promise<Collection[] | null> {
+  try {
+    const { data, error } = await supabase.functions.invoke('cached-collections');
+    if (error) return null;
+    return data as Collection[];
+  } catch {
+    return null;
+  }
+}
+
+async function invalidateCollectionCache(): Promise<void> {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      await supabase.functions.invoke('invalidate-cache', {
+        body: { type: 'collections' },
+      });
+    }
+  } catch {
+    // Cache invalidation is best-effort
+  }
+}
+
 const LEGACY_COVER_FIELD_KEY = 'collections:useLegacyCoverField';
 
 const getInitialLegacyFlag = () => {
@@ -29,6 +52,23 @@ export function useCollections(includeInactive = false) {
     setLoading(true);
     setError(null);
 
+    // For public queries, try cached edge function first
+    if (!includeInactive) {
+      const cached = await fetchCachedCollections();
+      if (cached) {
+        let result = cached.filter((item: Collection) => item.is_active ?? true);
+        result = [...result].sort((a: Collection, b: Collection) => {
+          const orderDiff = (a.display_order ?? 0) - (b.display_order ?? 0);
+          if (orderDiff !== 0) return orderDiff;
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        });
+        setCollections(result);
+        setLoading(false);
+        return;
+      }
+    }
+
+    // Fallback: direct Supabase query
     const { data, error } = await supabase.from('collections').select('*, collection_products(count)');
 
     if (error) {
@@ -193,6 +233,7 @@ export function useCollectionMutations() {
 
       if (error) throw error;
 
+      await invalidateCollectionCache();
       setLoading(false);
       return { data, error: null };
     } catch (err) {
@@ -252,6 +293,7 @@ export function useCollectionMutations() {
 
       if (error) throw error;
 
+      await invalidateCollectionCache();
       setLoading(false);
       return { data, error: null };
     } catch (err) {
@@ -274,6 +316,7 @@ export function useCollectionMutations() {
 
       if (error) throw error;
 
+      await invalidateCollectionCache();
       setLoading(false);
       return { error: null };
     } catch (err) {

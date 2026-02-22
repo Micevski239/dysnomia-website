@@ -37,10 +37,10 @@ export default function USPSection() {
   return (
     <section
       style={{
-        backgroundColor: '#FAFAFA',
+        backgroundColor: '#FFFFFF',
         padding: isMobile ? '40px 0' : '64px 0',
-        borderTop: '1px solid #E5E5E5',
-        borderBottom: '1px solid #E5E5E5'
+        borderTop: 'none',
+        borderBottom: 'none'
       }}
     >
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 clamp(16px, 4vw, 48px)' }}>

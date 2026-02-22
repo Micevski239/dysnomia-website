@@ -64,6 +64,14 @@ export default function ProductCarousel({
     scrollToPage(currentIndex);
   }, [currentIndex, scrollToPage]);
 
+  // Auto-advance every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % totalPages);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [totalPages]);
+
   // Initialize scroll position to middle set (page 0)
   useEffect(() => {
     if (scrollRef.current && products.length > 0) {
@@ -148,82 +156,6 @@ export default function ProductCarousel({
 
         {/* Carousel Container */}
         <div style={{ position: 'relative' }}>
-          {/* Left Arrow */}
-          {!isMobile && (
-            <button
-              onClick={goToPrev}
-              style={{
-                position: 'absolute',
-                left: '-20px',
-                top: '35%',
-                transform: 'translateY(-50%)',
-                width: '40px',
-                height: '40px',
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #E5E5E5',
-                borderRadius: '50%',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 10,
-                transition: 'all 0.2s',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#FBBE63';
-                e.currentTarget.style.backgroundColor = '#FBBE63';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = '#E5E5E5';
-                e.currentTarget.style.backgroundColor = '#FFFFFF';
-              }}
-              aria-label="Previous"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
-            </button>
-          )}
-
-          {/* Right Arrow */}
-          {!isMobile && (
-            <button
-              onClick={goToNext}
-              style={{
-                position: 'absolute',
-                right: '-20px',
-                top: '35%',
-                transform: 'translateY(-50%)',
-                width: '40px',
-                height: '40px',
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #E5E5E5',
-                borderRadius: '50%',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 10,
-                transition: 'all 0.2s',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#FBBE63';
-                e.currentTarget.style.backgroundColor = '#FBBE63';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = '#E5E5E5';
-                e.currentTarget.style.backgroundColor = '#FFFFFF';
-              }}
-              aria-label="Next"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 18l6-6-6-6" />
-              </svg>
-            </button>
-          )}
-
           {/* Products Container */}
           <div
             ref={scrollRef}

@@ -271,6 +271,7 @@ const ProductCard = memo(function ProductCard({
               color: '#0A0A0A',
               fontWeight: 500,
               lineHeight: 1.4,
+              height: 'calc(2 * 1.4em)',
               marginBottom: '8px',
               display: '-webkit-box',
               WebkitLineClamp: 2,
