@@ -50,14 +50,6 @@ export default function ProductCarousel({
     }
   }, [getCardWidth, gap, totalItems, itemsPerView]);
 
-  // Arrow navigation
-  const _goToPrev = () => {
-    setCurrentIndex((prev) => (prev - 1 + totalPages) % totalPages);
-  };
-
-  const _goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % totalPages);
-  };
 
   // Scroll when currentIndex (page) changes
   useEffect(() => {
