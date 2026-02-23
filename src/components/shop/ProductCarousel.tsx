@@ -51,11 +51,11 @@ export default function ProductCarousel({
   }, [getCardWidth, gap, totalItems, itemsPerView]);
 
   // Arrow navigation
-  const goToPrev = () => {
+  const _goToPrev = () => {
     setCurrentIndex((prev) => (prev - 1 + totalPages) % totalPages);
   };
 
-  const goToNext = () => {
+  const _goToNext = () => {
     setCurrentIndex((prev) => (prev + 1) % totalPages);
   };
 
