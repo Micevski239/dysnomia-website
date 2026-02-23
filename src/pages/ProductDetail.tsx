@@ -605,9 +605,17 @@ export default function ProductDetail() {
               </Accordion>
 
               <Accordion title={t('product.deliveryReturns')}>
-                <p style={{ color: '#4a4a4a', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
-                  {language === 'mk' ? productContent.deliveryAndReturnsMk : productContent.deliveryAndReturns}
-                </p>
+                <div style={{ color: '#4a4a4a', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
+                  {(language === 'mk' ? productContent.deliveryAndReturnsMk : productContent.deliveryAndReturns)
+                    .split('\n')
+                    .map((line, i) => {
+                      const boldWords = ['Packaging', 'Returns', 'Пакување', 'Враќање'];
+                      if (boldWords.includes(line.trim())) {
+                        return <p key={i} style={{ fontWeight: 600, marginTop: '16px', marginBottom: '4px', color: '#0A0A0A' }}>{line}</p>;
+                      }
+                      return <span key={i}>{line}{'\n'}</span>;
+                    })}
+                </div>
               </Accordion>
 
               <Accordion title={t('product.support')}>

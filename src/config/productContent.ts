@@ -3,20 +3,18 @@
 
 export const productContent = {
   deliveryAndReturns: `Free shipping on all orders within North Macedonia.
-
-International shipping coming soon.
-
-All artwork is carefully packaged to ensure safe delivery. Each piece is wrapped in acid-free tissue, cushioned with protective materials, and shipped in a sturdy box.
-
-Returns are accepted within 14 days of delivery for items in original condition. Please contact us to initiate a return. Custom or commissioned pieces are final sale.`,
+International shipping – coming soon.
+Packaging
+Each artwork is prepared with special care: carefully wrapped, cushioned with protective materials, and shipped in a sturdy box to ensure safe delivery.
+Returns
+Returns are accepted within 14 days of delivery, provided the item is in its original condition and packaging. To initiate a return, please contact us directly.`,
 
   deliveryAndReturnsMk: `Бесплатна достава за сите нарачки во Северна Македонија.
-
-Меѓународна достава наскоро.
-
-Сите уметнички дела се внимателно спакувани за безбедна достава. Секое парче е завиткано во безкиселинска хартија, обложено со заштитни материјали и испратено во цврста кутија.
-
-Враќање се прифаќа во рок од 14 дена од доставата за производи во оригинална состојба. Контактирајте нè за да започнете враќање. Производите по нарачка се финална продажба.`,
+Меѓународна достава – наскоро достапна.
+Пакување
+Секое уметничко дело се подготвува со посебно внимание: внимателно завиткано, заштитено со дополнителни материјали и испратено во цврста кутија за сигурно пристигнување.
+Враќање
+Враќање е можно во рок од 14 дена од приемот, доколку производот е во оригинална состојба и пакување. За да започнете процес на враќање, контактирајте нè директно.`,
 
   support: `For questions about a specific artwork, sizing, or shipping, please contact us at contact_dysnomia@yahoo.com
 

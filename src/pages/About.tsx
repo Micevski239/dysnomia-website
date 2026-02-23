@@ -84,20 +84,10 @@ export default function About() {
                 fontSize: '18px',
                 color: '#666666',
                 lineHeight: 1.8,
-                marginBottom: '24px',
-              }}
-            >
-              {t('about.heroP1')}
-            </p>
-            <p
-              style={{
-                fontSize: '17px',
-                color: '#666666',
-                lineHeight: 1.8,
                 marginBottom: '40px',
               }}
             >
-              {t('about.heroP2')}
+              {t('about.heroP1')}
             </p>
             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
               <Link
@@ -167,28 +157,63 @@ export default function About() {
                 bottom: '32px',
                 left: '32px',
                 right: '32px',
-                padding: '24px',
+                padding: '32px',
                 backgroundColor: 'rgba(255,255,255,0.95)',
                 backdropFilter: 'blur(10px)',
               }}
             >
-              <p
+              {/* Gold corner borders */}
+              <div
                 style={{
-                  fontSize: '11px',
-                  letterSpacing: '2px',
-                  textTransform: 'uppercase',
-                  color: '#FBBE63',
-                  marginBottom: '8px',
+                  position: 'absolute',
+                  top: '12px',
+                  left: '12px',
+                  width: '40px',
+                  height: '40px',
+                  borderTop: '2px solid #FBBE63',
+                  borderLeft: '2px solid #FBBE63',
                 }}
-              >
-                {t('about.ourMission')}
-              </p>
+              />
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '12px',
+                  right: '12px',
+                  width: '40px',
+                  height: '40px',
+                  borderTop: '2px solid #FBBE63',
+                  borderRight: '2px solid #FBBE63',
+                }}
+              />
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '12px',
+                  left: '12px',
+                  width: '40px',
+                  height: '40px',
+                  borderBottom: '2px solid #FBBE63',
+                  borderLeft: '2px solid #FBBE63',
+                }}
+              />
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '12px',
+                  right: '12px',
+                  width: '40px',
+                  height: '40px',
+                  borderBottom: '2px solid #FBBE63',
+                  borderRight: '2px solid #FBBE63',
+                }}
+              />
               <p
                 style={{
                   fontFamily: "'Playfair Display', Georgia, serif",
                   fontSize: '18px',
                   color: '#0A0A0A',
                   lineHeight: 1.5,
+                  textAlign: 'center',
                 }}
               >
                 {t('about.missionQuote')}
@@ -312,8 +337,8 @@ export default function About() {
         >
           <div style={{ order: isMobile ? 2 : 1 }}>
             <img
-              src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=800&h=600&fit=crop"
-              alt="Art studio"
+              src="/women.webp"
+              alt="Dysnomia team"
               style={{
                 width: '100%',
                 height: isMobile ? '280px' : '400px',
