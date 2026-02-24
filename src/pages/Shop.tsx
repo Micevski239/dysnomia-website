@@ -177,6 +177,9 @@ export default function Shop() {
           <p style={{ fontSize: isMobileOrTablet ? '14px' : '15px', color: '#666666', maxWidth: '600px' }}>
             {t('shop.shopDescription')}
           </p>
+          <p style={{ fontSize: isMobileOrTablet ? '13px' : '14px', color: '#B8860B', fontStyle: 'italic', marginTop: '8px', maxWidth: '600px' }}>
+            {t('shop.shopSlogan')}
+          </p>
         </div>
 
         {/* Toolbar */}
