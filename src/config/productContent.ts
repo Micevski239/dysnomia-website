@@ -16,6 +16,37 @@ Returns are accepted within 14 days of delivery, provided the item is in its ori
 Враќање
 Враќање е можно во рок од 14 дена од приемот, доколку производот е во оригинална состојба и пакување. За да започнете процес на враќање, контактирајте нè директно.`,
 
+  frames: [
+    {
+      name: 'Hanover Shallow Black Floater Frame',
+      nameMk: 'Hanover плитка црна лебдечка рамка',
+      description: 'A refined version of the popular black floater frame, designed for thinner canvases. With a slender face of 1,6 cm and a height of 4,5 cm, it keeps the artwork as the main focus. The matte black finish blends modern style with classic elegance, fitting seamlessly into any interior.',
+      descriptionMk: 'Рафинирана варијанта на популарната црна „лебдечка" рамка, создадена за потенки платна. Со тенок раб од 1,6 cm и висина од 4.5 cm, рамката овозможува делото да остане во центарот на вниманието. Мат црната завршница носи современ стил и класична елеганција, лесно вклоплива во секој ентериер.',
+      dimensions: { widthFace: '1,6 cm', height: '4,5 cm', rabbetDepth: '3 cm' },
+    },
+    {
+      name: 'Hanover Shallow White Floater Frame',
+      nameMk: 'Hanover плитка бела „floating" рамка',
+      description: 'A refined version of the popular white floater frame, designed for thinner canvases. With a slender face of 1.6 cm and a height of 4.5 cm, the frame ensures the artwork remains the central focus. The matte white finish combines modern style with classic elegance, seamlessly fitting into any interior.',
+      descriptionMk: 'Рафинирана варијанта на популарната бела „лебдечка" рамка, создадена за потенки платна. Со тенок раб од 1,6 cm и висина од 4,5 cm, рамката овозможува делото да остане во центарот на вниманието. Мат белата завршница носи современ стил и класична елеганција, лесно вклоплива во секој ентериер.',
+      dimensions: { widthFace: '1,6 cm', height: '4,5 cm', rabbetDepth: '3 cm' },
+    },
+    {
+      name: 'Logan Italian Gold Floater Frame',
+      nameMk: 'Logan Италијанска Златна Лебдечка Рамка',
+      description: 'Designed and crafted in Italy, this frame adds a refined and sophisticated touch to any artwork. The metallic textured gold face paired with muted matte sides creates a luxurious yet understated look that enhances the art while blending seamlessly with both modern and traditional interiors.',
+      descriptionMk: 'Дизајниран и изработен во Италија, овој рам додава рафиниран и софистициран допир на секое уметничко дело. Металната текстурирана златна површина во комбинација со мат страни создава луксузен, но ненаметлив изглед што ја нагласува уметноста и се вклопува во модерни и традиционални ентериери.',
+      dimensions: { widthFace: '0,6 cm', height: '5,5 cm', rabbetDepth: '4,5 cm' },
+    },
+    {
+      name: 'Logan Premier Silver Floater Frame',
+      nameMk: 'Logan Ексклузивна Сребрена лебдечка Рамка',
+      description: 'Discover the allure of our Exclusive Silver Floater Frame, a perfect fusion of contemporary style and rustic charm. This frame is a true highlight in the world of interior design, combining modern elegance with traditional warmth. It is ideal for those who appreciate contemporary design while also valuing the warmth of rustic elements.',
+      descriptionMk: 'Откријте ја привлечноста на нашата Ексклузивна Сребрена Лебдечка Рамка, совршен спој на современ стил и рустикален шарм. Овој рам е вистински акцент во светот на ентериерниот дизајн, комбинирајќи модерна елеганција со традиционална топлина. Идеален е за оние што го сакаат современиот дизајн.',
+      dimensions: { widthFace: '0,6 cm', height: '5,5 cm', rabbetDepth: '4,5 cm' },
+    },
+  ],
+
   support: `For questions about a specific artwork, sizing, or shipping, please contact us at contact_dysnomia@yahoo.com
 
 We typically respond within 24-48 hours.

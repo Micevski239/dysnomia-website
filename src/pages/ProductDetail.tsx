@@ -604,6 +604,29 @@ export default function ProductDetail() {
                 })()}
               </Accordion>
 
+              <Accordion title={t('product.frames')}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                  {productContent.frames.map((frame, idx) => (
+                    <Accordion key={idx} title={language === 'mk' ? frame.nameMk : frame.name}>
+                      <p style={{ margin: '0 0 12px 0', color: '#4a4a4a', fontSize: '14px', lineHeight: 1.7 }}>
+                        {language === 'mk' ? frame.descriptionMk : frame.description}
+                      </p>
+                      <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <li style={{ color: '#4a4a4a', fontSize: '13px', lineHeight: 1.6 }}>
+                          <span style={{ fontWeight: 600, color: '#1a1a1a' }}>{language === 'mk' ? 'Ширина на раб' : 'Width Face'}:</span> {frame.dimensions.widthFace}
+                        </li>
+                        <li style={{ color: '#4a4a4a', fontSize: '13px', lineHeight: 1.6 }}>
+                          <span style={{ fontWeight: 600, color: '#1a1a1a' }}>{language === 'mk' ? 'Висина' : 'Height'}:</span> {frame.dimensions.height}
+                        </li>
+                        <li style={{ color: '#4a4a4a', fontSize: '13px', lineHeight: 1.6 }}>
+                          <span style={{ fontWeight: 600, color: '#1a1a1a' }}>{language === 'mk' ? 'Длабочина' : 'Rabbet Depth'}:</span> {frame.dimensions.rabbetDepth}
+                        </li>
+                      </ul>
+                    </Accordion>
+                  ))}
+                </div>
+              </Accordion>
+
               <Accordion title={t('product.deliveryReturns')}>
                 <div style={{ color: '#4a4a4a', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
                   {(language === 'mk' ? productContent.deliveryAndReturnsMk : productContent.deliveryAndReturns)
