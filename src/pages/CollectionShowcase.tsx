@@ -7,6 +7,7 @@ import type { ProductCardProps } from '../components/shop/ProductCard';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { useLanguage } from '../hooks/useLanguage';
 import { localize } from '../lib/localize';
+import { getThumbnailUrl } from '../lib/utils';
 import DysnomiaLoader from '../components/shop/DysnomiaLoader';
 
 const PRODUCTS_PER_PAGE = 12;
@@ -94,7 +95,7 @@ export default function CollectionShowcase() {
         title: localize(p.title, p.title_mk, language),
         slug: p.slug,
         price: p.price,
-        image: p.image_url ?? '',
+        image: getThumbnailUrl(p.image_url) || '',
         brand: localize(collection?.title, collection?.title_mk, language) || 'dysnomia',
         showRoomPreview: true,
       })),

@@ -7,6 +7,7 @@ import { useCollections } from '../hooks/useCollections';
 import { useProductCollectionMap } from '../hooks/useProductCollectionMap';
 import { useLanguage } from '../hooks/useLanguage';
 import { localize } from '../lib/localize';
+import { getThumbnailUrl } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 
@@ -88,7 +89,7 @@ export default function Shop() {
         title: localize(p.title, p.title_mk, language),
         slug: p.slug,
         price: p.price,
-        image: p.image_url ?? '',
+        image: getThumbnailUrl(p.image_url) || '',
         brand: productCollectionMap[p.id] || 'dysnomia',
         showRoomPreview: true,
       })),

@@ -7,6 +7,7 @@ import { useCurrency } from '../hooks/useCurrency';
 import ProductCard from '../components/shop/ProductCard';
 import type { ProductCardProps } from '../components/shop/ProductCard';
 import { localize } from '../lib/localize';
+import { getThumbnailUrl } from '../lib/utils';
 import type { Product } from '../types';
 import { getPrice } from '../config/printOptions';
 
@@ -18,7 +19,7 @@ const mapProductToCard = (product: Product, language = 'en'): ProductCardProps =
   slug: product.slug,
   brand: 'dysnomia',
   price: Number(product.price) || 0,
-  image: product.image_url || FALLBACK_IMAGE,
+  image: getThumbnailUrl(product.image_url) || FALLBACK_IMAGE,
   badge: 'bestseller',
   sizes: ['50x70 cm', '70x100 cm', '100x150 cm'],
 });

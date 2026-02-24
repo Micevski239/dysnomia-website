@@ -6,6 +6,7 @@ import { useBreakpoint } from '../hooks/useBreakpoint';
 import { useLanguage } from '../hooks/useLanguage';
 import { useCurrency } from '../hooks/useCurrency';
 import { localize } from '../lib/localize';
+import { getThumbnailUrl } from '../lib/utils';
 import ProductCard from '../components/shop/ProductCard';
 import type { ProductCardProps } from '../components/shop/ProductCard';
 import type { Product } from '../types';
@@ -20,7 +21,7 @@ const mapProductToCard = (product: Product, language = 'en'): ProductCardProps =
   slug: product.slug,
   brand: 'dysnomia',
   price: Number(product.price) || 0,
-  image: product.image_url || FALLBACK_IMAGE,
+  image: getThumbnailUrl(product.image_url) || FALLBACK_IMAGE,
   badge: 'new',
   sizes: ['50x70 cm', '70x100 cm', '100x150 cm'],
 });

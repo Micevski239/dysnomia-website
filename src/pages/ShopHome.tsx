@@ -5,6 +5,7 @@ import { useProducts } from '../hooks/useProducts';
 import { useLanguage } from '../hooks/useLanguage';
 import { useProductCollectionMap } from '../hooks/useProductCollectionMap';
 import { localize } from '../lib/localize';
+import { getThumbnailUrl } from '../lib/utils';
 import type { Product } from '../types';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=533&fit=crop';
@@ -15,7 +16,7 @@ const mapProductToCard = (product: Product, collectionName?: string, language = 
   slug: product.slug,
   brand: collectionName || 'dysnomia',
   price: Number(product.price) || 0,
-  image: product.image_url || FALLBACK_IMAGE,
+  image: getThumbnailUrl(product.image_url) || FALLBACK_IMAGE,
   hoverImage: product.image_url || FALLBACK_IMAGE,
   badge: product.status === 'sold' ? 'limited' : product.is_featured ? 'artist' : undefined,
   sizes: ['50x70 cm', '70x100 cm', '100x150 cm']
