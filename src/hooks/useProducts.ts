@@ -215,6 +215,30 @@ interface CurrentImages {
   image_url_framed: string | null;
 }
 
+function compressToWebP(file: File, maxWidth: number, quality: number): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let w = img.width;
+      let h = img.height;
+      if (w > maxWidth) { h = Math.round((h * maxWidth) / w); w = maxWidth; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext('2d')!.drawImage(img, 0, 0, w, h);
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error('WebP conversion failed'))),
+        'image/webp',
+        quality
+      );
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Failed to load image')); };
+    img.src = url;
+  });
+}
+
 export function useProductMutations() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -226,23 +250,38 @@ export function useProductMutations() {
       throw new Error(validation.error);
     }
 
-    const fileExt = file.name.split('.').pop()?.toLowerCase();
-    const fileName = `${crypto.randomUUID()}.${fileExt}`;
-    const filePath = fileName;
+    const baseName = `${crypto.randomUUID()}.webp`;
+
+    // Compress & convert full image to WebP (max 1200px, quality 0.8)
+    const fullBlob = await compressToWebP(file, 1200, 0.8);
 
     const { error: uploadError } = await supabase.storage
       .from('product-images')
-      .upload(filePath, file, {
-        contentType: file.type,
+      .upload(baseName, fullBlob, {
+        contentType: 'image/webp',
+        cacheControl: '31536000',
       });
 
     if (uploadError) {
       throw uploadError;
     }
 
+    // Generate & upload thumbnail (max 400px, quality 0.8)
+    try {
+      const thumbBlob = await compressToWebP(file, 400, 0.8);
+      await supabase.storage
+        .from('product-images')
+        .upload(`thumbnails/${baseName}`, thumbBlob, {
+          contentType: 'image/webp',
+          cacheControl: '31536000',
+        });
+    } catch {
+      // Thumbnail is best-effort — full image still works
+    }
+
     const { data } = supabase.storage
       .from('product-images')
-      .getPublicUrl(filePath);
+      .getPublicUrl(baseName);
 
     return data.publicUrl;
   };

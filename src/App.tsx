@@ -51,6 +51,7 @@ const Announcements = lazy(() => import('./pages/admin/Announcements'));
 const Blog = lazy(() => import('./pages/Blog'));
 const BlogPostPage = lazy(() => import('./pages/BlogPost'));
 const BlogAdmin = lazy(() => import('./pages/admin/BlogAdmin'));
+const ImageOptimizer = lazy(() => import('./pages/admin/ImageOptimizer'));
 
 // Support pages
 const Contact = lazy(() => import('./pages/Contact'));
@@ -148,6 +149,7 @@ function App() {
               <Route path="/admin/featured" element={<FeaturedManager />} />
               <Route path="/admin/announcements" element={<Announcements />} />
               <Route path="/admin/blog" element={<BlogAdmin />} />
+              <Route path="/admin/images" element={<ImageOptimizer />} />
             </Route>
           </Routes>
                 </Suspense>
