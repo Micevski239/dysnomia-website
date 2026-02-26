@@ -41,6 +41,7 @@ export default function AdminLayout() {
     { path: '/admin/announcements', label: 'Announcements', icon: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z' },
     { path: '/admin/blog', label: 'Blog', icon: 'M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z' },
     { path: '/admin/images', label: 'Image Optimizer', icon: 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z' },
+    { path: '/admin/statistics', label: 'Statistics', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
   ];
 
   const isActive = (path: string) => {
@@ -53,6 +54,7 @@ export default function AdminLayout() {
     if (path === '/admin/announcements') return location.pathname === '/admin/announcements';
     if (path === '/admin/blog') return location.pathname === '/admin/blog';
     if (path === '/admin/images') return location.pathname === '/admin/images';
+    if (path === '/admin/statistics') return location.pathname === '/admin/statistics';
     return location.pathname.startsWith(path);
   };
 

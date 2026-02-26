@@ -52,6 +52,7 @@ const Blog = lazy(() => import('./pages/Blog'));
 const BlogPostPage = lazy(() => import('./pages/BlogPost'));
 const BlogAdmin = lazy(() => import('./pages/admin/BlogAdmin'));
 const ImageOptimizer = lazy(() => import('./pages/admin/ImageOptimizer'));
+const Statistics = lazy(() => import('./pages/admin/Statistics'));
 
 // Support pages
 const Contact = lazy(() => import('./pages/Contact'));
@@ -150,6 +151,7 @@ function App() {
               <Route path="/admin/announcements" element={<Announcements />} />
               <Route path="/admin/blog" element={<BlogAdmin />} />
               <Route path="/admin/images" element={<ImageOptimizer />} />
+              <Route path="/admin/statistics" element={<Statistics />} />
             </Route>
           </Routes>
                 </Suspense>
