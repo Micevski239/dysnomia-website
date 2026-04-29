@@ -88,6 +88,8 @@ export default function CollectionShowcase() {
   // Reset loaded state when collection changes
   useEffect(() => { setHeroLoaded(false); }, [slug]);
 
+  const isKidsCollection = slug === 'kids';
+
   const productCards: ProductCardProps[] = useMemo(
     () =>
       artworks.map((p) => ({
@@ -98,8 +100,9 @@ export default function CollectionShowcase() {
         image: getThumbnailUrl(p.image_url) || '',
         brand: localize(collection?.title, collection?.title_mk, language) || 'dysnomia',
         showRoomPreview: true,
+        isKidsRoom: isKidsCollection,
       })),
-    [artworks, collection, language]
+    [artworks, collection, isKidsCollection, language]
   );
 
   const visibleProducts = useMemo(() => productCards.slice(0, visibleCount), [productCards, visibleCount]);

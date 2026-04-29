@@ -33,6 +33,30 @@ export const printSizes: PrintSize[] = [
 // Price matrix: printType -> sizeId -> price (in MKD ден.)
 export const priceMatrix: Record<PrintType, Record<string, number>> = {
   canvas: {
+    '50x70': 1299,
+    '60x90': 1649,
+    '70x100': 1959,
+    '80x120': 2249,
+    '100x150': 3099,
+  },
+  roll: {
+    '50x70': 749,
+    '60x90': 899,
+    '70x100': 1099,
+    '80x120': 1549,
+    '100x150': 2049,
+  },
+  framed: {
+    '50x70': 3599,
+    '60x90': 4299,
+    '70x100': 4899,
+    '80x120': 5549,
+    '100x150': 7039,
+  },
+};
+
+export const oldPriceMatrix: Record<PrintType, Record<string, number>> = {
+  canvas: {
     '50x70': 2640,
     '60x90': 2930,
     '70x100': 3260,
@@ -57,6 +81,10 @@ export const priceMatrix: Record<PrintType, Record<string, number>> = {
 
 export function getPrice(printType: PrintType, sizeId: string): number {
   return priceMatrix[printType]?.[sizeId] ?? 0;
+}
+
+export function getOldPrice(printType: PrintType, sizeId: string): number {
+  return oldPriceMatrix[printType]?.[sizeId] ?? 0;
 }
 
 export function formatPriceMKD(price: number): string {

@@ -5,7 +5,7 @@ import { useCurrency } from '../../hooks/useCurrency';
 import { useWishlist } from '../../hooks/useWishlist';
 import { useLanguage } from '../../hooks/useLanguage';
 import RoomMockup from './RoomMockup';
-import { priceMatrix } from '../../config/printOptions';
+import { priceMatrix, oldPriceMatrix } from '../../config/printOptions';
 
 export interface ProductCardProps {
   id: string;
@@ -47,10 +47,13 @@ const ProductCard = memo(function ProductCard({
   // Get price from static price matrix using default size (50x70 canvas)
   const displayPrice = useMemo(() => {
     const priceInMKD = priceMatrix.canvas['50x70'];
+    if (currency === 'EUR') return priceInMKD / 61.5;
+    return priceInMKD;
+  }, [currency]);
 
-    if (currency === 'EUR') {
-      return priceInMKD / 61.5;
-    }
+  const displayOldPrice = useMemo(() => {
+    const priceInMKD = oldPriceMatrix.canvas['50x70'];
+    if (currency === 'EUR') return priceInMKD / 61.5;
     return priceInMKD;
   }, [currency]);
 
@@ -63,11 +66,14 @@ const ProductCard = memo(function ProductCard({
   }), []);
 
   const formattedPrice = useMemo(() => {
-    if (currency === 'EUR') {
-      return eurFormatter.format(displayPrice);
-    }
+    if (currency === 'EUR') return eurFormatter.format(displayPrice);
     return `${Math.round(displayPrice).toLocaleString()} MKD`;
   }, [currency, displayPrice, eurFormatter]);
+
+  const formattedOldPrice = useMemo(() => {
+    if (currency === 'EUR') return eurFormatter.format(displayOldPrice);
+    return `${Math.round(displayOldPrice).toLocaleString()} MKD`;
+  }, [currency, displayOldPrice, eurFormatter]);
 
   return (
     <div
@@ -287,9 +293,12 @@ const ProductCard = memo(function ProductCard({
         </Link>
 
         {/* Price */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '12px', color: '#666666' }}>
             {language === 'mk' ? 'Само за' : 'As low as'}
+          </span>
+          <span style={{ fontSize: '12px', color: '#e53e3e', textDecoration: 'line-through', opacity: 0.8 }}>
+            {formattedOldPrice}
           </span>
           <span style={{ fontSize: '13px', color: '#0A0A0A', fontWeight: 500 }}>
             {formattedPrice}

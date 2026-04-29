@@ -75,7 +75,7 @@ export default function ProductDetail() {
           const c = r.collection;
           return Array.isArray(c) ? c : [c].filter(Boolean);
         });
-        setIsKidsCollection(collections.some((c: any) => c.slug === 'kid'));
+        setIsKidsCollection(collections.some((c: any) => c.slug === 'kids'));
         if (collections.length > 0) {
           setCollectionData({ title: collections[0].title, title_mk: collections[0].title_mk });
         }

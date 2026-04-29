@@ -10,7 +10,7 @@ import type { Product } from '../types';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=533&fit=crop';
 
-const mapProductToCard = (product: Product, collectionName?: string, language = 'en'): ProductCardProps => ({
+const mapProductToCard = (product: Product, collectionName?: string, isKids = false, language = 'en'): ProductCardProps => ({
   id: product.id,
   title: localize(product.title, product.title_mk, language),
   slug: product.slug,
@@ -19,19 +19,20 @@ const mapProductToCard = (product: Product, collectionName?: string, language = 
   image: getThumbnailUrl(product.image_url) || FALLBACK_IMAGE,
   hoverImage: product.image_url || FALLBACK_IMAGE,
   badge: product.status === 'sold' ? 'limited' : product.is_featured ? 'artist' : undefined,
-  sizes: ['50x70 cm', '70x100 cm', '100x150 cm']
+  sizes: ['50x70 cm', '70x100 cm', '100x150 cm'],
+  isKidsRoom: isKids,
 });
 
 export default function ShopHome() {
   const { products, loading } = useProducts(false, { limit: 10 });
   const { t, language } = useLanguage();
-  const productCollectionMap = useProductCollectionMap();
+  const { productCollectionMap, kidsProductIds } = useProductCollectionMap();
 
   const featuredProducts = useMemo(() => {
     const featured = products.filter((product) => product.is_featured);
     const source = featured.length > 0 ? featured : products;
-    return source.slice(0, 10).map((p) => mapProductToCard(p, productCollectionMap[p.id], language));
-  }, [products, productCollectionMap, language]);
+    return source.slice(0, 10).map((p) => mapProductToCard(p, productCollectionMap[p.id], kidsProductIds.has(p.id), language));
+  }, [products, productCollectionMap, kidsProductIds, language]);
 
 
   return (

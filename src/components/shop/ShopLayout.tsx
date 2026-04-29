@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import AnnouncementBar from './AnnouncementBar';
 import Header from './Header';
 import Footer from './Footer';
@@ -12,6 +13,13 @@ interface ShopLayoutProps {
 
 export default function ShopLayout({ cartCount = 0, wishlistCount = 0 }: ShopLayoutProps) {
   const { isMobileOrTablet } = useBreakpoint();
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setShowScrollTop(window.scrollY > 400);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -67,6 +75,39 @@ export default function ShopLayout({ cartCount = 0, wishlistCount = 0 }: ShopLay
 
       {/* Cookie Consent */}
       <CookieConsent />
+
+      {/* Scroll to top button */}
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        aria-label="Scroll to top"
+        style={{
+          position: 'fixed',
+          bottom: '32px',
+          right: '32px',
+          width: '44px',
+          height: '44px',
+          backgroundColor: '#0A0A0A',
+          color: '#FFFFFF',
+          border: 'none',
+          borderRadius: '50%',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
+          opacity: showScrollTop ? 1 : 0,
+          pointerEvents: showScrollTop ? 'auto' : 'none',
+          transform: showScrollTop ? 'translateY(0)' : 'translateY(12px)',
+          transition: 'opacity 0.25s ease, transform 0.25s ease',
+          zIndex: 200,
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#FBBE63'; e.currentTarget.style.color = '#0A0A0A'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#0A0A0A'; e.currentTarget.style.color = '#FFFFFF'; }}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M18 15l-6-6-6 6" />
+        </svg>
+      </button>
     </div>
   );
 }

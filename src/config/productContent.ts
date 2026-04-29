@@ -2,14 +2,14 @@
 // Edit this file to update the global content shown on all product pages
 
 export const productContent = {
-  deliveryAndReturns: `Free shipping on all orders within North Macedonia.
+  deliveryAndReturns: `Delivery for all artworks is charged at 150 MKD, regardless of format or size.
 International shipping – coming soon.
 Packaging
 Each artwork is prepared with special care: carefully wrapped, cushioned with protective materials, and shipped in a sturdy box to ensure safe delivery.
 Returns
 Returns are accepted within 14 days of delivery, provided the item is in its original condition and packaging. To initiate a return, please contact us directly.`,
 
-  deliveryAndReturnsMk: `Бесплатна достава за сите нарачки во Северна Македонија.
+  deliveryAndReturnsMk: `Доставата на сите слики се наплаќа дополнително 150 денари, независно од форматот или големината.
 Меѓународна достава – наскоро достапна.
 Пакување
 Секое уметничко дело се подготвува со посебно внимание: внимателно завиткано, заштитено со дополнителни материјали и испратено во цврста кутија за сигурно пристигнување.

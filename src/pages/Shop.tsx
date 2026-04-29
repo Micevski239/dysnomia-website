@@ -38,7 +38,7 @@ export default function Shop() {
   const [collectionProductIds, setCollectionProductIds] = useState<Set<string> | null>(null);
   const { products, loading, error, refetch } = useProducts();
   const { collections } = useCollections();
-  const productCollectionMap = useProductCollectionMap();
+  const { productCollectionMap, kidsProductIds } = useProductCollectionMap();
   const { language, t } = useLanguage();
   const { isMobile, isMobileOrTablet } = useBreakpoint();
 
@@ -92,8 +92,9 @@ export default function Shop() {
         image: getThumbnailUrl(p.image_url) || '',
         brand: productCollectionMap[p.id] || 'dysnomia',
         showRoomPreview: true,
+        isKidsRoom: kidsProductIds.has(p.id),
       })),
-    [products, productCollectionMap, language]
+    [products, productCollectionMap, kidsProductIds, language]
   );
 
   const filteredAndSortedProducts = useMemo(() => {

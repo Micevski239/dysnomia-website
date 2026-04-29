@@ -3,6 +3,7 @@ import {
   printTypes,
   printSizes,
   getPrice,
+  getOldPrice,
   type PrintType,
 } from '../../config/printOptions';
 import { useLanguage } from '../../hooks/useLanguage';
@@ -30,6 +31,7 @@ export default function VariantSelector({ printType, onSelectionChange }: Varian
   }, [printType]);
 
   const currentPrice = getPrice(selectedType, selectedSize);
+  const oldPrice = getOldPrice(selectedType, selectedSize);
 
   const handleTypeChange = (type: PrintType) => {
     setSelectedType(type);
@@ -294,15 +296,28 @@ export default function VariantSelector({ printType, onSelectionChange }: Varian
         }}
       >
         <span style={{ fontSize: '13px', color: '#4a4a4a' }}>{t('product.price')}:</span>
-        <span
-          style={{
-            fontSize: '24px',
-            fontWeight: 600,
-            color: '#B8860B',
-          }}
-        >
-          {formatPrice(currentPrice)}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px' }}>
+          <span
+            style={{
+              fontSize: '15px',
+              fontWeight: 400,
+              color: '#e53e3e',
+              textDecoration: 'line-through',
+              opacity: 0.8,
+            }}
+          >
+            {formatPrice(oldPrice)}
+          </span>
+          <span
+            style={{
+              fontSize: '24px',
+              fontWeight: 600,
+              color: '#B8860B',
+            }}
+          >
+            {formatPrice(currentPrice)}
+          </span>
+        </div>
       </div>
     </div>
   );

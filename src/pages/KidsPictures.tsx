@@ -32,6 +32,7 @@ const mapProductToCard = (product: Product, language = 'en'): ProductCardProps =
 export default function KidsPictures() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [kidsCollectionId, setKidsCollectionId] = useState<string | null>(null);
   const { isMobile, isMobileOrTablet } = useBreakpoint();
   const { language, t } = useLanguage();
   const { formatPrice } = useCurrency();
@@ -45,13 +46,15 @@ export default function KidsPictures() {
       const { data: collectionData } = await supabase
         .from('collections')
         .select('id')
-        .eq('slug', 'kid')
+        .eq('slug', 'kids')
         .single();
 
       if (!collectionData || !isMounted) {
         setLoading(false);
         return;
       }
+
+      setKidsCollectionId(collectionData.id);
 
       const { data: mappingData } = await supabase
         .from('collection_products')
@@ -127,7 +130,7 @@ export default function KidsPictures() {
             </p>
             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
               <Link
-                to="/shop"
+                to={kidsCollectionId ? `/shop?collection=${kidsCollectionId}` : '/shop'}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',

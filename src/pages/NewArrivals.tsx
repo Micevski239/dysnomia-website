@@ -11,11 +11,11 @@ import ProductCard from '../components/shop/ProductCard';
 import type { ProductCardProps } from '../components/shop/ProductCard';
 import type { Product } from '../types';
 import { getPrice } from '../config/printOptions';
+import { useProductCollectionMap } from '../hooks/useProductCollectionMap';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1000&h=1400&fit=crop';
 
-
-const mapProductToCard = (product: Product, language = 'en'): ProductCardProps => ({
+const mapProductToCard = (product: Product, isKids = false, language = 'en'): ProductCardProps => ({
   id: product.id,
   title: localize(product.title, product.title_mk, language),
   slug: product.slug,
@@ -24,6 +24,7 @@ const mapProductToCard = (product: Product, language = 'en'): ProductCardProps =
   image: getThumbnailUrl(product.image_url) || FALLBACK_IMAGE,
   badge: 'new',
   sizes: ['50x70 cm', '70x100 cm', '100x150 cm'],
+  isKidsRoom: isKids,
 });
 
 export default function NewArrivals() {
@@ -32,6 +33,7 @@ export default function NewArrivals() {
   const { isMobile, isMobileOrTablet } = useBreakpoint();
   const { language, t } = useLanguage();
   const { formatPrice } = useCurrency();
+  const { kidsProductIds } = useProductCollectionMap();
 
   const sortedProducts = useMemo(() => {
     return [...products].sort(
@@ -299,7 +301,7 @@ export default function NewArrivals() {
             }}
           >
             {gridProducts.map((product) => (
-              <ProductCard key={product.id} {...mapProductToCard(product, language)} />
+              <ProductCard key={product.id} {...mapProductToCard(product, kidsProductIds.has(product.id), language)} />
             ))}
           </div>
         )}
