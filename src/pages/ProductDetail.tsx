@@ -62,6 +62,8 @@ export default function ProductDetail() {
   const [isKidsCollection, setIsKidsCollection] = useState(false);
   const [collectionData, setCollectionData] = useState<{ title: string; title_mk?: string } | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [isLifestyleLightboxOpen, setIsLifestyleLightboxOpen] = useState(false);
+  const [lifestyleLightboxIndex, setLifestyleLightboxIndex] = useState(0);
 
   useEffect(() => {
     if (!product) return;
@@ -651,7 +653,14 @@ export default function ProductDetail() {
         </div>
 
         {/* Customer Photos Strip */}
-        <div style={{ marginTop: '64px', paddingTop: '48px', borderTop: '1px solid #e5e5e5' }}>
+        <div style={{
+          marginTop: '64px',
+          paddingTop: '48px',
+          paddingBottom: '48px',
+          borderTop: '1px solid #e5e5e5',
+          borderBottom: '1px solid #e5e5e5',
+          backgroundColor: '#f6f3ed',
+        }}>
           <h2 style={{
             fontSize: 'clamp(20px, 3vw, 28px)',
             fontWeight: 300,
@@ -684,6 +693,7 @@ export default function ProductDetail() {
                 key={src}
                 src={src}
                 alt={`Customer photo ${i + 1}`}
+                onClick={() => { setLifestyleLightboxIndex(i); setIsLifestyleLightboxOpen(true); }}
                 style={{
                   height: '380px',
                   width: 'auto',
@@ -691,6 +701,7 @@ export default function ProductDetail() {
                   objectFit: 'cover',
                   scrollSnapAlign: 'start',
                   display: 'block',
+                  cursor: 'zoom-in',
                 }}
               />
             ))}
@@ -754,6 +765,20 @@ export default function ProductDetail() {
         initialIndex={lightboxIndex}
         isOpen={isLightboxOpen}
         onClose={() => setIsLightboxOpen(false)}
+      />
+
+      {/* Lifestyle Lightbox */}
+      <ImageLightbox
+        images={[
+          { url: '/lifestyle/lifestyle1.webp', alt: 'Customer photo 1' },
+          { url: '/lifestyle/lifestyle2.webp', alt: 'Customer photo 2' },
+          { url: '/lifestyle/lifestyle3.webp', alt: 'Customer photo 3' },
+          { url: '/lifestyle/lifestyle4.webp', alt: 'Customer photo 4' },
+          { url: '/lifestyle/lifestyle5.webp', alt: 'Customer photo 5' },
+        ]}
+        initialIndex={lifestyleLightboxIndex}
+        isOpen={isLifestyleLightboxOpen}
+        onClose={() => setIsLifestyleLightboxOpen(false)}
       />
     </div>
   );
