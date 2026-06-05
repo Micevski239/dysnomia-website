@@ -682,8 +682,8 @@ export default function ProductDetail() {
             } as React.CSSProperties}
           >
             {([
-              '/lifestyle/lifestyle2.webp',
               '/lifestyle/lifestyle3.webp',
+              '/lifestyle/lifestyle2.webp',
               '/lifestyle/lifestyle4.webp',
             ] as const).map((src, i) => (
               <img
@@ -765,8 +765,8 @@ export default function ProductDetail() {
       {/* Lifestyle Fullscreen Overlay */}
       {isLifestyleLightboxOpen && (() => {
         const lifestyleImages = [
-          '/lifestyle/lifestyle2.webp',
           '/lifestyle/lifestyle3.webp',
+          '/lifestyle/lifestyle2.webp',
           '/lifestyle/lifestyle4.webp',
         ];
         return (
