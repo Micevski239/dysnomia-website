@@ -659,11 +659,10 @@ export default function ProductDetail() {
           paddingBottom: '48px',
           borderTop: '1px solid #e5e5e5',
           borderBottom: '1px solid #e5e5e5',
-          backgroundColor: '#f6f3ed',
         }}>
           <h2 style={{
             fontSize: 'clamp(20px, 3vw, 28px)',
-            fontWeight: 300,
+            fontWeight: 700,
             color: '#1a1a1a',
             marginBottom: '24px',
             letterSpacing: '0.02em',
@@ -683,11 +682,9 @@ export default function ProductDetail() {
             } as React.CSSProperties}
           >
             {([
-              '/lifestyle/lifestyle1.webp',
               '/lifestyle/lifestyle2.webp',
               '/lifestyle/lifestyle3.webp',
               '/lifestyle/lifestyle4.webp',
-              '/lifestyle/lifestyle5.webp',
             ] as const).map((src, i) => (
               <img
                 key={src}
@@ -695,8 +692,8 @@ export default function ProductDetail() {
                 alt={`Customer photo ${i + 1}`}
                 onClick={() => { setLifestyleLightboxIndex(i); setIsLifestyleLightboxOpen(true); }}
                 style={{
-                  height: '380px',
-                  width: 'auto',
+                  width: '480px',
+                  height: '270px',
                   flexShrink: 0,
                   objectFit: 'cover',
                   scrollSnapAlign: 'start',
@@ -767,19 +764,130 @@ export default function ProductDetail() {
         onClose={() => setIsLightboxOpen(false)}
       />
 
-      {/* Lifestyle Lightbox */}
-      <ImageLightbox
-        images={[
-          { url: '/lifestyle/lifestyle1.webp', alt: 'Customer photo 1' },
-          { url: '/lifestyle/lifestyle2.webp', alt: 'Customer photo 2' },
-          { url: '/lifestyle/lifestyle3.webp', alt: 'Customer photo 3' },
-          { url: '/lifestyle/lifestyle4.webp', alt: 'Customer photo 4' },
-          { url: '/lifestyle/lifestyle5.webp', alt: 'Customer photo 5' },
-        ]}
-        initialIndex={lifestyleLightboxIndex}
-        isOpen={isLifestyleLightboxOpen}
-        onClose={() => setIsLifestyleLightboxOpen(false)}
-      />
+      {/* Lifestyle Fullscreen Overlay */}
+      {isLifestyleLightboxOpen && (() => {
+        const lifestyleImages = [
+          '/lifestyle/lifestyle2.webp',
+          '/lifestyle/lifestyle3.webp',
+          '/lifestyle/lifestyle4.webp',
+        ];
+        return (
+          <div
+            onClick={() => setIsLifestyleLightboxOpen(false)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 9999,
+              backgroundColor: 'rgba(0,0,0,0.92)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {/* Close */}
+            <button
+              onClick={() => setIsLifestyleLightboxOpen(false)}
+              style={{
+                position: 'absolute',
+                top: '20px',
+                right: '20px',
+                width: '48px',
+                height: '48px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(255,255,255,0.1)',
+                border: 'none',
+                borderRadius: '50%',
+                cursor: 'pointer',
+                color: '#ffffff',
+              }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+            {/* Prev */}
+            {lifestyleLightboxIndex > 0 && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setLifestyleLightboxIndex(i => i - 1); }}
+                style={{
+                  position: 'absolute',
+                  left: '20px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: '56px',
+                  height: '56px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  border: 'none',
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  color: '#ffffff',
+                }}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
+            )}
+            {/* Next */}
+            {lifestyleLightboxIndex < lifestyleImages.length - 1 && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setLifestyleLightboxIndex(i => i + 1); }}
+                style={{
+                  position: 'absolute',
+                  right: '20px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: '56px',
+                  height: '56px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  border: 'none',
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  color: '#ffffff',
+                }}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
+            )}
+            {/* Image */}
+            <img
+              src={lifestyleImages[lifestyleLightboxIndex]}
+              alt={`Customer photo ${lifestyleLightboxIndex + 1}`}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                maxWidth: '90vw',
+                maxHeight: '90vh',
+                objectFit: 'contain',
+                display: 'block',
+              }}
+            />
+            {/* Counter */}
+            <div style={{
+              position: 'absolute',
+              bottom: '20px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              color: '#ffffff',
+              fontSize: '14px',
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              padding: '8px 16px',
+              borderRadius: '20px',
+            }}>
+              {lifestyleLightboxIndex + 1} / {lifestyleImages.length}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
