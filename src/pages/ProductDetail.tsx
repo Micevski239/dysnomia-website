@@ -692,11 +692,9 @@ export default function ProductDetail() {
                 alt={`Customer photo ${i + 1}`}
                 onClick={() => { setLifestyleLightboxIndex(i); setIsLifestyleLightboxOpen(true); }}
                 style={{
-                  width: '480px',
                   height: '270px',
+                  width: 'auto',
                   flexShrink: 0,
-                  objectFit: 'cover',
-                  scrollSnapAlign: 'start',
                   display: 'block',
                   cursor: 'zoom-in',
                 }}
