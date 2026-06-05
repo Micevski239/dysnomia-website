@@ -650,6 +650,53 @@ export default function ProductDetail() {
           </div>
         </div>
 
+        {/* Customer Photos Strip */}
+        <div style={{ marginTop: '64px', paddingTop: '48px', borderTop: '1px solid #e5e5e5' }}>
+          <h2 style={{
+            fontSize: 'clamp(20px, 3vw, 28px)',
+            fontWeight: 300,
+            color: '#1a1a1a',
+            marginBottom: '24px',
+            letterSpacing: '0.02em',
+          }}>
+            {language === 'mk' ? 'Од нашите купувачи' : 'From Our Customers'}
+          </h2>
+          <div
+            className="lifestyle-strip"
+            style={{
+              display: 'flex',
+              gap: '16px',
+              overflowX: 'auto',
+              scrollSnapType: 'x mandatory',
+              WebkitOverflowScrolling: 'touch',
+              msOverflowStyle: 'none',
+              scrollbarWidth: 'none',
+            } as React.CSSProperties}
+          >
+            {([
+              '/lifestyle/lifestyle1.webp',
+              '/lifestyle/lifestyle2.webp',
+              '/lifestyle/lifestyle3.webp',
+              '/lifestyle/lifestyle4.webp',
+              '/lifestyle/lifestyle5.webp',
+            ] as const).map((src, i) => (
+              <img
+                key={src}
+                src={src}
+                alt={`Customer photo ${i + 1}`}
+                style={{
+                  height: '380px',
+                  width: 'auto',
+                  flexShrink: 0,
+                  objectFit: 'cover',
+                  scrollSnapAlign: 'start',
+                  display: 'block',
+                }}
+              />
+            ))}
+          </div>
+        </div>
+
         {/* Reviews Section */}
         <div style={{ marginTop: '64px' }}>
           <ReviewList
