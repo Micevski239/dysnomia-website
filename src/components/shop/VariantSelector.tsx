@@ -50,6 +50,13 @@ export default function VariantSelector({ printType, onSelectionChange }: Varian
     onSelectionChange?.(selectedType, selectedSize, currentPrice, color);
   };
 
+  const handleFrameThumbnailClick = (color: FrameColor) => {
+    setSelectedType('framed');
+    setFrameColor(color);
+    const newPrice = getPrice('framed', selectedSize);
+    onSelectionChange?.('framed', selectedSize, newPrice, color);
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Print Type Selection */}
@@ -278,6 +285,73 @@ export default function VariantSelector({ printType, onSelectionChange }: Varian
                     </svg>
                   </span>
                 )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Frame Thumbnails */}
+      <div>
+        <label
+          style={{
+            display: 'block',
+            fontSize: '12px',
+            fontWeight: 600,
+            color: '#1a1a1a',
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em',
+            marginBottom: '12px',
+          }}
+        >
+          {t('product.frames')}
+        </label>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          {([
+            { color: 'gold' as FrameColor, src: '/frames/frame1.webp', label: t('product.colorGold') },
+            { color: 'silver' as FrameColor, src: '/frames/frame4.webp', label: t('product.colorSilver') },
+            { color: 'white' as FrameColor, src: '/frames/frame2.webp', label: t('product.colorWhite') },
+            { color: 'black' as FrameColor, src: '/frames/frame3.webp', label: t('product.colorBlack') },
+          ]).map(({ color, src, label }) => {
+            const isActive = selectedType === 'framed' && frameColor === color;
+            return (
+              <button
+                key={color}
+                type="button"
+                onClick={() => handleFrameThumbnailClick(color)}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                }}
+              >
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  border: isActive ? '2px solid #B8860B' : '2px solid #e5e5e5',
+                  borderRadius: '4px',
+                  overflow: 'hidden',
+                  transition: 'border-color 0.15s ease',
+                }}>
+                  <img
+                    src={src}
+                    alt={label}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  />
+                </div>
+                <span style={{
+                  fontSize: '11px',
+                  color: isActive ? '#B8860B' : '#6b6b6b',
+                  fontWeight: isActive ? 600 : 400,
+                  transition: 'color 0.15s ease',
+                }}>
+                  {label}
+                </span>
               </button>
             );
           })}

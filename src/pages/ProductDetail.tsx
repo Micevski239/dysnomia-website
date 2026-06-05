@@ -51,8 +51,8 @@ const STATIC_REVIEWS_DATA = [
     created_at: '2025-03-15T10:00:00Z',
     title: { en: null as string | null, mk: null as string | null },
     content: {
-      en: 'The canvas is premium quality – the colors are vivid and the texture looks authentic. It fit perfectly into my minimalist interior and immediately became the center of attention. Delivery was timely and secure.',
-      mk: 'Канвасот е премиум изработка – боите се живи, а текстурата изгледа автентично. Одлично се вклопи во мојот минималистички ентериер и веднаш стана центар на вниманието. Испораката беше навремена и безбедна.',
+      en: 'The canvas is premium quality - the colors are vivid and the texture looks authentic. It fit perfectly into my minimalist interior and immediately became the center of attention. Delivery was timely and secure.',
+      mk: 'Канвасот е премиум изработка - боите се живи, а текстурата изгледа автентично. Одлично се вклопи во мојот минималистички ентериер и веднаш стана центар на вниманието. Испораката беше навремена и безбедна.',
     },
   },
   {
@@ -62,8 +62,8 @@ const STATIC_REVIEWS_DATA = [
     created_at: '2025-04-02T10:00:00Z',
     title: { en: 'Art That Enriches the Home' as string | null, mk: 'Уметност што го збогатува домот' as string | null },
     content: {
-      en: 'A truly unique canvas – the frame is elegant and the print looks premium. The space gained warmth and style, and guests constantly ask where I bought it. Fast delivery and secure packaging – highly recommend!',
-      mk: 'Навистина уникатен канвас – рамката е елегантна, а печатот изгледа премиум. Просторот доби топлина и стил, а гостите постојано ме прашуваат од каде е купен. Брза испорака и сигурно пакување – препорачувам!',
+      en: 'A truly unique canvas - the frame is elegant and the print looks premium. The space gained warmth and style, and guests constantly ask where I bought it. Fast delivery and secure packaging - highly recommend!',
+      mk: 'Навистина уникатен канвас - рамката е елегантна, а печатот изгледа премиум. Просторот доби топлина и стил, а гостите постојано ме прашуваат од каде е купен. Брза испорака и сигурно пакување - препорачувам!',
     },
   },
   {
@@ -73,8 +73,8 @@ const STATIC_REVIEWS_DATA = [
     created_at: '2025-04-18T10:00:00Z',
     title: { en: 'Elegant Canvas for Any Space' as string | null, mk: 'Елегантен канвас во секој простор' as string | null },
     content: {
-      en: 'The canvas looks modern and sophisticated – the frame is slim and adds elegance. The colors bring harmony and instantly make the space more inviting. Delivery was timely and packaging secure.',
-      mk: 'Канвасот изгледа модерно и софистицирано – рамката е тенка и додава елеганција. Боите внесуваат хармонија и веднаш го прават просторот попријатен. Испораката беше навремена, а пакувањето сигурно.',
+      en: 'The canvas looks modern and sophisticated - the frame is slim and adds elegance. The colors bring harmony and instantly make the space more inviting. Delivery was timely and packaging secure.',
+      mk: 'Канвасот изгледа модерно и софистицирано - рамката е тенка и додава елеганција. Боите внесуваат хармонија и веднаш го прават просторот попријатен. Испораката беше навремена, а пакувањето сигурно.',
     },
   },
   {
@@ -95,8 +95,8 @@ const STATIC_REVIEWS_DATA = [
     created_at: '2025-05-20T10:00:00Z',
     title: { en: 'Perfect Detail for the Interior' as string | null, mk: 'Совршен детал за ентериер' as string | null },
     content: {
-      en: 'The painting is impressive and immediately draws attention. The colors are vivid and the frame is minimalist and modern. Fast delivery and secure packaging – truly satisfied with the choice.',
-      mk: 'Сликата е впечатлива и веднаш привлекува внимание. Боите се живи, а рамката е минималистичка и модерна. Брза испорака и сигурно пакување – навистина задоволен сум од изборот.',
+      en: 'The painting is impressive and immediately draws attention. The colors are vivid and the frame is minimalist and modern. Fast delivery and secure packaging - truly satisfied with the choice.',
+      mk: 'Сликата е впечатлива и веднаш привлекува внимание. Боите се живи, а рамката е минималистичка и модерна. Брза испорака и сигурно пакување - навистина задоволен сум од изборот.',
     },
   },
   {
@@ -106,8 +106,8 @@ const STATIC_REVIEWS_DATA = [
     created_at: '2025-06-01T10:00:00Z',
     title: { en: 'Warm Recommendation for Dysnomia Gallery' as string | null, mk: 'Топла препорака за Dysnomia Gallery' as string | null },
     content: {
-      en: 'I warmly recommend Dysnomia Gallery because every order comes with a unique gift of their random choice. The canvases are premium quality, the colors bring warmth and style, and the frames look elegant. Fast delivery and secure packaging – a true pleasure to shop from them.',
-      mk: 'Топло ја препорачувам Dysnomia Gallery затоа што секоја нарачка носи уникатен подарок по нивен случаен избор. Канвасите се премиум изработка, боите внесуваат топлина и стил, а рамките изгледаат елегантно. Брза испорака и сигурно пакување – вистинско задоволство да се купува од нив.',
+      en: 'I warmly recommend Dysnomia Gallery because every order comes with a unique gift of their random choice. The canvases are premium quality, the colors bring warmth and style, and the frames look elegant. Fast delivery and secure packaging - a true pleasure to shop from them.',
+      mk: 'Топло ја препорачувам Dysnomia Gallery затоа што секоја нарачка носи уникатен подарок по нивен случаен избор. Канвасите се премиум изработка, боите внесуваат топлина и стил, а рамките изгледаат елегантно. Брза испорака и сигурно пакување - вистинско задоволство да се купува од нив.',
     },
   },
 ];
@@ -392,7 +392,7 @@ export default function ProductDetail() {
                       >
                         <img
                           src={currentImage}
-                          alt={`${product.title} – framed`}
+                          alt={`${product.title} - framed`}
                           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                         />
                       </div>
@@ -515,7 +515,7 @@ export default function ProductDetail() {
                                 >
                                   <img
                                     src={currentImage}
-                                    alt={`${product.title} – framed`}
+                                    alt={`${product.title} - framed`}
                                     style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                                   />
                                 </div>
