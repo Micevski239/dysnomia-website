@@ -249,7 +249,6 @@ export default function ProductDetail() {
   // Reviews
   const {
     reviews,
-    averageRating,
     reviewCount,
     refetch: refetchReviews,
   } = useReviews(product?.id);
