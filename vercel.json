@@ -15,6 +15,39 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/artwork/:slug",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(bot|crawl|spider|slurp|facebookexternalhit|whatsapp|telegram|twitterbot|linkedin|pinterest|discord|embedly|quora|vkshare|skypeuripreview|snapchat|viber).*"
+        }
+      ],
+      "destination": "/api/prerender?type=artwork&slug=:slug"
+    },
+    {
+      "source": "/collections/:slug",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(bot|crawl|spider|slurp|facebookexternalhit|whatsapp|telegram|twitterbot|linkedin|pinterest|discord|embedly|quora|vkshare|skypeuripreview|snapchat|viber).*"
+        }
+      ],
+      "destination": "/api/prerender?type=collection&slug=:slug"
+    },
+    {
+      "source": "/blog/:slug",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(bot|crawl|spider|slurp|facebookexternalhit|whatsapp|telegram|twitterbot|linkedin|pinterest|discord|embedly|quora|vkshare|skypeuripreview|snapchat|viber).*"
+        }
+      ],
+      "destination": "/api/prerender?type=blog&slug=:slug"
+    },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

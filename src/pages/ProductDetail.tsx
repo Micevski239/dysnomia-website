@@ -7,6 +7,7 @@ import { useLanguage } from '../hooks/useLanguage';
 import { localize } from '../lib/localize';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import Accordion from '../components/ui/Accordion';
+import SEO, { ProductStructuredData, BreadcrumbStructuredData } from '../components/SEO';
 import SizeGuideModal from '../components/shop/SizeGuideModal';
 import VariantSelector from '../components/shop/VariantSelector';
 import ImageLightbox from '../components/shop/ImageLightbox';
@@ -291,6 +292,7 @@ export default function ProductDetail() {
   if (error || !product) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 24px' }}>
+        <SEO title={language === 'mk' ? 'Делото не е пронајдено' : 'Artwork Not Found'} noindex />
         <div style={{ textAlign: 'center' }}>
           <div style={{ width: '80px', height: '80px', margin: '0 auto 24px', border: '2px solid #e5e5e5', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg style={{ width: '32px', height: '32px', color: '#6b6b6b' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -320,8 +322,43 @@ export default function ProductDetail() {
     );
   }
 
+  const seoTitle = localize(product.title, product.title_mk, language);
+  const seoDescriptionFull =
+    localize(product.description, product.description_mk, language) ||
+    (language === 'mk'
+      ? `${seoTitle} — канвас слика достапна како платно, ролна или врамен принт, во големини од 50×70 до 100×150 см.`
+      : `${seoTitle} — canvas print available as stretched canvas, rolled canvas or framed print, in sizes from 50×70 to 100×150 cm.`);
+  const seoDescription =
+    seoDescriptionFull.length > 160 ? `${seoDescriptionFull.slice(0, 157)}...` : seoDescriptionFull;
+  const seoImages = [
+    product.image_url,
+    product.image_url_canvas,
+    product.image_url_framed,
+  ].filter((img): img is string => Boolean(img));
+
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#ffffff', padding: 'clamp(24px, 4vw, 48px) clamp(16px, 3vw, 24px)' }}>
+      <SEO
+        title={seoTitle}
+        description={seoDescription}
+        image={seoImages[0]}
+        path={`/artwork/${product.slug}`}
+        type="product"
+      />
+      <ProductStructuredData
+        name={seoTitle}
+        description={seoDescriptionFull}
+        image={seoImages}
+        slug={product.slug}
+        status={product.status}
+      />
+      <BreadcrumbStructuredData
+        items={[
+          { name: language === 'mk' ? 'Почетна' : 'Home', path: '/' },
+          { name: language === 'mk' ? 'Продавница' : 'Shop', path: '/shop' },
+          { name: seoTitle, path: `/artwork/${product.slug}` },
+        ]}
+      />
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
         {/* Back Link */}
         <Link

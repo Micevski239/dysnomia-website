@@ -3,6 +3,7 @@ import { useBlogPost } from '../hooks/useBlog';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { useLanguage } from '../hooks/useLanguage';
 import { localize } from '../lib/localize';
+import SEO, { ArticleStructuredData, BreadcrumbStructuredData } from '../components/SEO';
 
 function estimateReadTime(content: string | null): number {
   if (!content) return 1;
@@ -55,6 +56,7 @@ export default function BlogPostPage() {
   if (error || !post) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 24px' }}>
+        <SEO title={language === 'mk' ? 'Написот не е пронајден' : 'Post Not Found'} noindex />
         <div style={{ textAlign: 'center' }}>
           <div style={{ width: '80px', height: '80px', margin: '0 auto 24px', border: '2px solid #e5e5e5', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg style={{ width: '32px', height: '32px', color: '#6b6b6b' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -91,8 +93,34 @@ export default function BlogPostPage() {
   const readTime = estimateReadTime(content);
   const paragraphs = content ? content.split('\n\n').filter(Boolean) : [];
 
+  const excerpt = localize(post.excerpt, post.excerpt_mk, language) || content || title;
+  const seoDescription = excerpt.length > 160 ? `${excerpt.slice(0, 157)}...` : excerpt;
+
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#ffffff', padding: 'clamp(24px, 4vw, 48px) clamp(16px, 3vw, 24px)' }}>
+      <SEO
+        title={title}
+        description={seoDescription}
+        image={post.cover_image || undefined}
+        path={`/blog/${post.slug}`}
+        type="article"
+      />
+      <ArticleStructuredData
+        headline={title}
+        description={seoDescription}
+        image={post.cover_image}
+        author={post.author}
+        datePublished={post.published_at}
+        dateModified={post.updated_at}
+        slug={post.slug}
+      />
+      <BreadcrumbStructuredData
+        items={[
+          { name: language === 'mk' ? 'Почетна' : 'Home', path: '/' },
+          { name: language === 'mk' ? 'Блог' : 'Blog', path: '/blog' },
+          { name: title, path: `/blog/${post.slug}` },
+        ]}
+      />
       <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
         {/* Back Link */}
         <Link

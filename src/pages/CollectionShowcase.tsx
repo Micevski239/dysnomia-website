@@ -9,6 +9,7 @@ import { useLanguage } from '../hooks/useLanguage';
 import { localize } from '../lib/localize';
 import { getThumbnailUrl } from '../lib/utils';
 import DysnomiaLoader from '../components/shop/DysnomiaLoader';
+import SEO, { BreadcrumbStructuredData } from '../components/SEO';
 
 const PRODUCTS_PER_PAGE = 12;
 
@@ -116,8 +117,36 @@ export default function CollectionShowcase() {
     );
   }
 
+  const seoTitle = localize(collection?.title, collection?.title_mk, language);
+  const seoDescriptionRaw = localize(collection?.description, collection?.description_mk, language);
+  const seoDescription = seoDescriptionRaw
+    ? seoDescriptionRaw.length > 160
+      ? `${seoDescriptionRaw.slice(0, 157)}...`
+      : seoDescriptionRaw
+    : undefined;
+
   return (
     <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: isMobileOrTablet ? '100px' : '120px' }}>
+      {collection && (
+        <>
+          <SEO
+            title={seoTitle}
+            description={seoDescription}
+            image={heroImage || undefined}
+            path={`/collections/${collection.slug}`}
+          />
+          <BreadcrumbStructuredData
+            items={[
+              { name: language === 'mk' ? 'Почетна' : 'Home', path: '/' },
+              { name: language === 'mk' ? 'Колекции' : 'Collections', path: '/collections' },
+              { name: seoTitle, path: `/collections/${collection.slug}` },
+            ]}
+          />
+        </>
+      )}
+      {!loading && !collection && (
+        <SEO title={language === 'mk' ? 'Колекцијата не е пронајдена' : 'Collection Not Found'} noindex />
+      )}
       {/* Hero Section */}
       <section style={{ maxWidth: '1400px', margin: '0 auto', padding: `0 clamp(16px, 4vw, 48px) clamp(40px, 8vw, 80px)` }}>
         <div

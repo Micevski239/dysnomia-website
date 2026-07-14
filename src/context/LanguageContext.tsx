@@ -773,6 +773,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>(() => {
     if (typeof window === 'undefined') return DEFAULT_LANGUAGE;
     try {
+      // A ?lang= URL param wins over the stored preference — it's how search
+      // engines and shared links address the Macedonian version of a page.
+      const urlLang = new URLSearchParams(window.location.search).get('lang');
+      if (urlLang === 'en' || urlLang === 'mk') return urlLang;
       const stored = localStorage.getItem(LANGUAGE_STORAGE_KEY);
       if (stored === 'en' || stored === 'mk') return stored;
       return DEFAULT_LANGUAGE;

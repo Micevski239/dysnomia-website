@@ -1,3 +1,10 @@
 User-agent: *
 Allow: /
-Sitemap: https://dysnomia.art/sitemap.xml
+Disallow: /admin
+Disallow: /api/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /account
+Disallow: /order-confirmation/
+
+Sitemap: https://dysnomiagallery.com/sitemap.xml
