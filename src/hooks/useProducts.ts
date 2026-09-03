@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, PUBLIC_FUNCTION_HEADERS } from '../lib/supabase';
 import { validateImageFile } from '../lib/fileValidation';
 import type { Product, ProductFormData } from '../types';
 
 async function fetchCachedProducts(): Promise<Product[] | null> {
   try {
-    const { data, error } = await supabase.functions.invoke('cached-products');
+    const { data, error } = await supabase.functions.invoke('cached-products', {
+      headers: PUBLIC_FUNCTION_HEADERS,
+    });
     if (error) return null;
     return data as Product[];
   } catch {
@@ -103,7 +105,7 @@ export function useProduct(slug: string) {
       try {
         const { data: cached, error: fnError } = await supabase.functions.invoke(
           'cached-product',
-          { body: { slug } }
+          { body: { slug }, headers: PUBLIC_FUNCTION_HEADERS }
         );
         if (!fnError && cached && !('error' in cached) && isMounted) {
           setProduct(cached as Product);

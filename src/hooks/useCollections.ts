@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { PostgrestError } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
+import { supabase, PUBLIC_FUNCTION_HEADERS } from '../lib/supabase';
 import { validateImageFile } from '../lib/fileValidation';
 import type { Collection, CollectionFormData } from '../types';
 
 async function fetchCachedCollections(): Promise<Collection[] | null> {
   try {
-    const { data, error } = await supabase.functions.invoke('cached-collections');
+    const { data, error } = await supabase.functions.invoke('cached-collections', {
+      headers: PUBLIC_FUNCTION_HEADERS,
+    });
     if (error) return null;
     return data as Collection[];
   } catch {
