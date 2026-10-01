@@ -68,6 +68,9 @@ Supabase Edge Functions live in `supabase/functions/`:
 - `invalidate-cache` — purges cached responses
 - `send-order-email` — fire-and-forget transactional emails (MK/EN by `orders.language`) triggered via `src/lib/sendOrderEmail.ts`; the function loads the order from the DB by id and never trusts the browser's copy
 - `newsletter` — footer sign-up / unsubscribe, welcome email, optional Brevo sync (`BREVO_API_KEY`, `BREVO_LIST_ID`)
+- `send-newsletter` — admin-only; sends a newsletter written in Admin → Newsletter to all active subscribers via Resend and records it in `newsletter_campaigns` (migration 011)
+
+Newsletter sign-up forms (footer, home, blog, first-visit popup) share `useNewsletterForm(source)`.
 
 ### Pre-build checks
 

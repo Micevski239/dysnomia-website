@@ -66,6 +66,10 @@ const release = readFileSync(R + 'supabase/release/2026-10-release.sql', 'utf8')
 await run('RELEASE (1st run)', release);
 await run('RELEASE (2nd run, idempotent)', release);
 
+const campaigns = readFileSync(R + 'supabase/migrations/011_newsletter_campaigns.sql', 'utf8');
+await run('011 newsletter campaigns (1st run)', campaigns);
+await run('011 newsletter campaigns (2nd run, idempotent)', campaigns);
+
 const ADMIN = '11111111-1111-1111-1111-111111111111';
 const CUST = '22222222-2222-2222-2222-222222222222';
 const P1 = 'aaaaaaaa-0000-0000-0000-000000000001';
@@ -143,5 +147,17 @@ await db.exec(`INSERT INTO newsletter_subscribers (email, consent) VALUES ('n@x.
 await db.exec(asRole('anon'));
 console.log('     anon sees subscribers:', (await q('SELECT count(*)::int c FROM newsletter_subscribers'))[0].c, '(must be 0)');
 await db.exec(reset);
+
+await db.exec(`INSERT INTO newsletter_campaigns (subject_mk, body_mk, recipients) VALUES ('Наслов', 'Текст', 1)`);
+await db.exec(asRole('anon'));
+console.log('     anon sees campaigns:', (await q('SELECT count(*)::int c FROM newsletter_campaigns'))[0].c, '(must be 0)');
+await db.exec(reset);
+await db.exec(asRole('authenticated', CUST, 'cust@x.mk'));
+console.log('     customer sees campaigns:', (await q('SELECT count(*)::int c FROM newsletter_campaigns'))[0].c, '(must be 0)');
+await db.exec(reset);
+await db.exec(asRole('authenticated', ADMIN, 'admin@x.mk'));
+console.log('     admin sees campaigns:', (await q('SELECT count(*)::int c FROM newsletter_campaigns'))[0].c, '(must be 1)');
+await db.exec(reset);
+await expectFail('customer writes a campaign', asRole('authenticated', CUST, 'cust@x.mk') + `INSERT INTO newsletter_campaigns (subject_mk, body_mk) VALUES ('x', 'x');`);
 await expectFail('3 gallery images on a blog post', `UPDATE blog_posts SET gallery_images='[{},{},{}]'::jsonb;`);
 console.log('\nDONE');

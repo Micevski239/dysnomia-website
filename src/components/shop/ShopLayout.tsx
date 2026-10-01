@@ -4,6 +4,7 @@ import AnnouncementBar from './AnnouncementBar';
 import Header from './Header';
 import Footer from './Footer';
 import CookieConsent from './CookieConsent';
+import NewsletterPopup from './NewsletterPopup';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 interface ShopLayoutProps {
@@ -75,6 +76,9 @@ export default function ShopLayout({ cartCount = 0, wishlistCount = 0 }: ShopLay
 
       {/* Cookie Consent */}
       <CookieConsent />
+
+      {/* First-visit newsletter invitation */}
+      <NewsletterPopup />
 
       {/* Scroll to top button */}
       <button

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Hero, ProductCarousel, USPSection, GalleryTour, BrandStory } from '../components/shop';
+import { Hero, ProductCarousel, USPSection, GalleryTour, BrandStory, NewsletterInline } from '../components/shop';
 import type { ProductCardProps } from '../components/shop';
 import { useProducts } from '../hooks/useProducts';
 import { useLanguage } from '../hooks/useLanguage';
@@ -56,6 +56,13 @@ export default function ShopHome() {
 
       {/* Gallery Tour Preview - Collection Showcase */}
       <GalleryTour />
+
+      {/* Newsletter sign-up */}
+      <section style={{ padding: 'clamp(40px, 6vw, 72px) clamp(16px, 4vw, 48px)', backgroundColor: '#FFFFFF' }}>
+        <div style={{ maxWidth: '960px', margin: '0 auto' }}>
+          <NewsletterInline source="home" />
+        </div>
+      </section>
 
       {/* USP Section - Brand Values */}
       <USPSection />

@@ -4,6 +4,7 @@ import { useBlogPosts } from '../hooks/useBlog';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { useLanguage } from '../hooks/useLanguage';
 import { localize } from '../lib/localize';
+import { NewsletterInline } from '../components/shop';
 import type { BlogPost } from '../types';
 
 function estimateReadTime(content: string | null): number {
@@ -347,6 +348,11 @@ export default function Blog() {
             ))}
           </div>
         ) : null}
+
+        {/* Newsletter sign-up */}
+        <div style={{ maxWidth: '960px', margin: 'clamp(48px, 7vw, 80px) auto 0' }}>
+          <NewsletterInline source="blog" title={t('newsletter.blogTitle')} description={t('newsletter.blogText')} />
+        </div>
       </section>
 
     </div>
