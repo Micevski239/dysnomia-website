@@ -4,9 +4,7 @@ import { AdminCard, DataTable, SearchInput, StatusBadge, EmptyState } from '../.
 import type { Column } from '../../components/admin';
 import StarRating from '../../components/shop/StarRating';
 import { MessageSquare, Check, Trash2 } from 'lucide-react';
-import type { Review } from '../../types';
-
-type ReviewWithProduct = Review & { product_title?: string };
+import type { AdminReview } from '../../types';
 
 const filterBtn = (active: boolean): React.CSSProperties => ({
   padding: '10px 20px',
@@ -28,6 +26,7 @@ export default function ReviewsList() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkLoading, setBulkLoading] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const formatDate = (dateString: string) =>
     new Date(dateString).toLocaleDateString('en-GB', {
@@ -43,7 +42,7 @@ export default function ReviewsList() {
         (r) =>
           r.customer_name.toLowerCase().includes(q) ||
           r.customer_email.toLowerCase().includes(q) ||
-          (r.product_title && r.product_title.toLowerCase().includes(q)) ||
+          r.product_title.toLowerCase().includes(q) ||
           (r.title && r.title.toLowerCase().includes(q)) ||
           (r.content && r.content.toLowerCase().includes(q))
       );
@@ -53,21 +52,31 @@ export default function ReviewsList() {
 
   const handleApprove = async (id: string) => {
     setActionLoading(id);
-    await approveReview(id);
+    setActionError(null);
+    const { error: err } = await approveReview(id);
+    if (err) setActionError(`Could not approve review: ${err}`);
     setActionLoading(null);
   };
 
   const handleDelete = async (id: string) => {
     if (!window.confirm('Delete this review?')) return;
     setActionLoading(id);
-    await deleteReview(id);
+    setActionError(null);
+    const { error: err } = await deleteReview(id);
+    if (err) setActionError(`Could not delete review: ${err}`);
     setActionLoading(null);
   };
 
   const handleBulkApprove = async () => {
     if (selectedIds.size === 0) return;
     setBulkLoading(true);
-    for (const id of selectedIds) await approveReview(id);
+    setActionError(null);
+    let failed = 0;
+    for (const id of selectedIds) {
+      const { error: err } = await approveReview(id);
+      if (err) failed++;
+    }
+    if (failed > 0) setActionError(`${failed} of ${selectedIds.size} reviews could not be approved.`);
     setSelectedIds(new Set());
     setBulkLoading(false);
   };
@@ -76,12 +85,18 @@ export default function ReviewsList() {
     if (selectedIds.size === 0) return;
     if (!window.confirm(`Delete ${selectedIds.size} reviews?`)) return;
     setBulkLoading(true);
-    for (const id of selectedIds) await deleteReview(id);
+    setActionError(null);
+    let failed = 0;
+    for (const id of selectedIds) {
+      const { error: err } = await deleteReview(id);
+      if (err) failed++;
+    }
+    if (failed > 0) setActionError(`${failed} of ${selectedIds.size} reviews could not be deleted.`);
     setSelectedIds(new Set());
     setBulkLoading(false);
   };
 
-  const columns: Column<ReviewWithProduct>[] = [
+  const columns: Column<AdminReview>[] = [
     {
       key: 'product',
       header: 'Product',
@@ -99,7 +114,7 @@ export default function ReviewsList() {
         <div style={{ maxWidth: '360px' }}>
           {r.title && <p style={{ fontWeight: 600, color: '#1a1a1a', fontSize: '14px', marginBottom: '4px' }}>{r.title}</p>}
           {r.content && (
-            <p style={{ fontSize: '13px', color: '#888888', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>
+            <p style={{ fontSize: '13px', color: '#888888', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
               {r.content}
             </p>
           )}
@@ -226,9 +241,9 @@ export default function ReviewsList() {
         </div>
       )}
 
-      {error && (
-        <div style={{ backgroundColor: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '12px', padding: '16px', color: '#DC2626', fontSize: '14px' }}>
-          {error}
+      {(error || actionError) && (
+        <div role="alert" style={{ backgroundColor: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '12px', padding: '16px', color: '#DC2626', fontSize: '14px' }}>
+          {error || actionError}
         </div>
       )}
 

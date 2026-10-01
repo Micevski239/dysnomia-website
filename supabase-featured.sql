@@ -1,10 +1,10 @@
-""-- ============================================================
+-- ============================================================
 -- Featured Sections & Bestseller Products
 -- Run this migration in your Supabase SQL editor
 -- ============================================================
 
 -- 1. Stores per-section config (spotlight product for each page)
-CREATE TABLE public.featured_sections (
+CREATE TABLE IF NOT EXISTS public.featured_sections (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   section_key TEXT NOT NULL UNIQUE,       -- 'bestsellers' or 'new_arrivals'
   spotlight_product_id UUID REFERENCES public.products(id) ON DELETE SET NULL,
@@ -12,7 +12,7 @@ CREATE TABLE public.featured_sections (
 );
 
 -- 2. Admin-curated bestseller list (max 12)
-CREATE TABLE public.bestseller_products (
+CREATE TABLE IF NOT EXISTS public.bestseller_products (
   product_id UUID NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
   display_order INTEGER NOT NULL DEFAULT 0,
   added_at TIMESTAMPTZ DEFAULT NOW(),
@@ -20,8 +20,8 @@ CREATE TABLE public.bestseller_products (
 );
 
 -- Indexes
-CREATE INDEX idx_bestseller_products_order ON public.bestseller_products(display_order);
-CREATE INDEX idx_featured_sections_key ON public.featured_sections(section_key);
+CREATE INDEX IF NOT EXISTS idx_bestseller_products_order ON public.bestseller_products(display_order);
+CREATE INDEX IF NOT EXISTS idx_featured_sections_key ON public.featured_sections(section_key);
 
 -- RLS
 ALTER TABLE public.featured_sections ENABLE ROW LEVEL SECURITY;
@@ -73,4 +73,3 @@ CREATE POLICY "Authenticated users can delete bestseller_products"
 INSERT INTO public.featured_sections (section_key) VALUES
   ('bestsellers'),
   ('new_arrivals');
-""

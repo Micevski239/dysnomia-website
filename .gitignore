@@ -30,3 +30,10 @@ dist-ssr
 
 # Supabase temp files
 supabase/.temp/
+
+# macOS AppleDouble metadata
+._*
+.DS_Store
+
+# Client reports (shared separately)
+*.pdf

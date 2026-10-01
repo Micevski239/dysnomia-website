@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { isKidsCollection as isKidsCollectionCheck, isKidsSlug } from '../lib/kidsCollection';
 import type { Collection, Product } from '../types';
 import ProductCard from '../components/shop/ProductCard';
 import type { ProductCardProps } from '../components/shop/ProductCard';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { useLanguage } from '../hooks/useLanguage';
+import { useSlugRedirect } from '../hooks/useSlugRedirect';
 import { localize } from '../lib/localize';
 import { getThumbnailUrl } from '../lib/utils';
 import DysnomiaLoader from '../components/shop/DysnomiaLoader';
@@ -89,7 +91,7 @@ export default function CollectionShowcase() {
   // Reset loaded state when collection changes
   useEffect(() => { setHeroLoaded(false); }, [slug]);
 
-  const isKidsCollection = slug === 'kids';
+  const isKidsCollection = isKidsCollectionCheck(collection) || isKidsSlug(slug);
 
   const productCards: ProductCardProps[] = useMemo(
     () =>
@@ -109,7 +111,9 @@ export default function CollectionShowcase() {
   const visibleProducts = useMemo(() => productCards.slice(0, visibleCount), [productCards, visibleCount]);
   const hasMore = visibleCount < productCards.length;
 
-  if (loading) {
+  const checkingRedirect = useSlugRedirect('collection', slug, !loading && !collection, '/collections/');
+
+  if (loading || checkingRedirect) {
     return (
       <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: isMobileOrTablet ? '100px' : '120px' }}>
         <DysnomiaLoader />

@@ -20,7 +20,8 @@ export function useProductSearch() {
     if (typeof window === 'undefined') return [];
     try {
       const stored = localStorage.getItem(RECENT_SEARCHES_KEY);
-      return stored ? JSON.parse(stored) : [];
+      const parsed: unknown = stored ? JSON.parse(stored) : [];
+      return Array.isArray(parsed) ? parsed.filter((s): s is string => typeof s === 'string') : [];
     } catch {
       return [];
     }
@@ -51,7 +52,14 @@ export function useProductSearch() {
       const { data, error: searchError } = await supabase
         .from('products')
         .select('id, title, slug, price, image_url')
-        .or(`title.ilike.%${sanitized}%,description.ilike.%${sanitized}%`)
+        .or(
+          [
+            `title.ilike.%${sanitized}%`,
+            `title_mk.ilike.%${sanitized}%`,
+            `description.ilike.%${sanitized}%`,
+            `description_mk.ilike.%${sanitized}%`,
+          ].join(',')
+        )
         .in('status', ['published', 'sold'])
         .limit(10);
 

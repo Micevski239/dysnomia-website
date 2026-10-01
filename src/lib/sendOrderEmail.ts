@@ -8,14 +8,18 @@ export type OrderEmailType =
   | 'order_delivered'
   | 'order_cancelled';
 
+/**
+ * Fire-and-forget order email. The edge function loads the order from the DB
+ * by id, so only the id is sent.
+ */
 export async function sendOrderEmail(
-  order: Order,
+  order: Pick<Order, 'id'>,
   emailType: OrderEmailType,
   trackingNumber?: string
 ): Promise<void> {
   try {
     await supabase.functions.invoke('send-order-email', {
-      body: { order, emailType, trackingNumber },
+      body: { order: { id: order.id }, emailType, trackingNumber },
     });
   } catch {
     // Fire-and-forget: email failures never block order flow

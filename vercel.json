@@ -48,6 +48,6 @@
       ],
       "destination": "/api/prerender?type=blog&slug=:slug"
     },
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    { "source": "/((?!api/|assets/).*)", "destination": "/index.html" }
   ]
 }

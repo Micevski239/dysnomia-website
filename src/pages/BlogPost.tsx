@@ -1,14 +1,67 @@
+import { Fragment } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useBlogPost } from '../hooks/useBlog';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { useLanguage } from '../hooks/useLanguage';
+import { useSlugRedirect } from '../hooks/useSlugRedirect';
 import { localize } from '../lib/localize';
 import SEO, { ArticleStructuredData, BreadcrumbStructuredData } from '../components/SEO';
+import type { BlogImage } from '../types';
 
 function estimateReadTime(content: string | null): number {
   if (!content) return 1;
   const words = content.trim().split(/\s+/).length;
   return Math.max(1, Math.ceil(words / 200));
+}
+
+/** Split on blank lines; tolerates Windows line endings and whitespace-only lines. */
+function splitParagraphs(content: string | null): string[] {
+  if (!content) return [];
+  return content
+    .split(/\r?\n[ \t]*\r?\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Place each extra image after a paragraph. Images with an explicit
+ * after_paragraph go there; the rest are spread evenly through the text.
+ * Images whose position is past the last paragraph are returned as trailing.
+ */
+function placeImages(images: BlogImage[], paragraphCount: number) {
+  const byParagraph = new Map<number, BlogImage[]>();
+  const trailing: BlogImage[] = [];
+  images.forEach((image, i) => {
+    const target = image.after_paragraph && image.after_paragraph > 0
+      ? image.after_paragraph - 1
+      : Math.round((paragraphCount * (i + 1)) / (images.length + 1)) - 1;
+    if (target >= 0 && target < paragraphCount - 1) {
+      byParagraph.set(target, [...(byParagraph.get(target) || []), image]);
+    } else {
+      trailing.push(image);
+    }
+  });
+  return { byParagraph, trailing };
+}
+
+function BlogFigure({ image, language }: { image: BlogImage; language: string }) {
+  const caption = localize(image.caption || '', image.caption_mk, language);
+  return (
+    <figure style={{ display: 'flow-root', margin: '8px 0 28px' }}>
+      <img
+        src={image.url}
+        alt={caption || ''}
+        loading="lazy"
+        decoding="async"
+        style={{ width: '100%', height: 'auto', display: 'block' }}
+      />
+      {caption && (
+        <figcaption style={{ fontSize: '13px', color: '#6b6b6b', marginTop: '10px', lineHeight: 1.6, fontStyle: 'italic' }}>
+          {caption}
+        </figcaption>
+      )}
+    </figure>
+  );
 }
 
 function formatDate(dateStr: string | null, language: string): string {
@@ -26,11 +79,12 @@ export default function BlogPostPage() {
   const { post, loading, error } = useBlogPost(slug || '');
   const { language, t } = useLanguage();
   const { isMobile } = useBreakpoint();
+  const checkingRedirect = useSlugRedirect('blog', slug, !loading && (!!error || !post), '/blog/');
 
-  if (loading) {
+  if (loading || checkingRedirect) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#ffffff', padding: '48px 24px' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '960px', margin: '0 auto' }}>
           <div style={{ height: '14px', width: '120px', backgroundColor: '#f5f5f5', marginBottom: '32px' }} />
           <div
             style={{
@@ -91,7 +145,9 @@ export default function BlogPostPage() {
   const title = localize(post.title, post.title_mk, language);
   const content = localize(post.content, post.content_mk, language);
   const readTime = estimateReadTime(content);
-  const paragraphs = content ? content.split('\n\n').filter(Boolean) : [];
+  const paragraphs = splitParagraphs(content);
+  const galleryImages = (post.gallery_images || []).filter((img) => img?.url).slice(0, 2);
+  const { byParagraph: imagesByParagraph, trailing: trailingImages } = placeImages(galleryImages, paragraphs.length);
 
   const excerpt = localize(post.excerpt, post.excerpt_mk, language) || content || title;
   const seoDescription = excerpt.length > 160 ? `${excerpt.slice(0, 157)}...` : excerpt;
@@ -140,16 +196,16 @@ export default function BlogPostPage() {
           {t('blog.backToBlog')}
         </Link>
 
-        {/* Two-column layout: cover image + article content */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
-            gap: 'clamp(24px, 5vw, 64px)',
-          }}
-        >
+        {/* Article: cover floats left, text wraps beside it and continues full-width below */}
+        <article style={{ display: 'flow-root' }}>
           {/* Cover Image */}
-          <div>
+          <div
+            style={
+              isMobile
+                ? { width: '100%', marginBottom: '24px' }
+                : { float: 'left', width: '44%', marginRight: 'clamp(28px, 4vw, 48px)', marginBottom: '24px' }
+            }
+          >
             {post.cover_image ? (
               <div style={{ aspectRatio: '3/4', overflow: 'hidden' }}>
                 <img
@@ -172,8 +228,8 @@ export default function BlogPostPage() {
             )}
           </div>
 
-          {/* Article Content */}
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {/* Header — flow-root keeps the divider line from running under the floated cover */}
+          <header style={{ display: 'flow-root' }}>
             <p style={{ color: '#B8860B', fontSize: '14px', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '8px', fontWeight: 500 }}>
               {t('blog.title')}
             </p>
@@ -186,6 +242,7 @@ export default function BlogPostPage() {
             <div
               style={{
                 display: 'flex',
+                flexWrap: 'wrap',
                 alignItems: 'center',
                 gap: '8px',
                 fontSize: '12px',
@@ -202,50 +259,56 @@ export default function BlogPostPage() {
               <span>&middot;</span>
               <span>{readTime} {t('blog.minuteRead')}</span>
             </div>
+          </header>
 
-            {/* Content */}
-            <div>
-              {paragraphs.map((paragraph, index) => (
-                <p
-                  key={index}
-                  style={{
-                    color: '#4a4a4a',
-                    lineHeight: 1.8,
-                    marginBottom: '20px',
-                    fontSize: '15px',
-                  }}
-                >
-                  {paragraph}
-                </p>
-              ))}
-            </div>
-
-            {/* Back to Blog CTA */}
-            <div style={{ marginTop: 'auto', paddingTop: '32px' }}>
-              <Link
-                to="/blog"
+          {/* Content with up to two extra images between paragraphs */}
+          {paragraphs.map((paragraph, index) => (
+            <Fragment key={index}>
+              <p
                 style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  letterSpacing: '1px',
-                  textTransform: 'uppercase',
-                  color: '#0A0A0A',
-                  textDecoration: 'none',
-                  borderBottom: '2px solid #FBBE63',
-                  paddingBottom: '4px',
+                  color: '#4a4a4a',
+                  lineHeight: 1.8,
+                  marginBottom: '20px',
+                  fontSize: '16px',
+                  whiteSpace: 'pre-line',
                 }}
               >
-                {t('blog.backToBlog')}
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </Link>
-            </div>
+                {paragraph}
+              </p>
+              {(imagesByParagraph.get(index) || []).map((image) => (
+                <BlogFigure key={image.url} image={image} language={language} />
+              ))}
+            </Fragment>
+          ))}
+          {trailingImages.map((image) => (
+            <BlogFigure key={image.url} image={image} language={language} />
+          ))}
+
+          {/* Back to Blog CTA */}
+          <div style={{ clear: 'both', paddingTop: '32px' }}>
+            <Link
+              to="/blog"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '10px',
+                fontSize: '13px',
+                fontWeight: 600,
+                letterSpacing: '1px',
+                textTransform: 'uppercase',
+                color: '#0A0A0A',
+                textDecoration: 'none',
+                borderBottom: '2px solid #FBBE63',
+                paddingBottom: '4px',
+              }}
+            >
+              {t('blog.backToBlog')}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
           </div>
-        </div>
+        </article>
       </div>
     </div>
   );

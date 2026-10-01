@@ -9,7 +9,7 @@ interface CheckoutFormProps {
 }
 
 export default function CheckoutForm({ onSubmit, isSubmitting }: CheckoutFormProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { isMobile } = useBreakpoint();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
@@ -104,7 +104,7 @@ export default function CheckoutForm({ onSubmit, isSubmitting }: CheckoutFormPro
               style={inputStyle('email')}
               placeholder="email@example.com"
             />
-            {errors.email && <p style={errorStyle}>{errors.email}</p>}
+            {errors.email && <p style={errorStyle}>{t(errors.email)}</p>}
           </div>
 
           <div>
@@ -117,7 +117,7 @@ export default function CheckoutForm({ onSubmit, isSubmitting }: CheckoutFormPro
               style={inputStyle('phone')}
               placeholder="+389 7X XXX XXX"
             />
-            {errors.phone && <p style={errorStyle}>{errors.phone}</p>}
+            {errors.phone && <p style={errorStyle}>{t(errors.phone)}</p>}
           </div>
         </div>
       </section>
@@ -147,7 +147,7 @@ export default function CheckoutForm({ onSubmit, isSubmitting }: CheckoutFormPro
               onChange={handleChange}
               style={inputStyle('fullName')}
             />
-            {errors.fullName && <p style={errorStyle}>{errors.fullName}</p>}
+            {errors.fullName && <p style={errorStyle}>{t(errors.fullName)}</p>}
           </div>
 
           <div>
@@ -159,7 +159,7 @@ export default function CheckoutForm({ onSubmit, isSubmitting }: CheckoutFormPro
               onChange={handleChange}
               style={inputStyle('address')}
             />
-            {errors.address && <p style={errorStyle}>{errors.address}</p>}
+            {errors.address && <p style={errorStyle}>{t(errors.address)}</p>}
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
@@ -172,7 +172,7 @@ export default function CheckoutForm({ onSubmit, isSubmitting }: CheckoutFormPro
                 onChange={handleChange}
                 style={inputStyle('city')}
               />
-              {errors.city && <p style={errorStyle}>{errors.city}</p>}
+              {errors.city && <p style={errorStyle}>{t(errors.city)}</p>}
             </div>
 
             <div>
@@ -184,7 +184,7 @@ export default function CheckoutForm({ onSubmit, isSubmitting }: CheckoutFormPro
                 onChange={handleChange}
                 style={inputStyle('postalCode')}
               />
-              {errors.postalCode && <p style={errorStyle}>{errors.postalCode}</p>}
+              {errors.postalCode && <p style={errorStyle}>{t(errors.postalCode)}</p>}
             </div>
           </div>
 
@@ -205,11 +205,11 @@ export default function CheckoutForm({ onSubmit, isSubmitting }: CheckoutFormPro
             >
               {countryOptions.map((option) => (
                 <option key={option.value} value={option.value}>
-                  {option.label}
+                  {language === 'mk' ? option.labelMk : option.label}
                 </option>
               ))}
             </select>
-            {errors.country && <p style={errorStyle}>{errors.country}</p>}
+            {errors.country && <p style={errorStyle}>{t(errors.country)}</p>}
           </div>
         </div>
       </section>

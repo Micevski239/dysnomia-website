@@ -112,7 +112,12 @@ export interface Order {
   currency: string;
   status: OrderStatus;
   tracking_number: string | null;
+  /** The customer's note from checkout. Read-only for admins. */
   notes: string | null;
+  /** Internal admin-only notes. */
+  admin_notes?: string | null;
+  /** Language the customer ordered in (used for emails). */
+  language?: 'mk' | 'en' | null;
   created_at: string;
   updated_at: string;
 }
@@ -134,12 +139,18 @@ export interface Review {
   id: string;
   product_id: string;
   customer_name: string;
+  /** Admin-only: available solely via the `admin_list_reviews` RPC (not selectable via REST). */
   customer_email: string;
   rating: number;
   title: string | null;
   content: string | null;
   is_approved: boolean;
   created_at: string;
+}
+
+/** Review as returned by the admin-only `admin_list_reviews` RPC. */
+export interface AdminReview extends Review {
+  product_title: string;
 }
 
 export interface CreateReviewData {
@@ -175,9 +186,19 @@ export interface BlogPost {
   content: string | null;
   content_mk?: string | null;
   cover_image: string | null;
+  /** Up to two extra images shown between paragraphs (column added in migration 009). */
+  gallery_images?: BlogImage[] | null;
   author: string;
   is_published: boolean;
   published_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface BlogImage {
+  url: string;
+  caption?: string | null;
+  caption_mk?: string | null;
+  /** 1-based paragraph number the image follows; empty = spread evenly. */
+  after_paragraph?: number | null;
 }

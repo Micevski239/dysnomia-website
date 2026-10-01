@@ -18,7 +18,7 @@ const mapProductToCard = (product: Product, collectionName?: string, isKids = fa
   price: Number(product.price) || 0,
   image: getThumbnailUrl(product.image_url) || FALLBACK_IMAGE,
   hoverImage: product.image_url || FALLBACK_IMAGE,
-  badge: product.status === 'sold' ? 'limited' : product.is_featured ? 'artist' : undefined,
+  badge: product.status === 'sold' ? 'limited' : undefined,
   sizes: ['50x70 cm', '70x100 cm', '100x150 cm'],
   isKidsRoom: isKids,
 });
@@ -28,10 +28,9 @@ export default function ShopHome() {
   const { t, language } = useLanguage();
   const { productCollectionMap, kidsProductIds } = useProductCollectionMap();
 
+  // The carousel shows the latest products (no admin-managed 'featured' flag exists).
   const featuredProducts = useMemo(() => {
-    const featured = products.filter((product) => product.is_featured);
-    const source = featured.length > 0 ? featured : products;
-    return source.slice(0, 10).map((p) => mapProductToCard(p, productCollectionMap[p.id], kidsProductIds.has(p.id), language));
+    return products.slice(0, 10).map((p) => mapProductToCard(p, productCollectionMap[p.id], kidsProductIds.has(p.id), language));
   }, [products, productCollectionMap, kidsProductIds, language]);
 
 

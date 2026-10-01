@@ -14,9 +14,9 @@ CREATE TABLE IF NOT EXISTS public.page_views (
 );
 
 -- Indexes for efficient querying
-CREATE INDEX idx_page_views_created_at ON public.page_views (created_at DESC);
-CREATE INDEX idx_page_views_page_path  ON public.page_views (page_path);
-CREATE INDEX idx_page_views_session_id ON public.page_views (session_id);
+CREATE INDEX IF NOT EXISTS idx_page_views_created_at ON public.page_views (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_page_views_page_path  ON public.page_views (page_path);
+CREATE INDEX IF NOT EXISTS idx_page_views_session_id ON public.page_views (session_id);
 
 -- RLS
 ALTER TABLE public.page_views ENABLE ROW LEVEL SECURITY;

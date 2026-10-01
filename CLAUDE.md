@@ -66,7 +66,19 @@ All prices are stored in MKD. `CurrencyContext` tracks the user's preferred curr
 Supabase Edge Functions live in `supabase/functions/`:
 - `cached-products`, `cached-product`, `cached-collections` — serve cached product/collection data
 - `invalidate-cache` — purges cached responses
-- `send-order-email` — fire-and-forget transactional emails triggered by order status changes via `src/lib/sendOrderEmail.ts`
+- `send-order-email` — fire-and-forget transactional emails (MK/EN by `orders.language`) triggered via `src/lib/sendOrderEmail.ts`; the function loads the order from the DB by id and never trusts the browser's copy
+- `newsletter` — footer sign-up / unsubscribe, welcome email, optional Brevo sync (`BREVO_API_KEY`, `BREVO_LIST_ID`)
+
+### Pre-build checks
+
+`npm run build` runs `scripts/check-site.mjs` first (also `npm run check:site`). It fails the build if the kids collection would be empty, an old social handle reappears, or the DB `print_prices` differ from `priceMatrix` in `printOptions.ts`. Keep `PRICE_RANGE_MKD` in `api/prerender.js` and the kids slug list in `src/lib/kidsCollection.ts` / migrations in sync. Social links live only in `src/config/social.ts`.
+
+### Database rules
+
+- Admin permissions always go through `public.is_admin()`; never write policies with `auth.role() = 'authenticated'`.
+- `reviews.customer_email` is not readable via REST — admins use the `admin_list_reviews()` RPC.
+- Bulk admin writes use atomic RPCs (`replace_bestsellers`, `set_product_collection`), not delete-then-insert.
+- Slug changes are recorded in `slug_redirects` by triggers; pages and prerender follow them.
 
 ### Build config
 

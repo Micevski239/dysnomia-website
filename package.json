@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node scripts/generate-sitemap.mjs",
+    "prebuild": "node scripts/check-site.mjs && node scripts/generate-sitemap.mjs",
+    "check:site": "node scripts/check-site.mjs",
+    "test:db": "node scripts/test-db.mjs",
     "build": "tsc -b && vite build",
     "generate:sitemap": "node scripts/generate-sitemap.mjs",
     "lint": "eslint .",
@@ -21,6 +23,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@eslint/js": "^9.39.1",
     "@tailwindcss/vite": "^4.1.18",
     "@types/node": "^24.10.1",

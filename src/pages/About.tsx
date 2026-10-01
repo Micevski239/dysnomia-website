@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { useLanguage } from '../hooks/useLanguage';
+import { SOCIAL_LINKS } from '../config/social';
 
 const VALUE_ICONS = [
   (
@@ -534,7 +535,8 @@ export default function About() {
               </p>
               <div style={{ display: 'flex', gap: '16px' }}>
                 <a
-                  href="https://www.instagram.com/dysnomia_art.gallery666/"
+                  href={SOCIAL_LINKS.instagram.url}
+                  aria-label="Instagram"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
@@ -556,7 +558,8 @@ export default function About() {
                   </svg>
                 </a>
                 <a
-                  href="https://www.facebook.com/profile.php?id=61575933645818"
+                  href={SOCIAL_LINKS.facebook.url}
+                  aria-label="Facebook"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{

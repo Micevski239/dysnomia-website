@@ -13,7 +13,7 @@ export function convertEURToMKD(priceInEUR: number): number {
 
 export function formatPriceInCurrency(priceInMKD: number, currency: Currency): string {
   if (currency === 'MKD') {
-    return `${priceInMKD.toLocaleString()} MKD`;
+    return `${priceInMKD.toLocaleString('mk-MK')} MKD`;
   }
   const eurPrice = convertMKDToEUR(priceInMKD);
   return `€${eurPrice.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;

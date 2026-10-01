@@ -36,7 +36,9 @@ Deno.serve(async (req: Request) => {
 
     const { data, error } = await supabase
       .from('collections')
-      .select('*, collection_products(count)');
+      .select('*, collection_products(count)')
+      // Service role bypasses RLS — only active collections are public
+      .eq('is_active', true);
 
     if (error) throw error;
 

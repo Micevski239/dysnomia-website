@@ -1,4 +1,5 @@
 import { Component, type ReactNode, type ErrorInfo } from 'react';
+import { isChunkLoadError, reloadOnceForChunkError } from '../lib/chunkReload';
 
 interface Props {
   children: ReactNode;
@@ -8,6 +9,7 @@ interface Props {
 interface State {
   hasError: boolean;
   error: Error | null;
+  reloading?: boolean;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
@@ -21,6 +23,11 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    // A stale chunk after a deploy: reload once to fetch the new build.
+    if (isChunkLoadError(error) && reloadOnceForChunkError()) {
+      this.setState({ reloading: true });
+      return;
+    }
     console.error('Error caught by boundary:', error, errorInfo);
   }
 
@@ -29,6 +36,10 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   render() {
+    if (this.state.reloading) {
+      return null;
+    }
+
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;

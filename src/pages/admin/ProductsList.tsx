@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useProducts, useProductMutations } from '../../hooks/useProducts';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
-import { formatPrice } from '../../lib/utils';
 import { AdminCard, DataTable, SearchInput, StatusBadge, EmptyState } from '../../components/admin';
 import type { Column } from '../../components/admin';
 import type { Product, ProductStatus } from '../../types';
@@ -132,13 +131,6 @@ export default function ProductsList() {
           <p style={{ fontSize: '12px', color: '#AAAAAA', marginTop: '2px' }}>/artwork/{p.slug}</p>
         </div>
       ),
-    },
-    {
-      key: 'price',
-      header: 'Price',
-      sortable: true,
-      sortKey: 'price',
-      render: (p) => <span style={{ fontWeight: 600, color: '#1a1a1a', fontSize: '14px' }}>{formatPrice(p.price)}</span>,
     },
     {
       key: 'status',

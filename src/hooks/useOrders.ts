@@ -1,8 +1,22 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { fetchAllRows } from '../lib/fetchAllRows';
+import { useLanguage } from './useLanguage';
 import type { Order, OrderStatus, CreateOrderData } from '../types';
 
+function toMessage(err: unknown, fallback: string): string {
+  if (err instanceof Error) return err.message;
+  if (err && typeof err === 'object' && 'message' in err && typeof err.message === 'string') {
+    return err.message;
+  }
+  return fallback;
+}
+
+/** Used when an update/delete matched no rows (missing order or blocked by RLS). */
+const NO_ROWS_MESSAGE = 'Order not found or you do not have permission to modify it.';
+
 export function useOrders() {
+  const { language } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,6 +34,7 @@ export function useOrders() {
           p_shipping_address: data.shippingAddress,
           p_items: data.items,
           p_notes: data.notes || null,
+          p_language: language === 'en' ? 'en' : 'mk',
         })
         .single();
 
@@ -30,7 +45,7 @@ export function useOrders() {
       setLoading(false);
       return { data: order as Order, error: null };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create order';
+      const errorMessage = toMessage(err, 'Failed to create order');
       setError(errorMessage);
       setLoading(false);
       return { data: null, error: errorMessage };
@@ -47,8 +62,7 @@ export function useOrders() {
       if (error) throw error;
       return { data: data as Order, error: null };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch order';
-      return { data: null, error: errorMessage };
+      return { data: null, error: toMessage(err, 'Failed to fetch order') };
     }
   };
 
@@ -63,16 +77,38 @@ export function useOrders() {
       if (error) throw error;
       return { data, error: null };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch order';
-      return { data: null, error: errorMessage };
+      return { data: null, error: toMessage(err, 'Failed to fetch order') };
     }
   };
 
+  const updateTrackingNumber = async (
+    id: string,
+    trackingNumber: string
+  ): Promise<{ error: string | null }> => {
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .update({ tracking_number: trackingNumber, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select('id');
+
+      if (error) throw error;
+      if (!data || data.length === 0) throw new Error(NO_ROWS_MESSAGE);
+      return { error: null };
+    } catch (err) {
+      return { error: toMessage(err, 'Failed to update tracking number') };
+    }
+  };
+
+  /**
+   * Updates the status. `changed` is true only when a row actually moved from a
+   * different status to `status`, so callers know whether to send a status email.
+   */
   const updateOrderStatus = async (
     id: string,
     status: OrderStatus,
     trackingNumber?: string
-  ): Promise<{ error: string | null }> => {
+  ): Promise<{ error: string | null; changed: boolean }> => {
     try {
       const updateData: Record<string, unknown> = {
         status,
@@ -82,67 +118,71 @@ export function useOrders() {
         updateData.tracking_number = trackingNumber;
       }
 
-      const { error } = await supabase
+      // `.neq('status', status)` makes a same-status save a no-op, so it can't
+      // trigger a duplicate email.
+      const { data, error } = await supabase
         .from('orders')
         .update(updateData)
-        .eq('id', id);
+        .eq('id', id)
+        .neq('status', status)
+        .select('id');
 
       if (error) throw error;
-      return { error: null };
+      if (data && data.length > 0) return { error: null, changed: true };
+
+      // No row changed: either the status already equals `status`, or the order is missing/blocked.
+      const { data: existing, error: readError } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('id', id)
+        .maybeSingle();
+      if (readError) throw readError;
+      if (!existing) throw new Error(NO_ROWS_MESSAGE);
+
+      // Same status: still persist a provided tracking number.
+      if (trackingNumber !== undefined) {
+        const { error: trackingError } = await updateTrackingNumber(id, trackingNumber);
+        if (trackingError) return { error: trackingError, changed: false };
+      }
+      return { error: null, changed: false };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update order status';
-      return { error: errorMessage };
+      return { error: toMessage(err, 'Failed to update order status'), changed: false };
     }
   };
 
-  const updateTrackingNumber = async (
+  /** Saves internal admin notes (orders.admin_notes). Never touches the customer's `notes`. */
+  const updateAdminNotes = async (
     id: string,
-    trackingNumber: string
+    adminNotes: string
   ): Promise<{ error: string | null }> => {
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('orders')
-        .update({ tracking_number: trackingNumber, updated_at: new Date().toISOString() })
-        .eq('id', id);
+        .update({ admin_notes: adminNotes.trim() || null, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select('id');
 
       if (error) throw error;
+      if (!data || data.length === 0) throw new Error(NO_ROWS_MESSAGE);
       return { error: null };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update tracking number';
-      return { error: errorMessage };
-    }
-  };
-
-  const addOrderNote = async (
-    id: string,
-    notes: string
-  ): Promise<{ error: string | null }> => {
-    try {
-      const { error } = await supabase
-        .from('orders')
-        .update({ notes, updated_at: new Date().toISOString() })
-        .eq('id', id);
-
-      if (error) throw error;
-      return { error: null };
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update order notes';
-      return { error: errorMessage };
+      return { error: toMessage(err, 'Failed to update admin notes') };
     }
   };
 
   const deleteOrder = async (id: string): Promise<{ error: string | null }> => {
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('orders')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .select('id');
 
       if (error) throw error;
+      if (!data || data.length === 0) throw new Error(NO_ROWS_MESSAGE);
       return { error: null };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete order';
-      return { error: errorMessage };
+      return { error: toMessage(err, 'Failed to delete order') };
     }
   };
 
@@ -152,7 +192,7 @@ export function useOrders() {
     getOrderByNumber,
     updateOrderStatus,
     updateTrackingNumber,
-    addOrderNote,
+    updateAdminNotes,
     deleteOrder,
     loading,
     error,
@@ -169,21 +209,25 @@ export function useOrdersList(statusFilter?: OrderStatus) {
     setError(null);
 
     try {
-      let query = supabase
-        .from('orders')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // Page through all orders: PostgREST caps each response at 1000 rows.
+      const { data, error } = await fetchAllRows<Order>((from, to) => {
+        let query = supabase
+          .from('orders')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false });
 
-      if (statusFilter) {
-        query = query.eq('status', statusFilter);
-      }
+        if (statusFilter) {
+          query = query.eq('status', statusFilter);
+        }
 
-      const { data, error } = await query;
+        return query.range(from, to);
+      });
 
       if (error) throw error;
-      setOrders(data || []);
+      setOrders(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch orders');
+      setError(toMessage(err, 'Failed to fetch orders'));
     } finally {
       setLoading(false);
     }
@@ -196,10 +240,29 @@ export function useOrdersList(statusFilter?: OrderStatus) {
   return { orders, loading, error, refetch: fetchOrders };
 }
 
-export function useOrderDetail(id: string | undefined) {
+/**
+ * Loads a single order.
+ * - Public (default): via the `get_order_by_id` RPC (lookup by unguessable UUID).
+ * - Admin (`{ admin: true }`): direct table read under admin RLS, so internal
+ *   columns such as `admin_notes` are available.
+ */
+export function useOrderDetail(id: string | undefined, options?: { admin?: boolean }) {
+  const admin = options?.admin ?? false;
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async (): Promise<Order | null> => {
+    if (!id) return null;
+    if (admin) {
+      const { data, error } = await supabase.from('orders').select('*').eq('id', id).single();
+      if (error) throw error;
+      return data as Order;
+    }
+    const { data, error } = await supabase.rpc('get_order_by_id', { order_id: id }).single();
+    if (error) throw error;
+    return data as Order;
+  }, [id, admin]);
 
   useEffect(() => {
     if (!id) {
@@ -207,42 +270,38 @@ export function useOrderDetail(id: string | undefined) {
       return;
     }
 
+    let isMounted = true;
+
     async function fetchOrder() {
       setLoading(true);
       setError(null);
 
       try {
-        // Use secure RPC for order lookup
-        const { data, error } = await supabase
-          .rpc('get_order_by_id', { order_id: id })
-          .single();
-
-        if (error) throw error;
-        setOrder(data as Order);
+        const data = await load();
+        if (isMounted) setOrder(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch order');
+        if (isMounted) setError(toMessage(err, 'Failed to fetch order'));
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     }
 
     fetchOrder();
-  }, [id]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id, load]);
 
   const refetch = useCallback(async () => {
     if (!id) return;
 
     try {
-      const { data, error } = await supabase
-        .rpc('get_order_by_id', { order_id: id })
-        .single();
-
-      if (error) throw error;
-      setOrder(data as Order);
+      setOrder(await load());
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch order');
+      setError(toMessage(err, 'Failed to fetch order'));
     }
-  }, [id]);
+  }, [id, load]);
 
   return { order, loading, error, refetch };
 }

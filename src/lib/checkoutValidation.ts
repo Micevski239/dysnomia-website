@@ -1,34 +1,37 @@
 import { z } from 'zod';
 
+// Error messages are translation keys (namespace 'checkoutErrors' in
+// LanguageContext); render them with t().
+
 export const checkoutSchema = z.object({
   // Contact Information
   email: z
     .string()
-    .min(1, 'Email is required')
-    .email('Please enter a valid email address'),
+    .min(1, 'checkoutErrors.emailRequired')
+    .email('checkoutErrors.emailInvalid'),
   phone: z
     .string()
-    .min(1, 'Phone number is required')
-    .regex(/^[\d\s\-+()]+$/, 'Please enter a valid phone number'),
+    .min(1, 'checkoutErrors.phoneRequired')
+    .regex(/^[\d\s\-+()]+$/, 'checkoutErrors.phoneInvalid'),
 
   // Shipping Address
   fullName: z
     .string()
-    .min(1, 'Full name is required')
-    .min(2, 'Name must be at least 2 characters'),
+    .min(1, 'checkoutErrors.fullNameRequired')
+    .min(2, 'checkoutErrors.fullNameTooShort'),
   address: z
     .string()
-    .min(1, 'Address is required')
-    .min(5, 'Please enter a complete address'),
+    .min(1, 'checkoutErrors.addressRequired')
+    .min(5, 'checkoutErrors.addressTooShort'),
   city: z
     .string()
-    .min(1, 'City is required'),
+    .min(1, 'checkoutErrors.cityRequired'),
   postalCode: z
     .string()
-    .min(1, 'Postal code is required'),
+    .min(1, 'checkoutErrors.postalCodeRequired'),
   country: z
     .string()
-    .min(1, 'Country is required'),
+    .min(1, 'checkoutErrors.countryRequired'),
 
   // Optional
   notes: z.string().optional(),
@@ -59,24 +62,24 @@ export function validateCheckoutForm(data: unknown): {
 }
 
 export const countryOptions = [
-  { value: 'MK', label: 'North Macedonia' },
-  { value: 'AL', label: 'Albania' },
-  { value: 'BG', label: 'Bulgaria' },
-  { value: 'GR', label: 'Greece' },
-  { value: 'RS', label: 'Serbia' },
-  { value: 'XK', label: 'Kosovo' },
-  { value: 'ME', label: 'Montenegro' },
-  { value: 'HR', label: 'Croatia' },
-  { value: 'SI', label: 'Slovenia' },
-  { value: 'AT', label: 'Austria' },
-  { value: 'DE', label: 'Germany' },
-  { value: 'IT', label: 'Italy' },
-  { value: 'FR', label: 'France' },
-  { value: 'NL', label: 'Netherlands' },
-  { value: 'BE', label: 'Belgium' },
-  { value: 'CH', label: 'Switzerland' },
-  { value: 'GB', label: 'United Kingdom' },
-  { value: 'US', label: 'United States' },
-  { value: 'CA', label: 'Canada' },
-  { value: 'AU', label: 'Australia' },
+  { value: 'MK', label: 'North Macedonia', labelMk: 'Северна Македонија' },
+  { value: 'AL', label: 'Albania', labelMk: 'Албанија' },
+  { value: 'BG', label: 'Bulgaria', labelMk: 'Бугарија' },
+  { value: 'GR', label: 'Greece', labelMk: 'Грција' },
+  { value: 'RS', label: 'Serbia', labelMk: 'Србија' },
+  { value: 'XK', label: 'Kosovo', labelMk: 'Косово' },
+  { value: 'ME', label: 'Montenegro', labelMk: 'Црна Гора' },
+  { value: 'HR', label: 'Croatia', labelMk: 'Хрватска' },
+  { value: 'SI', label: 'Slovenia', labelMk: 'Словенија' },
+  { value: 'AT', label: 'Austria', labelMk: 'Австрија' },
+  { value: 'DE', label: 'Germany', labelMk: 'Германија' },
+  { value: 'IT', label: 'Italy', labelMk: 'Италија' },
+  { value: 'FR', label: 'France', labelMk: 'Франција' },
+  { value: 'NL', label: 'Netherlands', labelMk: 'Холандија' },
+  { value: 'BE', label: 'Belgium', labelMk: 'Белгија' },
+  { value: 'CH', label: 'Switzerland', labelMk: 'Швајцарија' },
+  { value: 'GB', label: 'United Kingdom', labelMk: 'Обединето Кралство' },
+  { value: 'US', label: 'United States', labelMk: 'Соединети Американски Држави' },
+  { value: 'CA', label: 'Canada', labelMk: 'Канада' },
+  { value: 'AU', label: 'Australia', labelMk: 'Австралија' },
 ];

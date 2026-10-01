@@ -1,9 +1,23 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-import type { Review, CreateReviewData } from '../types';
+import { fetchAllRows } from '../lib/fetchAllRows';
+import type { Review, AdminReview, CreateReviewData } from '../types';
+
+/** Public review shape — customer_email is never readable outside the admin RPC. */
+type PublicReviewRow = Omit<Review, 'customer_email'>;
+
+const PUBLIC_REVIEW_COLUMNS = 'id, product_id, customer_name, rating, title, content, is_approved, created_at';
+
+function toMessage(err: unknown, fallback: string): string {
+  if (err instanceof Error) return err.message;
+  if (err && typeof err === 'object' && 'message' in err && typeof err.message === 'string') {
+    return err.message;
+  }
+  return fallback;
+}
 
 export function useReviews(productId: string | undefined) {
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviews, setReviews] = useState<PublicReviewRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [averageRating, setAverageRating] = useState<number | null>(null);
@@ -21,7 +35,7 @@ export function useReviews(productId: string | undefined) {
     try {
       const { data, error } = await supabase
         .from('reviews')
-        .select('id, product_id, customer_name, customer_email, rating, title, content, is_approved, created_at')
+        .select(PUBLIC_REVIEW_COLUMNS)
         .eq('product_id', productId)
         .eq('is_approved', true)
         .order('created_at', { ascending: false });
@@ -39,7 +53,7 @@ export function useReviews(productId: string | undefined) {
         setAverageRating(null);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch reviews');
+      setError(toMessage(err, 'Failed to fetch reviews'));
     } finally {
       setLoading(false);
     }
@@ -76,7 +90,7 @@ export function useReviewMutations() {
       setLoading(false);
       return { success: true, error: null };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to submit review';
+      const errorMessage = toMessage(err, 'Failed to submit review');
       setError(errorMessage);
       setLoading(false);
       return { success: false, error: errorMessage };
@@ -86,8 +100,26 @@ export function useReviewMutations() {
   return { createReview, loading, error };
 }
 
+/** Row shape returned by the admin-only `admin_list_reviews` RPC. */
+interface AdminReviewRow {
+  id: string;
+  product_id: string;
+  customer_name: string;
+  customer_email: string;
+  rating: number;
+  title: string | null;
+  content: string | null;
+  is_approved: boolean;
+  created_at: string;
+  product_title: string | null;
+}
+
+/**
+ * Admin review list. Customer emails are only available through the
+ * `admin_list_reviews` RPC (column privileges block them via REST).
+ */
 export function useAllReviews(showPendingOnly = false) {
-  const [reviews, setReviews] = useState<(Review & { product_title?: string })[]>([]);
+  const [reviews, setReviews] = useState<AdminReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -96,28 +128,30 @@ export function useAllReviews(showPendingOnly = false) {
     setError(null);
 
     try {
-      let query = supabase
-        .from('reviews')
-        .select('id, product_id, customer_name, customer_email, rating, title, content, is_approved, created_at, products:product_id (title)')
-        .order('created_at', { ascending: false });
+      // Paged: PostgREST caps RPC results at 1000 rows per request too.
+      const { data, error } = await fetchAllRows<AdminReviewRow>((from, to) => {
+        let query = supabase
+          .rpc('admin_list_reviews')
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false });
 
-      if (showPendingOnly) {
-        query = query.eq('is_approved', false);
-      }
+        if (showPendingOnly) {
+          query = query.eq('is_approved', false);
+        }
 
-      const { data, error } = await query;
+        return query.range(from, to);
+      });
 
       if (error) throw error;
 
-      // Transform data to include product title
-      const transformedData = (data || []).map((review: any) => ({
-        ...review,
-        product_title: review.products?.title || 'Unknown Product',
-      }));
-
-      setReviews(transformedData);
+      setReviews(
+        data.map((review) => ({
+          ...review,
+          product_title: review.product_title || 'Unknown Product',
+        }))
+      );
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch reviews');
+      setError(toMessage(err, 'Failed to fetch reviews'));
     } finally {
       setLoading(false);
     }
@@ -129,30 +163,33 @@ export function useAllReviews(showPendingOnly = false) {
 
   const approveReview = async (id: string): Promise<{ error: string | null }> => {
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('reviews')
         .update({ is_approved: true })
-        .eq('id', id);
+        .eq('id', id)
+        .select('id');
 
       if (error) throw error;
+      if (!data || data.length === 0) throw new Error('Review not found or could not be updated.');
 
       fetchReviews();
       return { error: null };
     } catch (err) {
-      return { error: err instanceof Error ? err.message : 'Failed to approve review' };
+      return { error: toMessage(err, 'Failed to approve review') };
     }
   };
 
   const deleteReview = async (id: string): Promise<{ error: string | null }> => {
     try {
-      const { error } = await supabase.from('reviews').delete().eq('id', id);
+      const { data, error } = await supabase.from('reviews').delete().eq('id', id).select('id');
 
       if (error) throw error;
+      if (!data || data.length === 0) throw new Error('Review not found or could not be deleted.');
 
       fetchReviews();
       return { error: null };
     } catch (err) {
-      return { error: err instanceof Error ? err.message : 'Failed to delete review' };
+      return { error: toMessage(err, 'Failed to delete review') };
     }
   };
 

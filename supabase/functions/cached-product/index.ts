@@ -60,6 +60,8 @@ Deno.serve(async (req: Request) => {
       .from('products')
       .select('*')
       .eq('slug', slug)
+      // Service role bypasses RLS — never expose drafts on the public site
+      .in('status', ['published', 'sold'])
       .single();
 
     if (error) {

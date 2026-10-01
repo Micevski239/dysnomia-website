@@ -51,7 +51,7 @@ export default function Shipping() {
 
         {/* Return & Exchange Policy Details */}
         <section style={{ marginBottom: '48px' }}>
-          <p style={labelStyle}>{t('shipping.returnsLabel')}</p>
+          <p id="returns" style={labelStyle}>{t('shipping.returnsLabel')}</p>
           <p style={paragraphStyle}>{t('shipping.returnsText')}</p>
 
           <p style={labelStyle}>{t('shipping.exchangesLabel')}</p>

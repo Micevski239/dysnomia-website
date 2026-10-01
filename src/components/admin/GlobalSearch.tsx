@@ -11,6 +11,14 @@ interface SearchResult {
   link: string;
 }
 
+/** Subset of an `admin_list_reviews` row used by search. */
+interface ReviewHit {
+  id: string;
+  customer_name: string;
+  rating: number;
+  product_title: string | null;
+}
+
 interface GlobalSearchProps {
   isOpen: boolean;
   onClose: () => void;
@@ -64,9 +72,11 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
           .select('id, order_number, customer_name, total_amount')
           .or(`order_number.ilike.%${sanitized}%,customer_name.ilike.%${sanitized}%,customer_email.ilike.%${sanitized}%`)
           .limit(5),
+        // reviews.customer_email isn't readable via REST; the admin-only RPC exposes it,
+        // and PostgREST applies these filters to the RPC's result set server-side.
         supabase
-          .from('reviews')
-          .select('id, customer_name, rating, products:product_id (title)')
+          .rpc('admin_list_reviews')
+          .select('id, customer_name, rating, product_title')
           .or(`customer_name.ilike.%${sanitized}%,customer_email.ilike.%${sanitized}%`)
           .limit(5),
       ]);
@@ -97,11 +107,11 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
 
       if (reviews) {
         searchResults.push(
-          ...reviews.map((r: any) => ({
+          ...(reviews as ReviewHit[]).map((r) => ({
             id: `review-${r.id}`,
             type: 'review' as const,
             title: `Review by ${r.customer_name}`,
-            subtitle: `${r.products?.title || 'Product'} - ${r.rating} stars`,
+            subtitle: `${r.product_title || 'Product'} - ${r.rating} stars`,
             link: '/admin/reviews',
           }))
         );

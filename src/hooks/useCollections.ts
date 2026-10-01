@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { PostgrestError } from '@supabase/supabase-js';
 import { supabase, PUBLIC_FUNCTION_HEADERS } from '../lib/supabase';
 import { validateImageFile } from '../lib/fileValidation';
+import { storageGet, storageSet } from '../lib/storage';
 import type { Collection, CollectionFormData } from '../types';
 
 async function fetchCachedCollections(): Promise<Collection[] | null> {
@@ -16,7 +17,7 @@ async function fetchCachedCollections(): Promise<Collection[] | null> {
   }
 }
 
-async function invalidateCollectionCache(): Promise<void> {
+export async function invalidateCollectionCache(): Promise<void> {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
@@ -31,18 +32,13 @@ async function invalidateCollectionCache(): Promise<void> {
 
 const LEGACY_COVER_FIELD_KEY = 'collections:useLegacyCoverField';
 
-const getInitialLegacyFlag = () => {
-  if (typeof window === 'undefined') return false;
-  return window.localStorage.getItem(LEGACY_COVER_FIELD_KEY) === 'true';
-};
+const getInitialLegacyFlag = () => storageGet('local', LEGACY_COVER_FIELD_KEY) === 'true';
 
 let useLegacyCoverField = getInitialLegacyFlag();
 
 const persistLegacyFlag = (value: boolean) => {
   useLegacyCoverField = value;
-  if (typeof window !== 'undefined') {
-    window.localStorage.setItem(LEGACY_COVER_FIELD_KEY, value ? 'true' : 'false');
-  }
+  storageSet('local', LEGACY_COVER_FIELD_KEY, value ? 'true' : 'false');
 };
 
 export function useCollections(includeInactive = false) {

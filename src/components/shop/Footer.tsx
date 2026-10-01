@@ -1,6 +1,8 @@
 import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { InstagramIcon, FacebookIcon } from './Icons';
+import { SOCIAL_LINKS, CONTACT_EMAIL } from '../../config/social';
+import NewsletterSignup from './NewsletterSignup';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 import { useLanguage } from '../../hooks/useLanguage';
 
@@ -18,7 +20,9 @@ const footerLinks = {
   support: [
     { labelKey: 'about.contactUs', href: '/contact' },
     { labelKey: 'footer.shippingPolicy', href: '/shipping' },
-    { labelKey: 'footer.returnPolicy', href: '/shipping' }
+    { labelKey: 'footer.returnPolicy', href: '/shipping#returns' },
+    { labelKey: 'footer.faq', href: '/faq' },
+    { labelKey: 'footer.privacyPolicy', href: '/privacy' }
   ]
 };
 
@@ -47,6 +51,8 @@ export default memo(function Footer() {
   return (
     <footer style={{ backgroundColor: '#0A0A0A', borderTop: '1px solid #1A1A1A' }}>
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: `clamp(32px, 6vw, 64px) clamp(16px, 4vw, 48px)` }}>
+        <NewsletterSignup />
+
         {/* Main Footer Grid */}
         <div
           style={{
@@ -109,7 +115,7 @@ export default memo(function Footer() {
 
             {/* Email */}
             <a
-              href="mailto:contact_dysnomia@yahoo.com"
+              href={`mailto:${CONTACT_EMAIL}`}
               style={{
                 ...linkStyle,
                 display: 'flex',
@@ -119,13 +125,14 @@ export default memo(function Footer() {
               onMouseEnter={(e) => e.currentTarget.style.color = '#FBBE63'}
               onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
             >
-              contact_dysnomia@yahoo.com
+              {CONTACT_EMAIL}
             </a>
 
             {/* Social Links */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '16px' }}>
               <a
-                href="https://www.instagram.com/dysnomia_art.gallery666/"
+                href={SOCIAL_LINKS.instagram.url}
+                aria-label="Instagram"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
@@ -142,7 +149,8 @@ export default memo(function Footer() {
                 <InstagramIcon className="w-5 h-5" />
               </a>
               <a
-                href="https://www.facebook.com/profile.php?id=61575933645818"
+                href={SOCIAL_LINKS.facebook.url}
+                aria-label="Facebook"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
@@ -174,23 +182,6 @@ export default memo(function Footer() {
             gap: '24px'
           }}
         >
-          {/* Country Selector */}
-          <button
-            style={{
-              fontSize: '11px',
-              fontWeight: 700,
-              letterSpacing: '1px',
-              color: 'rgba(255,255,255,0.5)',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              transition: 'color 0.2s'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.color = '#FBBE63'}
-            onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
-          >
-           
-          </button>
 
           {/* Logo */}
           <Link

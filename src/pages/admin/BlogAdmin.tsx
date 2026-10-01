@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { useBlogMutations } from '../../hooks/useBlog';
 import { AdminCard } from '../../components/admin';
-import { Plus, Trash2, Save, Eye, EyeOff, Image as ImageIcon } from 'lucide-react';
-import type { BlogPost } from '../../types';
+import { generateSlug } from '../../lib/utils';
+import { Plus, Trash2, Save, Eye, EyeOff, Image as ImageIcon, X } from 'lucide-react';
+import type { BlogImage, BlogPost } from '../../types';
+
+const MAX_GALLERY_IMAGES = 2;
 
 type Draft = {
   title: string;
@@ -13,6 +16,7 @@ type Draft = {
   content: string;
   content_mk: string;
   cover_image: string | null;
+  gallery_images: BlogImage[];
   author: string;
   is_published: boolean;
   published_at: string | null;
@@ -27,22 +31,15 @@ const emptyDraft: Draft = {
   content: '',
   content_mk: '',
   cover_image: null,
+  gallery_images: [],
   author: 'Dysnomia',
   is_published: false,
   published_at: null,
 };
 
-function generateSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-}
-
 export default function BlogAdmin() {
-  const { posts, loading, addPost, updatePost, deletePost } = useBlogMutations();
+  const { posts, loading, addPost, updatePost, deletePost, uploadImage } = useBlogMutations();
+  const [uploadingSlot, setUploadingSlot] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [coverFile, setCoverFile] = useState<File | null>(null);
@@ -74,6 +71,42 @@ export default function BlogAdmin() {
     }
   };
 
+  const handleGalleryAdd = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file || draft.gallery_images.length >= MAX_GALLERY_IMAGES) return;
+    setUploadingSlot(draft.gallery_images.length);
+    try {
+      const url = await uploadImage(file);
+      if (url) {
+        setDraft((prev) => ({
+          ...prev,
+          gallery_images: [...prev.gallery_images, { url, caption: '', caption_mk: '', after_paragraph: null }].slice(
+            0,
+            MAX_GALLERY_IMAGES
+          ),
+        }));
+      }
+    } catch (err) {
+      showFeedback(err instanceof Error ? `Upload failed: ${err.message}` : 'Upload failed');
+    }
+    setUploadingSlot(null);
+  };
+
+  const updateGalleryImage = (index: number, changes: Partial<BlogImage>) => {
+    setDraft((prev) => ({
+      ...prev,
+      gallery_images: prev.gallery_images.map((img, i) => (i === index ? { ...img, ...changes } : img)),
+    }));
+  };
+
+  const removeGalleryImage = (index: number) => {
+    setDraft((prev) => ({
+      ...prev,
+      gallery_images: prev.gallery_images.filter((_, i) => i !== index),
+    }));
+  };
+
   const handleAdd = async () => {
     if (!draft.title.trim()) return;
     setSaving(true);
@@ -88,6 +121,7 @@ export default function BlogAdmin() {
           content: draft.content || null,
           content_mk: draft.content_mk || null,
           cover_image: draft.cover_image,
+          gallery_images: draft.gallery_images,
           author: draft.author || 'Dysnomia',
           is_published: draft.is_published,
           published_at: draft.is_published ? new Date().toISOString() : null,
@@ -100,6 +134,8 @@ export default function BlogAdmin() {
         setCoverPreview(null);
         setIsAdding(false);
         showFeedback('Blog post added!');
+      } else {
+        showFeedback(`Error adding post: ${error.message}`);
       }
     } catch {
       showFeedback('Error adding post');
@@ -122,6 +158,7 @@ export default function BlogAdmin() {
           content: draft.content || null,
           content_mk: draft.content_mk || null,
           cover_image: draft.cover_image,
+          gallery_images: draft.gallery_images,
           author: draft.author || 'Dysnomia',
           is_published: draft.is_published,
           published_at: draft.published_at,
@@ -134,6 +171,8 @@ export default function BlogAdmin() {
         setCoverFile(null);
         setCoverPreview(null);
         showFeedback('Blog post updated!');
+      } else {
+        showFeedback(`Error updating post: ${error.message}`);
       }
     } catch {
       showFeedback('Error updating post');
@@ -170,6 +209,7 @@ export default function BlogAdmin() {
       content: post.content || '',
       content_mk: post.content_mk || '',
       cover_image: post.cover_image,
+      gallery_images: post.gallery_images || [],
       author: post.author,
       is_published: post.is_published,
       published_at: post.published_at,
@@ -352,6 +392,109 @@ export default function BlogAdmin() {
                 border: '1px solid #E8E8E8',
               }}
             />
+          )}
+        </div>
+      </div>
+
+      {/* Additional images (shown between paragraphs) */}
+      <div>
+        <label style={labelStyle}>
+          Additional images ({draft.gallery_images.length}/{MAX_GALLERY_IMAGES}) — shown between paragraphs
+        </label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {draft.gallery_images.map((image, index) => (
+            <div
+              key={image.url}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '96px 1fr 1fr 120px 32px',
+                gap: '10px',
+                alignItems: 'center',
+                padding: '10px',
+                borderRadius: '10px',
+                border: '1px solid #E8E8E8',
+                backgroundColor: '#FFFFFF',
+              }}
+            >
+              <img
+                src={image.url}
+                alt=""
+                style={{ width: '96px', height: '64px', objectFit: 'cover', borderRadius: '6px' }}
+              />
+              <input
+                style={inputStyle}
+                value={image.caption || ''}
+                onChange={(e) => updateGalleryImage(index, { caption: e.target.value })}
+                placeholder="Caption (EN)"
+              />
+              <input
+                style={inputStyle}
+                value={image.caption_mk || ''}
+                onChange={(e) => updateGalleryImage(index, { caption_mk: e.target.value })}
+                placeholder="Опис (MK)"
+              />
+              <input
+                style={inputStyle}
+                type="number"
+                min={1}
+                value={image.after_paragraph ?? ''}
+                onChange={(e) =>
+                  updateGalleryImage(index, {
+                    after_paragraph: e.target.value ? Math.max(1, Number(e.target.value)) : null,
+                  })
+                }
+                placeholder="After ¶ (auto)"
+                title="Show after paragraph number… (empty = spread automatically)"
+              />
+              <button
+                type="button"
+                onClick={() => removeGalleryImage(index)}
+                title="Remove image"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: 'transparent',
+                  color: '#999',
+                }}
+              >
+                <X style={{ width: '16px', height: '16px' }} />
+              </button>
+            </div>
+          ))}
+
+          {draft.gallery_images.length < MAX_GALLERY_IMAGES && (
+            <label
+              style={{
+                display: 'inline-flex',
+                alignSelf: 'flex-start',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 16px',
+                borderRadius: '10px',
+                border: '1px dashed #CCCCCC',
+                cursor: uploadingSlot !== null ? 'wait' : 'pointer',
+                backgroundColor: '#FFFFFF',
+                fontSize: '13px',
+                color: '#666',
+                opacity: uploadingSlot !== null ? 0.6 : 1,
+              }}
+            >
+              <Plus style={{ width: '16px', height: '16px' }} />
+              {uploadingSlot !== null ? 'Uploading…' : 'Add image'}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleGalleryAdd}
+                disabled={uploadingSlot !== null}
+                style={{ display: 'none' }}
+              />
+            </label>
           )}
         </div>
       </div>
@@ -632,6 +775,9 @@ export default function BlogAdmin() {
             </li>
             <li>
               <code style={{ backgroundColor: '#F5F5F5', padding: '1px 4px', borderRadius: '3px' }}>cover_image</code> - text
+            </li>
+            <li>
+              <code style={{ backgroundColor: '#F5F5F5', padding: '1px 4px', borderRadius: '3px' }}>gallery_images</code> - jsonb, default '[]' (migration 009)
             </li>
             <li>
               <code style={{ backgroundColor: '#F5F5F5', padding: '1px 4px', borderRadius: '3px' }}>author</code> - text, default 'Dysnomia'

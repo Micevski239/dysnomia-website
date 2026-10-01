@@ -1,12 +1,18 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { hasAnalyticsConsent, onConsentChange } from '../lib/consent';
+import { storageGet, storageSet, randomId } from '../lib/storage';
+
+// Fallback when sessionStorage is unavailable: one id per page load.
+let memorySessionId: string | null = null;
 
 function getSessionId(): string {
-  let id = sessionStorage.getItem('pv_session');
+  let id = storageGet('session', 'pv_session');
   if (!id) {
-    id = crypto.randomUUID();
-    sessionStorage.setItem('pv_session', id);
+    id = memorySessionId ?? randomId();
+    memorySessionId = id;
+    storageSet('session', 'pv_session', id);
   }
   return id;
 }
@@ -14,8 +20,15 @@ function getSessionId(): string {
 export function usePageTracking() {
   const location = useLocation();
   const lastTrackedPath = useRef<string>('');
+  const [consented, setConsented] = useState<boolean>(hasAnalyticsConsent);
+
+  // Start (or stop) tracking as soon as the visitor answers the cookie banner.
+  useEffect(() => onConsentChange((state) => setConsented(state === 'accepted')), []);
 
   useEffect(() => {
+    // Page views are only recorded after the visitor accepted analytics cookies.
+    if (!consented) return;
+
     const path = location.pathname;
 
     // Skip admin routes and duplicate tracking (React strict mode)
@@ -30,5 +43,5 @@ export function usePageTracking() {
       user_agent: navigator.userAgent,
       screen_width: window.innerWidth,
     }).then(); // fire-and-forget
-  }, [location.pathname]);
+  }, [location.pathname, consented]);
 }

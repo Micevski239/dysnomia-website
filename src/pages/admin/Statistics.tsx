@@ -108,8 +108,8 @@ function formatDate(dateStr: string) {
 
 export default function Statistics() {
   const [days, setDays] = useState(30);
-  const { stats, loading } = useVisitorStats(days);
-  const { summary, viewsOverTime, popularPages, deviceBreakdown, topReferrers } = stats;
+  const { stats, loading, error } = useVisitorStats(days);
+  const { summary, viewsOverTime, popularPages, deviceBreakdown, topReferrers, truncated, rowsLoaded } = stats;
 
   const chartData = viewsOverTime.map((d) => ({
     ...d,
@@ -147,6 +147,40 @@ export default function Statistics() {
           ))}
         </div>
       </div>
+
+      {error && (
+        <div
+          role="alert"
+          style={{
+            backgroundColor: '#FEF2F2',
+            border: '1px solid #FECACA',
+            borderRadius: '12px',
+            padding: '16px 20px',
+            color: '#DC2626',
+            fontSize: '14px',
+          }}
+        >
+          Failed to load visitor statistics: {error}
+        </div>
+      )}
+
+      {!loading && truncated && (
+        <div
+          role="status"
+          style={{
+            backgroundColor: '#FFFBEB',
+            border: '1px solid #FDE68A',
+            borderRadius: '12px',
+            padding: '16px 20px',
+            color: '#92400E',
+            fontSize: '14px',
+          }}
+        >
+          This range has more page views than can be loaded at once. The chart and tables are
+          based on the most recent {rowsLoaded.toLocaleString()} views only (the summary cards
+          are complete). Choose a shorter range for full detail.
+        </div>
+      )}
 
       {/* Summary Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '24px' }}>

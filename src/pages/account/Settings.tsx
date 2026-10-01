@@ -1,15 +1,43 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type CSSProperties } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../../context/AuthContext';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useCurrency } from '../../hooks/useCurrency';
+import { useUserProfile } from '../../hooks/useUserProfile';
+
+const inputStyle: CSSProperties = {
+  width: '100%',
+  padding: '12px 14px',
+  fontSize: '14px',
+  color: '#1a1a1a',
+  backgroundColor: '#ffffff',
+  border: '1px solid #e5e5e5',
+  borderRadius: '4px',
+  outline: 'none',
+  boxSizing: 'border-box',
+};
+
+const fieldLabelStyle: CSSProperties = {
+  display: 'block',
+  fontSize: '13px',
+  fontWeight: 500,
+  color: '#6b6b6b',
+  marginBottom: '4px',
+};
 
 export default function AccountSettings() {
   const { user, loading: authLoading } = useAuthContext();
   const { t, language, setLanguage } = useLanguage();
   const { currency, setCurrency } = useCurrency();
   const navigate = useNavigate();
-  const [saved, setSaved] = useState(false);
+  const { profile, loading: profileLoading, error: profileError, saveProfile } = useUserProfile(user?.id);
+  // Unsaved edits; fields fall back to the stored profile until edited.
+  const [edits, setEdits] = useState<{ full_name?: string; phone?: string }>({});
+  const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState<'saved' | 'error' | null>(null);
+
+  const fullName = edits.full_name ?? profile?.full_name ?? '';
+  const phone = edits.phone ?? profile?.phone ?? '';
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -17,9 +45,24 @@ export default function AccountSettings() {
     }
   }, [user, authLoading, navigate]);
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSave = async () => {
+    if (saving) return;
+    setSaving(true);
+    setStatus(null);
+    const { error } = await saveProfile({
+      full_name: fullName.trim() || null,
+      phone: phone.trim() || null,
+      preferred_language: language,
+      preferred_currency: currency,
+    });
+    setSaving(false);
+    if (error) {
+      setStatus('error');
+      return;
+    }
+    setEdits({});
+    setStatus('saved');
+    setTimeout(() => setStatus((s) => (s === 'saved' ? null : s)), 3000);
   };
 
   if (authLoading) {
@@ -91,7 +134,7 @@ export default function AccountSettings() {
               d="M10 19l-7-7m0 0l7-7m-7 7h18"
             />
           </svg>
-          Back to Account
+          {t('account.backToAccount')}
         </Link>
 
         <h1
@@ -105,8 +148,9 @@ export default function AccountSettings() {
           {t('account.settings')}
         </h1>
 
-        {saved && (
+        {status === 'saved' && (
           <div
+            role="status"
             style={{
               backgroundColor: '#f0fdf4',
               border: '1px solid #bbf7d0',
@@ -115,7 +159,23 @@ export default function AccountSettings() {
               marginBottom: '24px',
             }}
           >
-            <p style={{ color: '#166534', fontSize: '14px' }}>Settings saved successfully!</p>
+            <p style={{ color: '#166534', fontSize: '14px' }}>{t('account.settingsSaved')}</p>
+          </div>
+        )}
+        {(status === 'error' || profileError) && (
+          <div
+            role="alert"
+            style={{
+              backgroundColor: '#fef2f2',
+              border: '1px solid #fecaca',
+              borderRadius: '8px',
+              padding: '12px 16px',
+              marginBottom: '24px',
+            }}
+          >
+            <p style={{ color: '#991b1b', fontSize: '14px' }}>
+              {status === 'error' ? t('account.settingsSaveError') : t('account.settingsLoadError')}
+            </p>
           </div>
         )}
 
@@ -136,21 +196,41 @@ export default function AccountSettings() {
               marginBottom: '16px',
             }}
           >
-            Account Information
+            {t('account.accountInformation')}
           </h2>
-          <div>
-            <label
-              style={{
-                display: 'block',
-                fontSize: '13px',
-                fontWeight: 500,
-                color: '#6b6b6b',
-                marginBottom: '4px',
-              }}
-            >
-              Email
-            </label>
+          <div style={{ marginBottom: '16px' }}>
+            <span style={fieldLabelStyle}>{t('account.email')}</span>
             <p style={{ color: '#1a1a1a' }}>{user.email}</p>
+          </div>
+          <div style={{ marginBottom: '16px' }}>
+            <label htmlFor="settings-full-name" style={fieldLabelStyle}>
+              {t('account.fullName')}
+            </label>
+            <input
+              id="settings-full-name"
+              type="text"
+              autoComplete="name"
+              maxLength={120}
+              value={fullName}
+              disabled={profileLoading}
+              onChange={(e) => setEdits((prev) => ({ ...prev, full_name: e.target.value }))}
+              style={inputStyle}
+            />
+          </div>
+          <div>
+            <label htmlFor="settings-phone" style={fieldLabelStyle}>
+              {t('account.phone')}
+            </label>
+            <input
+              id="settings-phone"
+              type="tel"
+              autoComplete="tel"
+              maxLength={30}
+              value={phone}
+              disabled={profileLoading}
+              onChange={(e) => setEdits((prev) => ({ ...prev, phone: e.target.value }))}
+              style={inputStyle}
+            />
           </div>
         </section>
 
@@ -171,7 +251,7 @@ export default function AccountSettings() {
               marginBottom: '20px',
             }}
           >
-            Preferences
+            {t('account.preferences')}
           </h2>
 
           <div style={{ marginBottom: '20px' }}>
@@ -184,7 +264,7 @@ export default function AccountSettings() {
                 marginBottom: '8px',
               }}
             >
-              Language
+              {t('account.language')}
             </label>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button
@@ -230,7 +310,7 @@ export default function AccountSettings() {
                 marginBottom: '8px',
               }}
             >
-              Currency
+              {t('account.currency')}
             </label>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button
@@ -270,6 +350,7 @@ export default function AccountSettings() {
         {/* Save Button */}
         <button
           onClick={handleSave}
+          disabled={saving || profileLoading}
           style={{
             width: '100%',
             padding: '16px',
@@ -279,10 +360,11 @@ export default function AccountSettings() {
             fontSize: '15px',
             border: 'none',
             borderRadius: '4px',
-            cursor: 'pointer',
+            cursor: saving || profileLoading ? 'default' : 'pointer',
+            opacity: saving || profileLoading ? 0.7 : 1,
           }}
         >
-          {t('common.save')} Settings
+          {saving ? t('account.saving') : t('account.saveSettings')}
         </button>
       </div>
     </div>
