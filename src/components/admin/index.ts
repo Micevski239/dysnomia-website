@@ -7,3 +7,4 @@ export { default as SearchInput } from './SearchInput';
 export { default as EmptyState } from './EmptyState';
 export { default as ActivityFeed } from './ActivityFeed';
 export type { ActivityItem } from './ActivityFeed';
+export { default as NewsletterComposer } from './NewsletterComposer';

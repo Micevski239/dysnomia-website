@@ -8,6 +8,7 @@ export { default as BrandStory } from './BrandStory';
 export { default as PressLogos } from './PressLogos';
 export { default as Footer } from './Footer';
 export { default as CookieConsent } from './CookieConsent';
+export { default as NewsletterInline } from './NewsletterInline';
 export { default as USPSection } from './USPSection';
 export { default as GalleryTour } from './GalleryTour';
 

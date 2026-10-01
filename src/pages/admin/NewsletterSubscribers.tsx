@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Download, Trash2, UserMinus } from 'lucide-react';
-import { AdminCard } from '../../components/admin';
+import { AdminCard, NewsletterComposer } from '../../components/admin';
 import { useNewsletterSubscribers, type NewsletterSubscriber } from '../../hooks/useNewsletterSubscribers';
 
 type Filter = 'subscribed' | 'unsubscribed' | 'all';
@@ -30,7 +30,9 @@ export default function NewsletterSubscribers() {
     );
   }, [subscribers, filter, search]);
 
-  const activeCount = subscribers.filter((s) => s.status === 'subscribed').length;
+  const active = subscribers.filter((s) => s.status === 'subscribed');
+  const activeCount = active.length;
+  const englishCount = active.filter((s) => s.language === 'en').length;
 
   const handleExport = () => {
     const blob = new Blob(['﻿' + toCsv(visible)], { type: 'text/csv;charset=utf-8' });
@@ -47,10 +49,12 @@ export default function NewsletterSubscribers() {
       <div>
         <h1 className="text-2xl font-bold text-[#1a1a1a] mb-1">Newsletter</h1>
         <p className="text-sm text-[#777]">
-          {activeCount} active subscribers · sign-ups from the footer form. Export to CSV for Brevo/Mailchimp, or set the
-          BREVO_API_KEY and BREVO_LIST_ID secrets for automatic sync.
+          {activeCount} active subscribers · sign-ups from the site forms. Write a newsletter below and send it to all of
+          them, or export the list to CSV.
         </p>
       </div>
+
+      <NewsletterComposer activeCount={activeCount} englishCount={englishCount} />
 
       <AdminCard
         title={`Subscribers (${visible.length})`}

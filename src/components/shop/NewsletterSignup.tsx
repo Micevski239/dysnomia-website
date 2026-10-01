@@ -1,52 +1,12 @@
-import { useState, type FormEvent } from 'react';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
-import { subscribeToNewsletter, type NewsletterError } from '../../lib/newsletter';
-
-const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-
-const ERROR_KEYS: Record<NewsletterError, string> = {
-  invalid_email: 'newsletter.invalidEmail',
-  consent_required: 'newsletter.consentRequired',
-  rate_limited: 'newsletter.rateLimited',
-  invalid_token: 'newsletter.error',
-  server_error: 'newsletter.error',
-};
+import { useNewsletterForm } from '../../hooks/useNewsletterForm';
 
 export default function NewsletterSignup() {
-  const { language, t } = useLanguage();
+  const { t } = useLanguage();
   const { isMobile } = useBreakpoint();
-  const [email, setEmail] = useState('');
-  const [consent, setConsent] = useState(false);
-  const [website, setWebsite] = useState(''); // honeypot
-  const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
-  const [message, setMessage] = useState('');
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!EMAIL_RE.test(email.trim())) {
-      setStatus('error');
-      setMessage(t('newsletter.invalidEmail'));
-      return;
-    }
-    if (!consent) {
-      setStatus('error');
-      setMessage(t('newsletter.consentRequired'));
-      return;
-    }
-
-    setStatus('sending');
-    const result = await subscribeToNewsletter({ email: email.trim(), consent, language, website, source: 'footer' });
-    if (result.success) {
-      setStatus('success');
-      setMessage(t('newsletter.success'));
-      setEmail('');
-      setConsent(false);
-    } else {
-      setStatus('error');
-      setMessage(t(ERROR_KEYS[result.error || 'server_error']));
-    }
-  };
+  const { email, setEmail, consent, setConsent, website, setWebsite, status, message, handleSubmit } =
+    useNewsletterForm('footer');
 
   return (
     <section

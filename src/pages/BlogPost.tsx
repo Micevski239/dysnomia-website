@@ -6,6 +6,7 @@ import { useLanguage } from '../hooks/useLanguage';
 import { useSlugRedirect } from '../hooks/useSlugRedirect';
 import { localize } from '../lib/localize';
 import SEO, { ArticleStructuredData, BreadcrumbStructuredData } from '../components/SEO';
+import { NewsletterInline } from '../components/shop';
 import type { BlogImage } from '../types';
 
 function estimateReadTime(content: string | null): number {
@@ -283,6 +284,11 @@ export default function BlogPostPage() {
           {trailingImages.map((image) => (
             <BlogFigure key={image.url} image={image} language={language} />
           ))}
+
+          {/* Newsletter sign-up */}
+          <div style={{ clear: 'both', paddingTop: '48px' }}>
+            <NewsletterInline source="blog-post" title={t('newsletter.blogTitle')} description={t('newsletter.blogText')} />
+          </div>
 
           {/* Back to Blog CTA */}
           <div style={{ clear: 'both', paddingTop: '32px' }}>
