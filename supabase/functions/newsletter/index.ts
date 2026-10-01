@@ -93,7 +93,8 @@ async function sendWelcome(email: string, language: Lang, token: string): Promis
       subject,
       html,
       headers: {
-        'List-Unsubscribe': `<${unsubscribeUrl}>`,
+        // One-click unsubscribe is a POST; api/unsubscribe.js handles it (www: the bare domain redirects)
+        'List-Unsubscribe': `<https://www.dysnomiagallery.com/api/unsubscribe?token=${token}>`,
         'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
       },
     }),

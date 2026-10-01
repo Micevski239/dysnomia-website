@@ -21,6 +21,8 @@ export interface NewsletterDraft {
   button_url: string;
   button_label_mk: string;
   button_label_en: string;
+  /** 'simple' = letter-like, more likely to reach the main inbox; 'designed' = branded layout. */
+  style: 'simple' | 'designed';
 }
 
 interface SendResult {
