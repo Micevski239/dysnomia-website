@@ -173,8 +173,29 @@ async function checkPrices() {
   }
 }
 
+/**
+ * The code depends on migrations 009 + 010 (supabase/release/2026-10-release.sql):
+ * e.g. checkout calls create_validated_order with p_language. Deploying the code
+ * before the database would break checkout, so stop the build until the release
+ * SQL is applied. public.slug_redirects (publicly readable) is the marker.
+ */
+async function checkDatabaseRelease() {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return;
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/slug_redirects?select=entity&limit=1`, {
+    headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+  });
+  if (res.status === 404 || res.status === 400) {
+    failures.push(
+      'Database: release SQL not applied yet. Run supabase/release/2026-10-release.sql in Supabase before deploying this code.'
+    );
+    return;
+  }
+  if (!res.ok) throw new Error(`slug_redirects: ${res.status}`);
+  console.log('[check-site] Database release OK — migrations 009/010 are applied.');
+}
+
 checkSocialLinks();
-for (const check of [checkKidsCollection, checkPrices]) {
+for (const check of [checkDatabaseRelease, checkKidsCollection, checkPrices]) {
   try {
     await check();
   } catch (err) {
