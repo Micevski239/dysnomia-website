@@ -1,5 +1,6 @@
-import { Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Suspense, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { supabase } from './lib/supabase';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
@@ -38,6 +39,8 @@ const OrderConfirmation = lazyWithReload(() => import('./pages/OrderConfirmation
 // Account pages
 const CustomerLogin = lazyWithReload(() => import('./pages/auth/Login'));
 const Register = lazyWithReload(() => import('./pages/auth/Register'));
+const ForgotPassword = lazyWithReload(() => import('./pages/auth/ForgotPassword'));
+const ResetPassword = lazyWithReload(() => import('./pages/auth/ResetPassword'));
 const AccountDashboard = lazyWithReload(() => import('./pages/account/Dashboard'));
 const AccountOrders = lazyWithReload(() => import('./pages/account/Orders'));
 const AccountWishlist = lazyWithReload(() => import('./pages/account/Wishlist'));
@@ -70,6 +73,30 @@ function PageLoader() {
   return <DysnomiaLoader />;
 }
 
+/**
+ * If the reset-password URL is not in Supabase's redirect allow-list, the e-mail
+ * link lands on the home page instead. Send the visitor to the form either way.
+ */
+// Read at module load: Supabase strips the token from the URL shortly afterwards.
+const openedFromRecoveryLink = window.location.hash.includes('type=recovery');
+
+function PasswordRecoveryRedirect() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    // The PASSWORD_RECOVERY event can fire before this effect subscribes.
+    if (openedFromRecoveryLink && window.location.pathname !== '/reset-password') {
+      navigate('/reset-password', { replace: true });
+    }
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') navigate('/reset-password', { replace: true });
+    });
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+  return null;
+}
+
 function App() {
   return (
     <LanguageProvider>
@@ -79,6 +106,7 @@ function App() {
             <AuthProvider>
               <BrowserRouter>
                 <ScrollToTop />
+                <PasswordRecoveryRedirect />
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
                     {/* Public Shop Routes */}
@@ -122,6 +150,8 @@ function App() {
               {/* Customer Auth Routes */}
               <Route path="/login" element={<CustomerLogin />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
 
               {/* Account Routes */}
               <Route path="/account" element={<AccountDashboard />} />
