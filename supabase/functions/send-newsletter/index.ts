@@ -8,15 +8,21 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
  * POST { action: 'send', campaign }  → to all subscribers with status = 'subscribed'
  *
  * campaign = { subject_mk, body_mk, subject_en?, body_en?, image_url?, button_url?,
- *              button_label_mk?, button_label_en? }
+ *              button_label_mk?, button_label_en?, style?: 'simple' | 'designed' }
  *
  * - Subscribers get the version in their language; when no English version is
  *   written, English subscribers get the Macedonian one.
- * - Every e-mail carries that subscriber's own unsubscribe link.
+ * - Every e-mail carries that subscriber's own unsubscribe link, plus the
+ *   one-click List-Unsubscribe headers mail providers require from bulk senders.
+ * - 'simple' looks like a personal letter (plain text on white); mail providers
+ *   are less likely to file it under promotions than the 'designed' layout.
  * - Each send is recorded in public.newsletter_campaigns (migration 011).
  */
 
 const SITE_URL = 'https://dysnomiagallery.com';
+// One-click unsubscribe is a POST from the mail provider; the bare domain
+// redirects to www, and a redirected POST is dropped.
+const UNSUBSCRIBE_API = 'https://www.dysnomiagallery.com/api/unsubscribe';
 const BATCH_SIZE = 100; // Resend batch limit
 const BATCH_PAUSE_MS = 600; // Resend allows 2 requests per second
 const PAGE_SIZE = 1000;
@@ -32,6 +38,7 @@ interface Campaign {
   button_url: string;
   button_label_mk: string;
   button_label_en: string;
+  style: 'simple' | 'designed';
 }
 
 function json(body: unknown, status: number, headers: Record<string, string>) {
@@ -77,17 +84,54 @@ function parseCampaign(input: unknown): Campaign {
     button_url: httpsUrl(c.button_url),
     button_label_mk: text(c.button_label_mk, 60),
     button_label_en: text(c.button_label_en, 60),
+    style: c.style === 'designed' ? 'designed' : 'simple',
   };
+}
+
+function paragraphs(body: string): string[] {
+  return body
+    .split(/\r?\n[ \t]*\r?\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
 }
 
 /** Plain text → HTML paragraphs: blank line = new paragraph, single line break = <br>. */
 function bodyToHtml(body: string): string {
-  return body
-    .split(/\r?\n[ \t]*\r?\n/)
-    .map((p) => p.trim())
-    .filter(Boolean)
+  return paragraphs(body)
     .map((p) => `<p style="font-size:15px;line-height:1.7;margin:0 0 18px;">${escapeHtml(p).replace(/\r?\n/g, '<br/>')}</p>`)
     .join('');
+}
+
+/** Letter-like layout: no banner, no styled button, default fonts. */
+function renderSimple(campaign: Campaign, v: ReturnType<typeof versionFor>, unsubscribeUrl: string): string {
+  const image = campaign.image_url
+    ? `<p style="margin:0 0 18px;"><img src="${escapeHtml(campaign.image_url)}" alt="" width="520" style="display:block;width:100%;max-width:520px;height:auto;border:0;"/></p>`
+    : '';
+  const link = campaign.button_url
+    ? `<p style="font-size:15px;line-height:1.7;margin:0 0 18px;"><a href="${escapeHtml(campaign.button_url)}" style="color:#0A0A0A;">${escapeHtml(v.button)}</a></p>`
+    : '';
+  return `<!DOCTYPE html>
+<html lang="${v.lang}"><body style="margin:0;padding:24px 16px;background:#ffffff;">
+  <div style="max-width:520px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;color:#222;">
+    ${image}
+    ${bodyToHtml(v.body)}
+    ${link}
+    <p style="font-size:15px;line-height:1.7;margin:0 0 28px;">Dysnomia Gallery<br/><a href="${SITE_URL}" style="color:#222;">dysnomiagallery.com</a></p>
+    <p style="font-size:12px;line-height:1.6;color:#888;margin:0;">${v.footer} <a href="${unsubscribeUrl}" style="color:#888;">${v.unsubscribe}</a></p>
+  </div>
+</body></html>`;
+}
+
+/** Plain-text alternative, sent with every e-mail. */
+function renderText(campaign: Campaign, v: ReturnType<typeof versionFor>, unsubscribeUrl: string): string {
+  return [
+    ...paragraphs(v.body),
+    campaign.button_url ? `${v.button}: ${campaign.button_url}` : '',
+    `Dysnomia Gallery\n${SITE_URL}`,
+    `${v.footer}\n${v.unsubscribe}: ${unsubscribeUrl}`,
+  ]
+    .filter(Boolean)
+    .join('\n\n');
 }
 
 function versionFor(campaign: Campaign, language: Lang) {
@@ -113,6 +157,11 @@ function versionFor(campaign: Campaign, language: Lang) {
 
 function renderEmail(campaign: Campaign, language: Lang, unsubscribeUrl: string) {
   const v = versionFor(campaign, language);
+  const text = renderText(campaign, v, unsubscribeUrl);
+  if (campaign.style === 'simple') {
+    return { subject: v.subject, html: renderSimple(campaign, v, unsubscribeUrl), text };
+  }
+
   const image = campaign.image_url
     ? `<tr><td><img src="${escapeHtml(campaign.image_url)}" alt="" width="560" style="display:block;width:100%;max-width:560px;height:auto;border:0;"/></td></tr>`
     : '';
@@ -143,17 +192,29 @@ function renderEmail(campaign: Campaign, language: Lang, unsubscribeUrl: string)
   </table>
 </body></html>`;
 
-  return { subject: v.subject, html };
+  return { subject: v.subject, html, text };
 }
 
-function buildMessage(from: string, to: string, campaign: Campaign, language: Lang, unsubscribeUrl: string) {
-  const { subject, html } = renderEmail(campaign, language, unsubscribeUrl);
+/** `token` is the subscriber's unsubscribe token; a test e-mail has none. */
+function buildMessage(from: string, to: string, campaign: Campaign, language: Lang, token: string | null) {
+  const unsubscribeUrl = token ? `${SITE_URL}/unsubscribe?token=${token}` : `${SITE_URL}/unsubscribe`;
+  const { subject, html, text } = renderEmail(campaign, language, unsubscribeUrl);
+  const replyTo = Deno.env.get('NEWSLETTER_REPLY_TO') || Deno.env.get('ADMIN_EMAIL');
   return {
     from,
     to: [to],
     subject,
     html,
-    headers: { 'List-Unsubscribe': `<${unsubscribeUrl}>` },
+    text,
+    ...(replyTo ? { reply_to: replyTo } : {}),
+    ...(token
+      ? {
+          headers: {
+            'List-Unsubscribe': `<${UNSUBSCRIBE_API}?token=${token}>`,
+            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+          },
+        }
+      : {}),
   };
 }
 
@@ -205,7 +266,7 @@ Deno.serve(async (req: Request) => {
       if (!user.email) return json({ success: false, error: 'Your account has no e-mail address.' }, 400, corsHeaders);
       const languages: Lang[] = campaign.subject_en ? ['mk', 'en'] : ['mk'];
       const messages = languages.map((language) =>
-        buildMessage(from, user.email!, campaign, language, `${SITE_URL}/unsubscribe`)
+        buildMessage(from, user.email!, campaign, language, null)
       );
       const res = await fetch('https://api.resend.com/emails/batch', {
         method: 'POST',
@@ -276,7 +337,7 @@ Deno.serve(async (req: Request) => {
     for (let i = 0; i < subscribers.length; i += BATCH_SIZE) {
       const batch = subscribers.slice(i, i + BATCH_SIZE);
       const messages = batch.map((s) =>
-        buildMessage(from, s.email, campaign, s.language === 'en' ? 'en' : 'mk', `${SITE_URL}/unsubscribe?token=${s.unsubscribe_token}`)
+        buildMessage(from, s.email, campaign, s.language === 'en' ? 'en' : 'mk', s.unsubscribe_token)
       );
       try {
         const res = await fetch('https://api.resend.com/emails/batch', {
