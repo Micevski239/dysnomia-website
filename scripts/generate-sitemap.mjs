@@ -40,6 +40,8 @@ const STATIC_ROUTES = [
   { path: '/about', priority: '0.5', changefreq: 'monthly' },
   { path: '/contact', priority: '0.5', changefreq: 'monthly' },
   { path: '/shipping', priority: '0.5', changefreq: 'monthly' },
+  { path: '/faq', priority: '0.4', changefreq: 'monthly' },
+  { path: '/privacy', priority: '0.3', changefreq: 'yearly' },
 ];
 
 async function fetchRows(table, query) {

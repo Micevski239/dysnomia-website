@@ -24,7 +24,7 @@ const defaultCategories: CategoryItem[] = [
   },
   {
     title: 'KIDS POSTERS',
-    link: '/kids',
+    link: '/kids-pictures',
     image: 'https://images.unsplash.com/photo-1617791160505-6f00504e3519?w=600&h=800&fit=crop'
   }
 ];

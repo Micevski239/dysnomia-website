@@ -32,7 +32,6 @@ const ROUTE_META: Record<string, RouteMeta> = {
   // so they don't compete with it in search results.
   '/posters': { ...HOME_META, canonical: '/' },
   '/frames': { ...HOME_META, canonical: '/' },
-  '/kids': { ...HOME_META, canonical: '/' },
   '/inspiration': { ...HOME_META, canonical: '/' },
   '/business': { ...HOME_META, canonical: '/' },
   '/artists': { ...HOME_META, canonical: '/' },
@@ -100,7 +99,26 @@ const ROUTE_META: Record<string, RouteMeta> = {
       mk: 'Време на достава, трошоци за испорака и политика за враќање на нарачките од Dysnomia Art Gallery низ Македонија.',
     },
   },
+  '/faq': {
+    title: { en: 'Frequently Asked Questions', mk: 'Често поставувани прашања' },
+    description: {
+      en: 'Answers about orders, shipping, print types, sizes and returns at Dysnomia Art Gallery.',
+      mk: 'Одговори за нарачки, достава, видови печат, големини и враќање кај Dysnomia Art Gallery.',
+    },
+  },
+  '/privacy': {
+    title: { en: 'Privacy Policy', mk: 'Политика за приватност' },
+    description: {
+      en: 'How Dysnomia Art Gallery collects, uses and protects your personal data.',
+      mk: 'Како Dysnomia Art Gallery ги собира, користи и заштитува вашите лични податоци.',
+    },
+  },
   // Transactional / private pages — kept out of search results.
+  '/unsubscribe': {
+    title: { en: 'Unsubscribe', mk: 'Одјава' },
+    description: HOME_META.description,
+    noindex: true,
+  },
   '/cart': {
     title: { en: 'Shopping Cart', mk: 'Кошничка' },
     description: HOME_META.description,

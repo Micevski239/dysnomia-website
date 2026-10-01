@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { fetchKidsCollectionId } from '../lib/kidsCollection';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { useLanguage } from '../hooks/useLanguage';
 import { useCurrency } from '../hooks/useCurrency';
@@ -43,23 +44,20 @@ export default function KidsPictures() {
     async function loadKidsProducts() {
       setLoading(true);
 
-      const { data: collectionData } = await supabase
-        .from('collections')
-        .select('id')
-        .eq('slug', 'kids')
-        .single();
+      const collectionId = await fetchKidsCollectionId();
+      if (!isMounted) return;
 
-      if (!collectionData || !isMounted) {
+      if (!collectionId) {
         setLoading(false);
         return;
       }
 
-      setKidsCollectionId(collectionData.id);
+      setKidsCollectionId(collectionId);
 
       const { data: mappingData } = await supabase
         .from('collection_products')
         .select('product:products(*)')
-        .eq('collection_id', collectionData.id)
+        .eq('collection_id', collectionId)
         .order('added_at', { ascending: false })
         .returns<CollectionProductRow[]>();
 
@@ -78,7 +76,8 @@ export default function KidsPictures() {
   }, []);
 
   const spotlight = useMemo(() => products[0] || null, [products]);
-  const gridProducts = products.slice(0, 12);
+  // Show every kids artwork, not only the first 12
+  const gridProducts = products;
 
   return (
     <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: isMobileOrTablet ? '100px' : '120px' }}>

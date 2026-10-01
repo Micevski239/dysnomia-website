@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
@@ -57,6 +57,10 @@ const Statistics = lazy(() => import('./pages/admin/Statistics'));
 // Support pages
 const Contact = lazy(() => import('./pages/Contact'));
 const Shipping = lazy(() => import('./pages/Shipping'));
+const FAQ = lazy(() => import('./pages/FAQ'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const Unsubscribe = lazy(() => import('./pages/Unsubscribe'));
+const NewsletterSubscribers = lazy(() => import('./pages/admin/NewsletterSubscribers'));
 
 // Loading fallback component
 import DysnomiaLoader from './components/shop/DysnomiaLoader';
@@ -95,12 +99,15 @@ function App() {
               <Route path="/blog/:slug" element={<BlogPostPage />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/shipping" element={<Shipping />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="/posters" element={<ShopHome />} />
               <Route path="/frames" element={<ShopHome />} />
               <Route path="/new-arrivals" element={<NewArrivals />} />
               <Route path="/kids-pictures" element={<KidsPictures />} />
               <Route path="/top-sellers" element={<TopSellers />} />
-              <Route path="/kids" element={<ShopHome />} />
+              <Route path="/kids" element={<Navigate to="/kids-pictures" replace />} />
               <Route path="/inspiration" element={<ShopHome />} />
               <Route path="/business" element={<ShopHome />} />
               <Route path="/artists" element={<ShopHome />} />
@@ -152,6 +159,7 @@ function App() {
               <Route path="/admin/blog" element={<BlogAdmin />} />
               <Route path="/admin/images" element={<ImageOptimizer />} />
               <Route path="/admin/statistics" element={<Statistics />} />
+              <Route path="/admin/newsletter" element={<NewsletterSubscribers />} />
             </Route>
           </Routes>
                 </Suspense>

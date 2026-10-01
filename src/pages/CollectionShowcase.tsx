@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { isKidsCollection as isKidsCollectionCheck, isKidsSlug } from '../lib/kidsCollection';
 import type { Collection, Product } from '../types';
 import ProductCard from '../components/shop/ProductCard';
 import type { ProductCardProps } from '../components/shop/ProductCard';
@@ -89,7 +90,7 @@ export default function CollectionShowcase() {
   // Reset loaded state when collection changes
   useEffect(() => { setHeroLoaded(false); }, [slug]);
 
-  const isKidsCollection = slug === 'kids';
+  const isKidsCollection = isKidsCollectionCheck(collection) || isKidsSlug(slug);
 
   const productCards: ProductCardProps[] = useMemo(
     () =>

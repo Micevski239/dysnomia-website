@@ -53,7 +53,7 @@ function escapeHtml(str: string): string {
 }
 
 function formatPrice(amount: number, currency: string): string {
-  return `${amount.toLocaleString()} ${escapeHtml(currency)}`;
+  return `${Number(amount).toLocaleString()} ${escapeHtml(String(currency))}`;
 }
 
 function buildItemsTable(order: Order): string {
@@ -140,7 +140,7 @@ function buildEmailBody(
   emailType: EmailType,
   trackingNumber?: string
 ): { subject: string; bodyContent: string } {
-  const orderNum = order.order_number;
+  const orderNum = escapeHtml(String(order.order_number));
 
   switch (emailType) {
     case 'order_placed':
@@ -291,7 +291,7 @@ function buildEmail(
   trackingNumber?: string
 ): { subject: string; html: string } {
   const { subject, bodyContent } = buildEmailBody(order, emailType, trackingNumber);
-  const html = wrapInLayout(bodyContent, order.order_number);
+  const html = wrapInLayout(bodyContent, escapeHtml(String(order.order_number)));
   return { subject, html };
 }
 
@@ -304,10 +304,10 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { order, emailType, trackingNumber } = await req.json();
+    const { order: clientOrder, emailType, trackingNumber } = await req.json();
 
     // Validate required fields
-    if (!order || !emailType) {
+    if (!clientOrder || !emailType) {
       return new Response(
         JSON.stringify({ success: false, error: 'Missing order or emailType' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -362,6 +362,34 @@ Deno.serve(async (req: Request) => {
           { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
+    }
+
+    // Never trust the order sent by the browser — load it from the database by id.
+    // Otherwise anyone could send branded emails with arbitrary content to any address.
+    const supabaseService = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+    const orderId = typeof clientOrder.id === 'string' ? clientOrder.id : '';
+    const { data: order } = await supabaseService
+      .from('orders')
+      .select('id, order_number, customer_email, customer_name, shipping_address, items, subtotal, shipping_cost, total_amount, currency, created_at')
+      .eq('id', orderId)
+      .maybeSingle();
+
+    if (!order) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Order not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // The public 'order_placed' email may only be triggered right after checkout
+    if (emailType === 'order_placed' && Date.now() - new Date(order.created_at).getTime() > 30 * 60 * 1000) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Order confirmation window expired' }),
+        { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     if (!order.customer_email) {

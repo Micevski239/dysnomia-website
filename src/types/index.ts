@@ -175,9 +175,19 @@ export interface BlogPost {
   content: string | null;
   content_mk?: string | null;
   cover_image: string | null;
+  /** Up to two extra images shown between paragraphs (column added in migration 009). */
+  gallery_images?: BlogImage[] | null;
   author: string;
   is_published: boolean;
   published_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface BlogImage {
+  url: string;
+  caption?: string | null;
+  caption_mk?: string | null;
+  /** 1-based paragraph number the image follows; empty = spread evenly. */
+  after_paragraph?: number | null;
 }

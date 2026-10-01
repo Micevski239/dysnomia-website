@@ -19,6 +19,7 @@ import { productContent } from '../config/productContent';
 import { type PrintType } from '../config/printOptions';
 import { type Product } from '../types';
 import { supabase } from '../lib/supabase';
+import { isKidsCollection as isKidsCollectionCheck } from '../lib/kidsCollection';
 
 // Adjust these per frame color to position the artwork on each livingroom photo
 const FRAME_DIMENSIONS: Record<string, { top: string; left: string; width: string; height: string }> = {
@@ -147,7 +148,7 @@ export default function ProductDetail() {
           const c = r.collection;
           return Array.isArray(c) ? c : [c].filter(Boolean);
         });
-        setIsKidsCollection(collections.some((c: any) => c.slug === 'kids'));
+        setIsKidsCollection(collections.some((c: any) => isKidsCollectionCheck(c)));
         if (collections.length > 0) {
           setCollectionData({ title: collections[0].title, title_mk: collections[0].title_mk });
         }
