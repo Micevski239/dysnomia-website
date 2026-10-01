@@ -14,7 +14,8 @@ import ImageLightbox from '../components/shop/ImageLightbox';
 import ReviewList from '../components/shop/ReviewList';
 import StarRating from '../components/shop/StarRating';
 import ProductCard from '../components/shop/ProductCard';
-import { useReviews } from '../hooks/useReviews';
+import { usePublicReviews } from '../hooks/usePublicReviews';
+import { useSlugRedirect } from '../hooks/useSlugRedirect';
 import { productContent } from '../config/productContent';
 import { type PrintType } from '../config/printOptions';
 import { type Product } from '../types';
@@ -130,47 +131,68 @@ export default function ProductDetail() {
   const [imageLoading, setImageLoading] = useState(false);
   const loadStartRef = useRef<number>(0);
   const { isMobile } = useBreakpoint();
-  const [isKidsCollection, setIsKidsCollection] = useState(false);
-  const [collectionData, setCollectionData] = useState<{ title: string; title_mk?: string } | null>(null);
-  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  // Collection info + related products, tagged with the product they belong to so
+  // data for a previously viewed product is never shown for the current one.
+  const [collectionInfo, setCollectionInfo] = useState<{
+    productId: string;
+    isKids: boolean;
+    collection: { title: string; title_mk?: string } | null;
+    related: Product[];
+  } | null>(null);
   const [isLifestyleLightboxOpen, setIsLifestyleLightboxOpen] = useState(false);
   const [lifestyleLightboxIndex, setLifestyleLightboxIndex] = useState(0);
 
-  useEffect(() => {
-    if (!product) return;
-    supabase
-      .from('collection_products')
-      .select('collection_id, collection:collections(slug,title,title_mk)')
-      .eq('product_id', product.id)
-      .then(({ data }) => {
-        const rows = data || [];
-        const collections = rows.flatMap((r: any) => {
-          const c = r.collection;
-          return Array.isArray(c) ? c : [c].filter(Boolean);
-        });
-        setIsKidsCollection(collections.some((c: any) => isKidsCollectionCheck(c)));
-        if (collections.length > 0) {
-          setCollectionData({ title: collections[0].title, title_mk: collections[0].title_mk });
-        }
+  const productId = product?.id;
+  const currentCollectionInfo = collectionInfo && collectionInfo.productId === productId ? collectionInfo : null;
+  const isKidsCollection = currentCollectionInfo?.isKids ?? false;
+  const collectionData = currentCollectionInfo?.collection ?? null;
+  const relatedProducts = currentCollectionInfo?.related ?? [];
 
-        // Fetch related products from the same collection
-        const collectionId = rows[0]?.collection_id;
-        if (!collectionId) return;
-        supabase
-          .from('collection_products')
-          .select('product:products(*)')
-          .eq('collection_id', collectionId)
-          .neq('product_id', product.id)
-          .limit(5)
-          .then(({ data: relData }) => {
-            const products = (relData || []).flatMap((r: any) => {
-              const p = r.product;
-              return Array.isArray(p) ? p : [p].filter(Boolean);
-            }).filter((p: Product) => p.status === 'published');
-            setRelatedProducts(products);
-          });
-      });
-  }, [product?.id]);
+  useEffect(() => {
+    if (!productId) return;
+    let cancelled = false;
+
+    type CollectionRef = { slug: string; title: string; title_mk?: string };
+    type CollectionRow = { collection_id: string; collection: CollectionRef | CollectionRef[] | null };
+    type RelatedRow = { product: Product | Product[] | null };
+    const toArray = <T,>(v: T | T[] | null): T[] => (Array.isArray(v) ? v : v ? [v] : []);
+
+    (async () => {
+      const { data } = await supabase
+        .from('collection_products')
+        .select('collection_id, collection:collections(slug,title,title_mk)')
+        .eq('product_id', productId);
+      if (cancelled) return;
+
+      const rows = (data || []) as unknown as CollectionRow[];
+      const collections = rows.flatMap((r) => toArray(r.collection));
+      const isKids = collections.some((c) => isKidsCollectionCheck(c));
+      const collection = collections.length > 0
+        ? { title: collections[0].title, title_mk: collections[0].title_mk }
+        : null;
+      setCollectionInfo({ productId, isKids, collection, related: [] });
+
+      // Fetch related products from the same collection
+      const collectionId = rows[0]?.collection_id;
+      if (!collectionId) return;
+      const { data: relData } = await supabase
+        .from('collection_products')
+        .select('product:products(*)')
+        .eq('collection_id', collectionId)
+        .neq('product_id', productId)
+        .limit(5);
+      if (cancelled) return;
+
+      const related = ((relData || []) as unknown as RelatedRow[])
+        .flatMap((r) => toArray(r.product))
+        .filter((p) => p.status === 'published');
+      setCollectionInfo({ productId, isKids, collection, related });
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [productId]);
 
   const roomPrefix = isKidsCollection ? '/kids' : '/livingroom';
   const frameDims = isKidsCollection ? KIDS_FRAME_DIMENSIONS : FRAME_DIMENSIONS;
@@ -248,32 +270,23 @@ export default function ProductDetail() {
 
   const isWishlisted = product ? isInWishlist(product.id) : false;
 
-  // Reviews
+  // Reviews — only genuine, approved reviews for this product count towards the
+  // rating. The static testimonials below are shown separately and never
+  // contribute to the count/average or to structured data.
   const {
-    reviews,
+    reviews: publicReviews,
     reviewCount,
+    averageRating,
     refetch: refetchReviews,
-  } = useReviews(product?.id);
+  } = usePublicReviews(product?.id);
 
-  const staticReviews = STATIC_REVIEWS_DATA.map(r => ({
-    id: r.id,
-    product_id: product?.id || '',
-    customer_name: r.customer_name,
-    customer_email: '',
-    rating: r.rating,
-    title: language === 'mk' ? r.title.mk : r.title.en,
-    content: language === 'mk' ? r.content.mk : r.content.en,
-    is_approved: true,
-    created_at: r.created_at,
-  }));
+  // ReviewList's prop type still carries customer_email; it is never rendered.
+  const reviews = publicReviews.map((r) => ({ ...r, customer_email: '' }));
 
-  const allReviews = [...reviews, ...staticReviews];
-  const adjustedCount = reviewCount + STATIC_REVIEWS_DATA.length;
-  const adjustedAverage = allReviews.length > 0
-    ? allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length
-    : null;
+  const notFound = !loading && (!!error || !product);
+  const checkingRedirect = useSlugRedirect('product', slug, notFound, '/artwork/');
 
-  if (loading) {
+  if (loading || checkingRedirect) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#ffffff', padding: '48px 24px' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
@@ -586,11 +599,11 @@ export default function ProductDetail() {
             </h1>
 
             {/* Rating Display */}
-            {adjustedAverage !== null && (
+            {averageRating !== null && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
-                <StarRating rating={adjustedAverage} size={18} />
+                <StarRating rating={averageRating} size={18} />
                 <span style={{ fontSize: '14px', color: '#6b6b6b' }}>
-                  {adjustedAverage.toFixed(1)} ({adjustedCount} {adjustedCount === 1 ? 'review' : 'reviews'})
+                  {averageRating.toFixed(1)} ({reviewCount} {reviewCount === 1 ? t('reviews.reviewSingular') : t('reviews.reviewPlural')})
                 </span>
               </div>
             )}
@@ -704,14 +717,14 @@ export default function ProductDetail() {
             <div>
               <Accordion title={t('product.description')} defaultOpen={true}>
                 <p style={{ color: '#4a4a4a', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
-                  {localize(product.description, product.description_mk, language) || 'No description available.'}
+                  {localize(product.description, product.description_mk, language) || t('product.noDescription')}
                 </p>
               </Accordion>
 
               <Accordion title={t('product.details')}>
                 {(() => {
                   const text = localize(product.details, product.details_mk, language);
-                  if (!text) return <p style={{ color: '#4a4a4a', lineHeight: 1.7 }}>No additional details available.</p>;
+                  if (!text) return <p style={{ color: '#4a4a4a', lineHeight: 1.7 }}>{t('product.noDetails')}</p>;
                   const lines = text.split('\n').filter((l: string) => l.trim());
                   return (
                     <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -830,12 +843,58 @@ export default function ProductDetail() {
         {/* Reviews Section */}
         <div style={{ marginTop: '64px' }}>
           <ReviewList
-            reviews={allReviews}
-            averageRating={adjustedAverage}
-            reviewCount={adjustedCount}
+            reviews={reviews}
+            averageRating={averageRating}
+            reviewCount={reviewCount}
             productId={product.id}
             onReviewSubmitted={refetchReviews}
           />
+        </div>
+
+        {/* Store testimonials — general feedback about Dysnomia, not reviews of this
+            artwork, so they are excluded from the rating and structured data. */}
+        <div style={{ marginTop: '64px', paddingTop: '48px', borderTop: '1px solid #e5e5e5' }}>
+          <h2 style={{
+            fontSize: 'clamp(20px, 3vw, 28px)',
+            fontWeight: 300,
+            color: '#1a1a1a',
+            marginBottom: '32px',
+            letterSpacing: '0.02em',
+          }}>
+            {t('reviews.testimonialsTitle')}
+          </h2>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(320px, 1fr))',
+            gap: '24px',
+          }}>
+            {STATIC_REVIEWS_DATA.map((r) => {
+              const title = language === 'mk' ? r.title.mk : r.title.en;
+              return (
+                <figure
+                  key={r.id}
+                  style={{
+                    margin: 0,
+                    padding: '24px',
+                    backgroundColor: '#FAFAFA',
+                    borderRadius: '24px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px',
+                  }}
+                >
+                  <StarRating rating={r.rating} size={14} />
+                  {title && (
+                    <p style={{ fontWeight: 600, color: '#1a1a1a', fontSize: '15px', margin: 0 }}>{title}</p>
+                  )}
+                  <blockquote style={{ margin: 0, color: '#4a4a4a', fontSize: '14px', lineHeight: 1.7 }}>
+                    {language === 'mk' ? r.content.mk : r.content.en}
+                  </blockquote>
+                  <figcaption style={{ color: '#666666', fontSize: '13px' }}>— {r.customer_name}</figcaption>
+                </figure>
+              );
+            })}
+          </div>
         </div>
 
         {/* More from this collection */}

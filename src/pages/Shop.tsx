@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/shop/ProductCard';
 import type { ProductCardProps } from '../components/shop/ProductCard';
@@ -11,11 +11,11 @@ import { getThumbnailUrl } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 
-type SortOption = 'newest' | 'price-low' | 'price-high' | 'name';
-type PriceFilter = 'all' | 'under-100' | '100-200' | '200-300' | 'over-300';
+// Price-based sorting/filtering is intentionally absent: every artwork is priced
+// by the shared print-type × size matrix (getPrice), so product.price is meaningless.
+type SortOption = 'newest' | 'name';
 
-const VALID_SORT_OPTIONS: SortOption[] = ['newest', 'price-low', 'price-high', 'name'];
-const VALID_PRICE_FILTERS: PriceFilter[] = ['all', 'under-100', '100-200', '200-300', 'over-300'];
+const VALID_SORT_OPTIONS: SortOption[] = ['newest', 'name'];
 
 export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -23,41 +23,43 @@ export default function Shop() {
   // Initialize state from URL params
   const initialSort = (searchParams.get('sort') as SortOption) || 'newest';
   const initialCollections = searchParams.get('collection')?.split(',').filter(Boolean) || [];
-  const initialPrice = (searchParams.get('price') as PriceFilter) || 'all';
-  const initialSale = searchParams.get('sale') === 'true';
 
   const [sortBy, setSortBy] = useState<SortOption>(
     VALID_SORT_OPTIONS.includes(initialSort) ? initialSort : 'newest'
   );
   const [selectedCollections, setSelectedCollections] = useState<Set<string>>(new Set(initialCollections));
-  const [priceFilter, setPriceFilter] = useState<PriceFilter>(
-    VALID_PRICE_FILTERS.includes(initialPrice) ? initialPrice : 'all'
-  );
-  const [showOnSale, setShowOnSale] = useState(initialSale);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [collectionProductIds, setCollectionProductIds] = useState<Set<string> | null>(null);
+  // Product IDs for the selection identified by `key` — results for an older
+  // selection are ignored so a slow response can't overwrite a newer one.
+  const [collectionFilter, setCollectionFilter] = useState<{ key: string; ids: Set<string> } | null>(null);
   const { products, loading, error, refetch } = useProducts();
   const { collections } = useCollections();
   const { productCollectionMap, kidsProductIds } = useProductCollectionMap();
   const { language, t } = useLanguage();
   const { isMobile, isMobileOrTablet } = useBreakpoint();
 
+  const collectionKey = useMemo(() => Array.from(selectedCollections).sort().join(','), [selectedCollections]);
+  const collectionProductIds = collectionFilter && collectionFilter.key === collectionKey ? collectionFilter.ids : null;
+
   // Fetch product IDs for selected collections
-  const fetchCollectionProducts = useCallback(async (collectionIds: Set<string>) => {
-    if (collectionIds.size === 0) {
-      setCollectionProductIds(null);
-      return;
-    }
-    const { data } = await supabase
+  useEffect(() => {
+    if (!collectionKey) return;
+    let cancelled = false;
+    supabase
       .from('collection_products')
       .select('product_id')
-      .in('collection_id', Array.from(collectionIds));
-    setCollectionProductIds(new Set((data || []).map((r: { product_id: string }) => r.product_id)));
-  }, []);
-
-  useEffect(() => {
-    fetchCollectionProducts(selectedCollections);
-  }, [selectedCollections, fetchCollectionProducts]);
+      .in('collection_id', collectionKey.split(','))
+      .then(({ data }) => {
+        if (cancelled) return;
+        setCollectionFilter({
+          key: collectionKey,
+          ids: new Set((data || []).map((r: { product_id: string }) => r.product_id)),
+        });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [collectionKey]);
 
   const toggleCollection = (id: string) => {
     setSelectedCollections((prev) => {
@@ -76,10 +78,8 @@ export default function Shop() {
     const params = new URLSearchParams();
     if (sortBy !== 'newest') params.set('sort', sortBy);
     if (selectedCollections.size > 0) params.set('collection', Array.from(selectedCollections).join(','));
-    if (priceFilter !== 'all') params.set('price', priceFilter);
-    if (showOnSale) params.set('sale', 'true');
     setSearchParams(params, { replace: true });
-  }, [sortBy, selectedCollections, priceFilter, showOnSale, setSearchParams]);
+  }, [sortBy, selectedCollections, setSearchParams]);
 
   // Map backend products to ProductCardProps used by this view
   const allProducts: ProductCardProps[] = useMemo(
@@ -105,30 +105,8 @@ export default function Shop() {
       result = result.filter((p) => collectionProductIds.has(p.id));
     }
 
-    // Apply price filter
-    if (priceFilter !== 'all') {
-      result = result.filter((p) => {
-        if (priceFilter === 'under-100') return p.price < 100;
-        if (priceFilter === '100-200') return p.price >= 100 && p.price < 200;
-        if (priceFilter === '200-300') return p.price >= 200 && p.price < 300;
-        if (priceFilter === 'over-300') return p.price >= 300;
-        return true;
-      });
-    }
-
-    // Apply sale filter
-    if (showOnSale) {
-      result = result.filter((p) => p.badge === 'sale');
-    }
-
     // Apply sorting
     switch (sortBy) {
-      case 'price-low':
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-high':
-        result.sort((a, b) => b.price - a.price);
-        break;
       case 'name':
         result.sort((a, b) => a.title.localeCompare(b.title));
         break;
@@ -139,12 +117,10 @@ export default function Shop() {
     }
 
     return result;
-  }, [allProducts, sortBy, selectedCollections, collectionProductIds, priceFilter, showOnSale]);
+  }, [allProducts, sortBy, selectedCollections, collectionProductIds]);
 
   const clearFilters = () => {
     setSelectedCollections(new Set());
-    setPriceFilter('all');
-    setShowOnSale(false);
   };
 
   const PRODUCTS_PER_PAGE = 12;
@@ -153,12 +129,12 @@ export default function Shop() {
   // Reset visible count when filters change
   useEffect(() => {
     setVisibleCount(PRODUCTS_PER_PAGE);
-  }, [selectedCollections, collectionProductIds, priceFilter, showOnSale, sortBy]);
+  }, [selectedCollections, collectionProductIds, sortBy]);
 
   const visibleProducts = filteredAndSortedProducts.slice(0, visibleCount);
   const hasMore = visibleCount < filteredAndSortedProducts.length;
 
-  const hasActiveFilters = selectedCollections.size > 0 || priceFilter !== 'all' || showOnSale;
+  const hasActiveFilters = selectedCollections.size > 0;
 
   return (
     <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: isMobileOrTablet ? '100px' : '120px' }}>
@@ -252,8 +228,6 @@ export default function Shop() {
                 }}
               >
                 <option value="newest">{t('shop.sortNewest')}</option>
-                <option value="price-low">{t('shop.sortPriceLow')}</option>
-                <option value="price-high">{t('shop.sortPriceHigh')}</option>
                 <option value="name">{t('shop.sortName')}</option>
               </select>
             </div>
@@ -350,97 +324,6 @@ export default function Shop() {
                   </label>
                 ))}
               </div>
-            </div>
-
-            {/* Price Filter */}
-            <div style={{ marginBottom: '32px' }}>
-              <h3
-                style={{
-                  fontFamily: "'Playfair Display', Georgia, serif",
-                  fontSize: '16px',
-                  color: '#0A0A0A',
-                  marginBottom: '16px',
-                  paddingBottom: '8px',
-                  borderBottom: '1px solid #E5E5E5'
-                }}
-              >
-                {t('shop.priceFilter')}
-              </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {[
-                  { value: 'all', label: t('shop.allPrices') },
-                  { value: 'under-100', label: t('shop.under100') },
-                  { value: '100-200', label: t('shop.price100to200') },
-                  { value: '200-300', label: t('shop.price200to300') },
-                  { value: 'over-300', label: t('shop.over300') }
-                ].map((option) => (
-                  <label
-                    key={option.value}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      cursor: 'pointer',
-                      fontSize: '13px',
-                      color: priceFilter === option.value ? '#0A0A0A' : '#666666',
-                      fontWeight: priceFilter === option.value ? 600 : 400
-                    }}
-                  >
-                    <input
-                      type="radio"
-                      name="price"
-                      value={option.value}
-                      checked={priceFilter === option.value}
-                      onChange={(e) => setPriceFilter(e.target.value as PriceFilter)}
-                      style={{
-                        width: '16px',
-                        height: '16px',
-                        accentColor: '#FBBE63'
-                      }}
-                    />
-                    {option.label}
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Sale Filter */}
-            <div style={{ marginBottom: '32px' }}>
-              <h3
-                style={{
-                  fontFamily: "'Playfair Display', Georgia, serif",
-                  fontSize: '16px',
-                  color: '#0A0A0A',
-                  marginBottom: '16px',
-                  paddingBottom: '8px',
-                  borderBottom: '1px solid #E5E5E5'
-                }}
-              >
-                {t('shop.specialOffers')}
-              </h3>
-              <label
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  color: showOnSale ? '#0A0A0A' : '#666666',
-                  fontWeight: showOnSale ? 600 : 400
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={showOnSale}
-                  onChange={(e) => setShowOnSale(e.target.checked)}
-                  style={{
-                    width: '16px',
-                    height: '16px',
-                    accentColor: '#FBBE63'
-                  }}
-                />
-                {t('shop.onSale')}
-              </label>
             </div>
 
             {/* Gold Decorative Line */}

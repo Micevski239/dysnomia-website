@@ -114,29 +114,17 @@ export function useFeaturedSectionMutations() {
     setError(null);
 
     try {
-      // Delete all existing bestseller rows
-      const { error: delErr } = await supabase
-        .from('bestseller_products')
-        .delete()
-        .neq('product_id', '00000000-0000-0000-0000-000000000000'); // delete all rows
+      // Atomic replace on the server; array order becomes display_order
+      const { error: rpcErr } = await supabase.rpc('replace_bestsellers', {
+        p_product_ids: productIds,
+      });
 
-      if (delErr) throw delErr;
-
-      // Insert new rows with display_order
-      if (productIds.length > 0) {
-        const rows = productIds.map((id, i) => ({
-          product_id: id,
-          display_order: i,
-        }));
-
-        const { error: insErr } = await supabase
-          .from('bestseller_products')
-          .insert(rows);
-
-        if (insErr) throw insErr;
-      }
+      if (rpcErr) throw rpcErr;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to save bestsellers';
+      const msg =
+        err && typeof err === 'object' && 'message' in err && typeof err.message === 'string'
+          ? err.message
+          : 'Failed to save bestsellers';
       setError(msg);
       throw err;
     } finally {

@@ -12,14 +12,27 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<LoginFormErrors>({});
 
-  const { signIn, user } = useAuth();
+  const { signIn, signOut, user, isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [signingOut, setSigningOut] = useState(false);
 
+  // Only admins go on to the dashboard; a signed-in customer sees the notice below.
   useEffect(() => {
-    if (user) {
+    if (user && isAdmin && !authLoading) {
       navigate('/admin/products');
     }
-  }, [user, navigate]);
+  }, [user, isAdmin, authLoading, navigate]);
+
+  const isNonAdminUser = Boolean(user) && !isAdmin && !authLoading;
+
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    await signOut();
+    setSigningOut(false);
+    setEmail('');
+    setPassword('');
+    setError('');
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -36,12 +49,11 @@ export default function Login() {
 
     const { error } = await signIn(email, password);
 
+    setLoading(false);
     if (error) {
       setError(error.message);
-      setLoading(false);
-    } else {
-      navigate('/admin/products');
     }
+    // On success, the effect above navigates once admin status is confirmed.
   };
 
   return (
@@ -54,6 +66,32 @@ export default function Login() {
           </Link>
         </div>
 
+        {isNonAdminUser ? (
+        <div className="bg-white border border-border p-8 shadow-sm text-center">
+          <h2 className="text-xl font-medium text-dark mb-3">Access Denied</h2>
+          <p className="text-sm text-muted mb-6">
+            You are signed in as <span className="font-medium text-dark">{user?.email}</span>,
+            which does not have admin privileges.
+          </p>
+          <div className="space-y-3">
+            <Button
+              type="button"
+              variant="primary"
+              className="w-full"
+              onClick={handleSignOut}
+              disabled={signingOut}
+            >
+              {signingOut ? 'Signing out...' : 'Sign out and use another account'}
+            </Button>
+            <Link
+              to="/"
+              className="block text-sm text-muted hover:text-primary transition-colors"
+            >
+              Continue to the shop
+            </Link>
+          </div>
+        </div>
+        ) : (
         <div className="bg-white border border-border p-8 shadow-sm">
           <h2 className="text-xl font-medium text-dark mb-6 text-center">Sign In</h2>
 
@@ -100,10 +138,11 @@ export default function Login() {
               className="w-full"
               disabled={loading}
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading || (Boolean(user) && authLoading) ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
         </div>
+        )}
 
         <p className="text-center mt-6 text-muted text-sm">
           <Link to="/" className="hover:text-primary transition-colors">

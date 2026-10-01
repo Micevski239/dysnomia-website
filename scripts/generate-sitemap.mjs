@@ -3,7 +3,9 @@
  * active collections and published blog posts fetched from Supabase.
  *
  * Runs automatically before `npm run build` (see the "prebuild" script).
- * If Supabase is unreachable the sitemap is still written with static routes.
+ * If Supabase is unreachable (or env vars are missing) the existing
+ * public/sitemap.xml is kept as-is, so a short outage during a deploy never
+ * drops every artwork from the sitemap.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -44,17 +46,23 @@ const STATIC_ROUTES = [
   { path: '/privacy', priority: '0.3', changefreq: 'yearly' },
 ];
 
+const PAGE_SIZE = 1000; // PostgREST max rows per request
+
 async function fetchRows(table, query) {
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return [];
-  const url = `${SUPABASE_URL}/rest/v1/${table}?${query}`;
-  const res = await fetch(url, {
-    headers: {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-    },
-  });
-  if (!res.ok) throw new Error(`${table}: HTTP ${res.status}`);
-  return res.json();
+  const rows = [];
+  for (let offset = 0; ; offset += PAGE_SIZE) {
+    const url = `${SUPABASE_URL}/rest/v1/${table}?${query}&order=slug&limit=${PAGE_SIZE}&offset=${offset}`;
+    const res = await fetch(url, {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+    });
+    if (!res.ok) throw new Error(`${table}: HTTP ${res.status}`);
+    const page = await res.json();
+    rows.push(...page);
+    if (page.length < PAGE_SIZE) return rows;
+  }
 }
 
 function escapeXml(value) {
@@ -87,6 +95,11 @@ function urlEntry({ path, lastmod, priority, changefreq }) {
 async function main() {
   const entries = STATIC_ROUTES.map((route) => urlEntry(route));
 
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    console.warn('sitemap: Supabase env vars missing — keeping the existing public/sitemap.xml');
+    return;
+  }
+
   try {
     const [products, collections, posts] = await Promise.all([
       fetchRows('products', 'select=slug,updated_at&status=in.(published,sold)'),
@@ -114,7 +127,8 @@ async function main() {
       `sitemap: ${STATIC_ROUTES.length} static, ${products.length} products, ${collections.length} collections, ${posts.length} blog posts`
     );
   } catch (err) {
-    console.warn(`sitemap: Supabase fetch failed (${err.message}) — writing static routes only`);
+    console.warn(`sitemap: Supabase fetch failed (${err.message}) — keeping the existing public/sitemap.xml`);
+    return;
   }
 
   const xml = [

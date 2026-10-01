@@ -18,12 +18,12 @@ export default function Register() {
     setError(null);
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('auth.passwordsDoNotMatch'));
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError(t('auth.passwordTooShort'));
       return;
     }
 
@@ -45,7 +45,7 @@ export default function Register() {
 
       setSuccess(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create account');
+      setError(err instanceof Error ? err.message : t('auth.registerFailed'));
     } finally {
       setLoading(false);
     }
@@ -102,7 +102,7 @@ export default function Register() {
               marginBottom: '12px',
             }}
           >
-            Check Your Email
+            {t('auth.checkYourEmail')}
           </h1>
           <p
             style={{
@@ -110,8 +110,7 @@ export default function Register() {
               marginBottom: '32px',
             }}
           >
-            We've sent a confirmation link to <strong>{email}</strong>. Please check your inbox and
-            click the link to verify your account.
+            {t('auth.confirmationSentBefore')} <strong>{email}</strong>{t('auth.confirmationSentAfter')}
           </p>
           <Link
             to="/login"
@@ -125,7 +124,7 @@ export default function Register() {
               borderRadius: '4px',
             }}
           >
-            Back to Login
+            {t('auth.backToLogin')}
           </Link>
         </div>
       </div>
@@ -168,7 +167,7 @@ export default function Register() {
             marginBottom: '32px',
           }}
         >
-          Join Dysnomia Art Gallery
+          {t('auth.joinGallery')}
         </p>
 
         {error && (
@@ -196,7 +195,7 @@ export default function Register() {
                 marginBottom: '8px',
               }}
             >
-              Full Name
+              {t('auth.fullName')}
             </label>
             <input
               type="text"
@@ -268,7 +267,7 @@ export default function Register() {
                 borderRadius: '4px',
                 outline: 'none',
               }}
-              placeholder="At least 6 characters"
+              placeholder={t('auth.passwordPlaceholder')}
             />
           </div>
 

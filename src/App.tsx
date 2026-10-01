@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -9,58 +9,59 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ShopLayoutWrapper from './components/shop/ShopLayoutWrapper';
 import ScrollToTop from './components/ScrollToTop';
 import { PageErrorBoundary } from './components/ErrorBoundary';
+import { lazyWithReload } from './lib/chunkReload';
 
 // Lazy loaded components for code splitting
-const ShopHome = lazy(() => import('./pages/ShopHome'));
-const Shop = lazy(() => import('./pages/Shop'));
-const Collections = lazy(() => import('./pages/Collections'));
-const CollectionShowcase = lazy(() => import('./pages/CollectionShowcase'));
-const NewArrivals = lazy(() => import('./pages/NewArrivals'));
-const KidsPictures = lazy(() => import('./pages/KidsPictures'));
-const TopSellers = lazy(() => import('./pages/TopSellers'));
-const About = lazy(() => import('./pages/About'));
-const AdminLayout = lazy(() => import('./components/AdminLayout'));
-const ProductDetail = lazy(() => import('./pages/ProductDetail'));
-const Login = lazy(() => import('./pages/admin/Login'));
-const Dashboard = lazy(() => import('./pages/admin/Dashboard'));
-const ProductForm = lazy(() => import('./pages/admin/ProductForm'));
-const ProductsList = lazy(() => import('./pages/admin/ProductsList'));
-const CollectionsList = lazy(() => import('./pages/admin/CollectionsList'));
-const CollectionForm = lazy(() => import('./pages/admin/CollectionForm'));
-const NotFound = lazy(() => import('./pages/NotFound'));
+const ShopHome = lazyWithReload(() => import('./pages/ShopHome'));
+const Shop = lazyWithReload(() => import('./pages/Shop'));
+const Collections = lazyWithReload(() => import('./pages/Collections'));
+const CollectionShowcase = lazyWithReload(() => import('./pages/CollectionShowcase'));
+const NewArrivals = lazyWithReload(() => import('./pages/NewArrivals'));
+const KidsPictures = lazyWithReload(() => import('./pages/KidsPictures'));
+const TopSellers = lazyWithReload(() => import('./pages/TopSellers'));
+const About = lazyWithReload(() => import('./pages/About'));
+const AdminLayout = lazyWithReload(() => import('./components/AdminLayout'));
+const ProductDetail = lazyWithReload(() => import('./pages/ProductDetail'));
+const Login = lazyWithReload(() => import('./pages/admin/Login'));
+const Dashboard = lazyWithReload(() => import('./pages/admin/Dashboard'));
+const ProductForm = lazyWithReload(() => import('./pages/admin/ProductForm'));
+const ProductsList = lazyWithReload(() => import('./pages/admin/ProductsList'));
+const CollectionsList = lazyWithReload(() => import('./pages/admin/CollectionsList'));
+const CollectionForm = lazyWithReload(() => import('./pages/admin/CollectionForm'));
+const NotFound = lazyWithReload(() => import('./pages/NotFound'));
 
 // E-commerce pages
-const Cart = lazy(() => import('./pages/Cart'));
-const Checkout = lazy(() => import('./pages/Checkout'));
-const OrderConfirmation = lazy(() => import('./pages/OrderConfirmation'));
+const Cart = lazyWithReload(() => import('./pages/Cart'));
+const Checkout = lazyWithReload(() => import('./pages/Checkout'));
+const OrderConfirmation = lazyWithReload(() => import('./pages/OrderConfirmation'));
 
 // Account pages
-const CustomerLogin = lazy(() => import('./pages/auth/Login'));
-const Register = lazy(() => import('./pages/auth/Register'));
-const AccountDashboard = lazy(() => import('./pages/account/Dashboard'));
-const AccountOrders = lazy(() => import('./pages/account/Orders'));
-const AccountWishlist = lazy(() => import('./pages/account/Wishlist'));
-const AccountSettings = lazy(() => import('./pages/account/Settings'));
+const CustomerLogin = lazyWithReload(() => import('./pages/auth/Login'));
+const Register = lazyWithReload(() => import('./pages/auth/Register'));
+const AccountDashboard = lazyWithReload(() => import('./pages/account/Dashboard'));
+const AccountOrders = lazyWithReload(() => import('./pages/account/Orders'));
+const AccountWishlist = lazyWithReload(() => import('./pages/account/Wishlist'));
+const AccountSettings = lazyWithReload(() => import('./pages/account/Settings'));
 
 // Admin pages
-const OrdersList = lazy(() => import('./pages/admin/OrdersList'));
-const OrderDetail = lazy(() => import('./pages/admin/OrderDetail'));
-const ReviewsList = lazy(() => import('./pages/admin/ReviewsList'));
-const FeaturedManager = lazy(() => import('./pages/admin/FeaturedManager'));
-const Announcements = lazy(() => import('./pages/admin/Announcements'));
-const Blog = lazy(() => import('./pages/Blog'));
-const BlogPostPage = lazy(() => import('./pages/BlogPost'));
-const BlogAdmin = lazy(() => import('./pages/admin/BlogAdmin'));
-const ImageOptimizer = lazy(() => import('./pages/admin/ImageOptimizer'));
-const Statistics = lazy(() => import('./pages/admin/Statistics'));
+const OrdersList = lazyWithReload(() => import('./pages/admin/OrdersList'));
+const OrderDetail = lazyWithReload(() => import('./pages/admin/OrderDetail'));
+const ReviewsList = lazyWithReload(() => import('./pages/admin/ReviewsList'));
+const FeaturedManager = lazyWithReload(() => import('./pages/admin/FeaturedManager'));
+const Announcements = lazyWithReload(() => import('./pages/admin/Announcements'));
+const Blog = lazyWithReload(() => import('./pages/Blog'));
+const BlogPostPage = lazyWithReload(() => import('./pages/BlogPost'));
+const BlogAdmin = lazyWithReload(() => import('./pages/admin/BlogAdmin'));
+const ImageOptimizer = lazyWithReload(() => import('./pages/admin/ImageOptimizer'));
+const Statistics = lazyWithReload(() => import('./pages/admin/Statistics'));
 
 // Support pages
-const Contact = lazy(() => import('./pages/Contact'));
-const Shipping = lazy(() => import('./pages/Shipping'));
-const FAQ = lazy(() => import('./pages/FAQ'));
-const Privacy = lazy(() => import('./pages/Privacy'));
-const Unsubscribe = lazy(() => import('./pages/Unsubscribe'));
-const NewsletterSubscribers = lazy(() => import('./pages/admin/NewsletterSubscribers'));
+const Contact = lazyWithReload(() => import('./pages/Contact'));
+const Shipping = lazyWithReload(() => import('./pages/Shipping'));
+const FAQ = lazyWithReload(() => import('./pages/FAQ'));
+const Privacy = lazyWithReload(() => import('./pages/Privacy'));
+const Unsubscribe = lazyWithReload(() => import('./pages/Unsubscribe'));
+const NewsletterSubscribers = lazyWithReload(() => import('./pages/admin/NewsletterSubscribers'));
 
 // Loading fallback component
 import DysnomiaLoader from './components/shop/DysnomiaLoader';
@@ -102,16 +103,16 @@ function App() {
               <Route path="/faq" element={<FAQ />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
-              <Route path="/posters" element={<ShopHome />} />
-              <Route path="/frames" element={<ShopHome />} />
+              <Route path="/posters" element={<Navigate to="/shop" replace />} />
+              <Route path="/frames" element={<Navigate to="/shop" replace />} />
               <Route path="/new-arrivals" element={<NewArrivals />} />
               <Route path="/kids-pictures" element={<KidsPictures />} />
               <Route path="/top-sellers" element={<TopSellers />} />
               <Route path="/kids" element={<Navigate to="/kids-pictures" replace />} />
-              <Route path="/inspiration" element={<ShopHome />} />
-              <Route path="/business" element={<ShopHome />} />
-              <Route path="/artists" element={<ShopHome />} />
-              <Route path="/stories" element={<ShopHome />} />
+              <Route path="/inspiration" element={<Navigate to="/shop" replace />} />
+              <Route path="/business" element={<Navigate to="/shop" replace />} />
+              <Route path="/artists" element={<Navigate to="/shop" replace />} />
+              <Route path="/stories" element={<Navigate to="/shop" replace />} />
 
               {/* E-commerce Routes */}
               <Route path="/cart" element={<Cart />} />

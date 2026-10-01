@@ -3,8 +3,8 @@ const ALLOWED_ORIGINS = [
   'https://www.dysnomiagallery.com',
 ];
 
-// In development, also allow localhost
-if (Deno.env.get('ENVIRONMENT') !== 'production') {
+// Localhost only when explicitly running in development
+if (Deno.env.get('ENVIRONMENT') === 'development') {
   ALLOWED_ORIGINS.push('http://localhost:5173', 'http://localhost:4173');
 }
 

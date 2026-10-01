@@ -34,11 +34,12 @@ const statusFlow: OrderStatus[] = ['pending', 'confirmed', 'shipped', 'delivered
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { order, loading, error, refetch } = useOrderDetail(id);
-  const { updateOrderStatus, updateTrackingNumber, addOrderNote, deleteOrder } = useOrders();
+  const { order, loading, error, refetch } = useOrderDetail(id, { admin: true });
+  const { updateOrderStatus, updateTrackingNumber, updateAdminNotes, deleteOrder } = useOrders();
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [notes, setNotes] = useState('');
   const [showNotesForm, setShowNotesForm] = useState(false);
   const [trackingNumber, setTrackingNumber] = useState('');
@@ -67,19 +68,21 @@ export default function OrderDetail() {
 
   const handleStatusChange = async (newStatus: OrderStatus) => {
     if (!order) return;
+    // Same status: nothing to change and no email to resend
+    if (newStatus === order.status) return;
 
     setIsUpdating(true);
     setUpdateError(null);
 
     const tracking = newStatus === 'shipped' ? trackingNumber || undefined : undefined;
-    const { error } = await updateOrderStatus(order.id, newStatus, tracking);
+    const { error, changed } = await updateOrderStatus(order.id, newStatus, tracking);
 
     if (error) {
       setUpdateError(error);
     } else {
-      // Fire-and-forget: send status email
+      // Fire-and-forget: send status email only if the DB row actually changed status
       const emailType = statusToEmailType[newStatus];
-      if (emailType) {
+      if (changed && emailType) {
         sendOrderEmail(order, emailType, tracking);
       }
       refetch();
@@ -111,7 +114,7 @@ export default function OrderDetail() {
     setIsUpdating(true);
     setUpdateError(null);
 
-    const { error } = await addOrderNote(order.id, notes);
+    const { error } = await updateAdminNotes(order.id, notes);
 
     if (error) {
       setUpdateError(error);
@@ -397,7 +400,28 @@ export default function OrderDetail() {
             </div>
           </div>
 
-          {/* Notes */}
+          {/* Customer note (from checkout) — read-only */}
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              border: '1px solid #e5e5e5',
+              borderRadius: '8px',
+              marginBottom: '24px',
+            }}
+          >
+            <div style={{ padding: '20px', borderBottom: '1px solid #e5e5e5' }}>
+              <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#1a1a1a' }}>Customer Note</h2>
+            </div>
+            <div style={{ padding: '20px' }}>
+              {order.notes ? (
+                <p style={{ color: '#4a4a4a', whiteSpace: 'pre-wrap' }}>{order.notes}</p>
+              ) : (
+                <p style={{ color: '#6b6b6b', fontStyle: 'italic' }}>The customer left no note.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Admin notes (internal) */}
           <div
             style={{
               backgroundColor: '#ffffff',
@@ -414,10 +438,13 @@ export default function OrderDetail() {
                 alignItems: 'center',
               }}
             >
-              <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#1a1a1a' }}>Notes</h2>
+              <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#1a1a1a' }}>
+                Admin Notes{' '}
+                <span style={{ fontSize: '12px', fontWeight: 400, color: '#6b6b6b' }}>(internal)</span>
+              </h2>
               <button
                 onClick={() => {
-                  setNotes(order.notes || '');
+                  setNotes(order.admin_notes || '');
                   setShowNotesForm(!showNotesForm);
                 }}
                 style={{
@@ -466,10 +493,10 @@ export default function OrderDetail() {
                     {isUpdating ? 'Saving...' : 'Save Notes'}
                   </button>
                 </div>
-              ) : order.notes ? (
-                <p style={{ color: '#4a4a4a', whiteSpace: 'pre-wrap' }}>{order.notes}</p>
+              ) : order.admin_notes ? (
+                <p style={{ color: '#4a4a4a', whiteSpace: 'pre-wrap' }}>{order.admin_notes}</p>
               ) : (
-                <p style={{ color: '#6b6b6b', fontStyle: 'italic' }}>No notes added.</p>
+                <p style={{ color: '#6b6b6b', fontStyle: 'italic' }}>No admin notes added.</p>
               )}
             </div>
           </div>
@@ -718,13 +745,30 @@ export default function OrderDetail() {
                   <p style={{ fontSize: '14px', color: '#dc2626', marginBottom: '12px' }}>
                     Are you sure? This will permanently delete order {order.order_number}.
                   </p>
+                  {deleteError && (
+                    <p
+                      role="alert"
+                      style={{
+                        fontSize: '13px',
+                        color: '#991b1b',
+                        backgroundColor: '#fef2f2',
+                        border: '1px solid #fecaca',
+                        borderRadius: '4px',
+                        padding: '8px 12px',
+                        marginBottom: '12px',
+                      }}
+                    >
+                      {deleteError}
+                    </p>
+                  )}
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button
                       onClick={async () => {
                         setIsUpdating(true);
+                        setDeleteError(null);
                         const { error } = await deleteOrder(order.id);
                         if (error) {
-                          setUpdateError(error);
+                          setDeleteError(`Could not delete order: ${error}`);
                           setIsUpdating(false);
                         } else {
                           navigate('/admin/orders');
@@ -747,7 +791,10 @@ export default function OrderDetail() {
                       {isUpdating ? 'Deleting...' : 'Yes, Delete'}
                     </button>
                     <button
-                      onClick={() => setShowDeleteConfirm(false)}
+                      onClick={() => {
+                        setShowDeleteConfirm(false);
+                        setDeleteError(null);
+                      }}
                       disabled={isUpdating}
                       style={{
                         flex: 1,

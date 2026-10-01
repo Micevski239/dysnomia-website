@@ -43,14 +43,23 @@ export default function AccountOrders() {
     async function fetchOrders() {
       setLoading(true);
       try {
+        // Order emails are matched case-insensitively (RLS compares lower()).
+        // ilike with LIKE wildcards escaped, then an exact lowercase check
+        // client-side (PostgREST also treats '*' as a wildcard).
+        const email = user!.email!.toLowerCase();
+        const pattern = email.replace(/[\\%_]/g, (ch) => `\\${ch}`);
         const { data, error } = await supabase
           .from('orders')
           .select('*')
-          .eq('customer_email', user!.email)
+          .ilike('customer_email', pattern)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
-        setOrders(data || []);
+        setOrders(
+          ((data || []) as Order[]).filter(
+            (order) => (order.customer_email || '').toLowerCase() === email
+          )
+        );
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load orders');
       } finally {

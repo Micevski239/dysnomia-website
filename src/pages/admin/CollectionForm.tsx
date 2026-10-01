@@ -35,10 +35,10 @@ export default function CollectionForm() {
     if (collection && isEditing) {
       setFormData({
         title: collection.title,
-        title_mk: (collection as any).title_mk || '',
+        title_mk: collection.title_mk || '',
         slug: collection.slug,
         description: collection.description || '',
-        description_mk: (collection as any).description_mk || '',
+        description_mk: collection.description_mk || '',
         display_order: collection.display_order ?? 0,
         is_active: collection.is_active,
         is_featured: collection.is_featured,

@@ -1,4 +1,5 @@
 import { createContext, useContext, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { getPrice } from '../config/printOptions';
 
 export interface CartItem {
   productId: string;
@@ -23,7 +24,11 @@ interface CartContextValue {
   getItemKey: (productId: string, printType: string, sizeId: string) => string;
 }
 
+// The stored shape is unchanged; prices are never trusted from storage (they are
+// recomputed from the price matrix on load), so existing carts keep working.
 const CART_STORAGE_KEY = 'dysnomia_cart';
+
+const PRINT_TYPES: ReadonlyArray<CartItem['printType']> = ['canvas', 'roll', 'framed'];
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 
@@ -31,16 +36,69 @@ function getItemKey(productId: string, printType: string, sizeId: string): strin
   return `${productId}-${printType}-${sizeId}`;
 }
 
+/**
+ * Validate one persisted cart entry. Returns null for malformed entries and for
+ * print type × size combos that no longer exist; otherwise returns the item with
+ * its unitPrice recomputed from the current price matrix.
+ */
+function sanitizeStoredItem(raw: unknown): CartItem | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const r = raw as Record<string, unknown>;
+  if (
+    typeof r.productId !== 'string' || !r.productId ||
+    typeof r.sizeId !== 'string' || !r.sizeId ||
+    typeof r.printType !== 'string' ||
+    !PRINT_TYPES.includes(r.printType as CartItem['printType'])
+  ) {
+    return null;
+  }
+  const printType = r.printType as CartItem['printType'];
+  const unitPrice = getPrice(printType, r.sizeId);
+  if (unitPrice <= 0) return null;
+
+  const quantity = typeof r.quantity === 'number' && Number.isFinite(r.quantity) ? Math.floor(r.quantity) : 0;
+  if (quantity < 1) return null;
+
+  return {
+    productId: r.productId,
+    productTitle: typeof r.productTitle === 'string' ? r.productTitle : '',
+    productSlug: typeof r.productSlug === 'string' ? r.productSlug : '',
+    imageUrl: typeof r.imageUrl === 'string' ? r.imageUrl : '',
+    printType,
+    sizeId: r.sizeId,
+    sizeLabel: typeof r.sizeLabel === 'string' ? r.sizeLabel : r.sizeId,
+    quantity,
+    unitPrice,
+  };
+}
+
+function loadStoredCart(): CartItem[] {
+  if (typeof window === 'undefined') return [];
+  let parsed: unknown;
+  try {
+    const stored = localStorage.getItem(CART_STORAGE_KEY);
+    if (!stored) return [];
+    parsed = JSON.parse(stored);
+  } catch {
+    return [];
+  }
+  if (!Array.isArray(parsed)) return [];
+
+  const seen = new Set<string>();
+  const result: CartItem[] = [];
+  for (const raw of parsed) {
+    const item = sanitizeStoredItem(raw);
+    if (!item) continue;
+    const key = getItemKey(item.productId, item.printType, item.sizeId);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(item);
+  }
+  return result;
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>(() => {
-    if (typeof window === 'undefined') return [];
-    try {
-      const stored = localStorage.getItem(CART_STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [items, setItems] = useState<CartItem[]>(loadStoredCart);
 
   // Persist to localStorage whenever items change
   useEffect(() => {

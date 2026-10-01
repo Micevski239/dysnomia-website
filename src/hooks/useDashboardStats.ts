@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { fetchAllRows } from '../lib/fetchAllRows';
 import type { ActivityItem } from '../components/admin/ActivityFeed';
 
 interface DashboardStats {
@@ -50,12 +51,17 @@ export function useDashboardStats() {
           .select('id', { count: 'exact', head: true })
           .gte('created_at', todayISO),
 
-        // Monthly revenue (sum of delivered orders this month)
-        supabase
-          .from('orders')
-          .select('total_amount')
-          .gte('created_at', firstOfMonthISO)
-          .in('status', ['confirmed', 'shipped', 'delivered']),
+        // Monthly revenue (sum of confirmed/shipped/delivered orders this month).
+        // Paged: PostgREST returns at most 1000 rows per request.
+        fetchAllRows<{ total_amount: number | null }>((from, to) =>
+          supabase
+            .from('orders')
+            .select('total_amount')
+            .gte('created_at', firstOfMonthISO)
+            .in('status', ['confirmed', 'shipped', 'delivered'])
+            .order('id', { ascending: true })
+            .range(from, to)
+        ),
 
         // Pending reviews count
         supabase

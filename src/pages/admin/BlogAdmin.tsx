@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useBlogMutations } from '../../hooks/useBlog';
 import { AdminCard } from '../../components/admin';
+import { generateSlug } from '../../lib/utils';
 import { Plus, Trash2, Save, Eye, EyeOff, Image as ImageIcon, X } from 'lucide-react';
 import type { BlogImage, BlogPost } from '../../types';
 
@@ -35,15 +36,6 @@ const emptyDraft: Draft = {
   is_published: false,
   published_at: null,
 };
-
-function generateSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-}
 
 export default function BlogAdmin() {
   const { posts, loading, addPost, updatePost, deletePost, uploadImage } = useBlogMutations();

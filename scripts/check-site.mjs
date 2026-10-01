@@ -115,11 +115,71 @@ function checkSocialLinks() {
   console.log('[check-site] Social links checked.');
 }
 
+/** Parse priceMatrix from src/config/printOptions.ts → { canvas: { '50x70': 1299, ... }, ... } */
+function readPriceMatrix() {
+  const src = readFileSync(join(ROOT, 'src', 'config', 'printOptions.ts'), 'utf8');
+  const start = src.indexOf('export const priceMatrix');
+  const block = src.slice(start, src.indexOf('};', start));
+  const matrix = {};
+  for (const m of block.matchAll(/(canvas|roll|framed)\s*:\s*\{([^}]*)\}/g)) {
+    matrix[m[1]] = {};
+    for (const p of m[2].matchAll(/'([0-9x]+)'\s*:\s*(\d+)/g)) matrix[m[1]][p[1]] = Number(p[2]);
+  }
+  return matrix;
+}
+
+/**
+ * Prices: the site shows priceMatrix, but orders are charged from the
+ * print_prices table. A mismatch means customers pay a different price than
+ * the one they saw. The prerender price range must also match.
+ */
+async function checkPrices() {
+  const matrix = readPriceMatrix();
+  const all = Object.values(matrix).flatMap((sizes) => Object.values(sizes));
+  if (all.length === 0) {
+    failures.push('Prices: could not read priceMatrix from src/config/printOptions.ts.');
+    return;
+  }
+
+  const prerender = readFileSync(join(ROOT, 'api', 'prerender.js'), 'utf8');
+  const range = prerender.match(/PRICE_RANGE_MKD = \{ low: (\d+), high: (\d+), count: (\d+) \}/);
+  const expected = [Math.min(...all), Math.max(...all), all.length];
+  if (!range || range.slice(1).map(Number).join() !== expected.join()) {
+    failures.push(`Prices: PRICE_RANGE_MKD in api/prerender.js must be { low: ${expected[0]}, high: ${expected[1]}, count: ${expected[2]} }.`);
+  }
+
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return;
+  let rows;
+  try {
+    rows = await getJson('print_prices?select=print_type,size_id,price_mkd');
+  } catch (err) {
+    console.warn(`[check-site] print_prices not readable, price check skipped: ${err.message}`);
+    return;
+  }
+  const mismatches = [];
+  for (const [type, sizes] of Object.entries(matrix)) {
+    for (const [size, price] of Object.entries(sizes)) {
+      const row = rows.find((r) => r.print_type === type && r.size_id === size);
+      if (!row) mismatches.push(`${type} ${size}: missing in DB (site ${price})`);
+      else if (Number(row.price_mkd) !== price) mismatches.push(`${type} ${size}: DB ${row.price_mkd} ≠ site ${price}`);
+    }
+  }
+  if (mismatches.length > 0) {
+    failures.push(
+      `Prices: the database charges different prices than the site shows (${mismatches.slice(0, 4).join('; ')}${mismatches.length > 4 ? '; …' : ''}). Apply migration 010 or update print_prices.`
+    );
+  } else {
+    console.log('[check-site] Prices OK — database matches the site.');
+  }
+}
+
 checkSocialLinks();
-try {
-  await checkKidsCollection();
-} catch (err) {
-  console.warn(`[check-site] kids check could not complete: ${err.message}`);
+for (const check of [checkKidsCollection, checkPrices]) {
+  try {
+    await check();
+  } catch (err) {
+    console.warn(`[check-site] ${check.name} could not complete: ${err.message}`);
+  }
 }
 
 if (failures.length > 0) {

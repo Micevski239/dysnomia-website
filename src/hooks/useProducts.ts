@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase, PUBLIC_FUNCTION_HEADERS } from '../lib/supabase';
 import { validateImageFile } from '../lib/fileValidation';
+import { fetchAllRows } from '../lib/fetchAllRows';
 import type { Product, ProductFormData } from '../types';
 
 async function fetchCachedProducts(): Promise<Product[] | null> {
@@ -52,20 +53,32 @@ export function useProducts(includeUnpublished = false, options?: Omit<UseProduc
     }
 
     // Fallback: direct Supabase query
-    let query = supabase
-      .from('products')
-      .select('id, title, title_mk, slug, description, description_mk, price, image_url, status, created_at, updated_at', { count: 'exact' })
-      .order('created_at', { ascending: false });
+    const buildQuery = () => {
+      let query = supabase
+        .from('products')
+        .select('id, title, title_mk, slug, description, description_mk, price, image_url, status, created_at, updated_at', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: false });
 
-    if (!includeUnpublished) {
-      query = query.in('status', ['published', 'sold']);
-    }
+      if (!includeUnpublished) {
+        query = query.in('status', ['published', 'sold']);
+      }
+      return query;
+    };
+
+    let data: Product[] | null;
+    let error: { message: string } | null;
+    let count: number | null;
 
     if (limit) {
-      query = query.range(offset, offset + limit - 1);
+      ({ data, error, count } = await buildQuery().range(offset, offset + limit - 1));
+    } else {
+      // Unbounded list: page through, since PostgREST returns at most 1000 rows per request
+      const all = await fetchAllRows<Product>((from, to) => buildQuery().range(from, to));
+      data = all.data;
+      error = all.error;
+      count = all.data.length;
     }
-
-    const { data, error, count } = await query;
 
     if (error) {
       setError(error.message);

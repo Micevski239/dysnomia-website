@@ -36,11 +36,16 @@ type EmailType =
   | 'order_delivered'
   | 'order_cancelled';
 
-const printTypeLabels: Record<string, string> = {
-  canvas: 'Canvas Print',
-  roll: 'Rolled Print',
-  framed: 'Framed Print',
+const printTypeLabels: Record<string, [string, string]> = {
+  canvas: ['Canvas Print', 'Канвас'],
+  roll: ['Rolled Print', 'Платно во ролна'],
+  framed: ['Framed Print', 'Врамена слика'],
 };
+
+// Language of the email being built. Set synchronously right before buildEmail()
+// (which is synchronous), so concurrent requests cannot interleave.
+let emailLang: 'mk' | 'en' = 'mk';
+const tr = (en: string, mk: string) => (emailLang === 'mk' ? mk : en);
 
 // Escape HTML to prevent XSS in email templates
 function escapeHtml(str: string): string {
@@ -63,7 +68,7 @@ function buildItemsTable(order: Order): string {
       <tr>
         <td style="padding: 12px 0; border-bottom: 1px solid #eee; font-family: Georgia, serif; font-size: 14px; color: #333;">
           ${escapeHtml(item.productTitle)}<br/>
-          <span style="color: #888; font-size: 12px;">${escapeHtml(printTypeLabels[item.printType] || item.printType)} &bull; ${escapeHtml(item.sizeLabel)}</span>
+          <span style="color: #888; font-size: 12px;">${escapeHtml(printTypeLabels[item.printType] ? tr(...printTypeLabels[item.printType]) : item.printType)} &bull; ${escapeHtml(item.sizeLabel)}</span>
         </td>
         <td style="padding: 12px 0; border-bottom: 1px solid #eee; text-align: center; font-family: Georgia, serif; font-size: 14px; color: #333;">
           ${Number(item.quantity)}
@@ -79,9 +84,9 @@ function buildItemsTable(order: Order): string {
     <table width="100%" cellpadding="0" cellspacing="0" style="margin: 20px 0;">
       <thead>
         <tr>
-          <th style="padding: 8px 0; border-bottom: 2px solid #ddd; text-align: left; font-family: Georgia, serif; font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Item</th>
-          <th style="padding: 8px 0; border-bottom: 2px solid #ddd; text-align: center; font-family: Georgia, serif; font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Qty</th>
-          <th style="padding: 8px 0; border-bottom: 2px solid #ddd; text-align: right; font-family: Georgia, serif; font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Total</th>
+          <th style="padding: 8px 0; border-bottom: 2px solid #ddd; text-align: left; font-family: Georgia, serif; font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px;">${tr('Item', 'Производ')}</th>
+          <th style="padding: 8px 0; border-bottom: 2px solid #ddd; text-align: center; font-family: Georgia, serif; font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px;">${tr('Qty', 'Кол.')}</th>
+          <th style="padding: 8px 0; border-bottom: 2px solid #ddd; text-align: right; font-family: Georgia, serif; font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px;">${tr('Total', 'Вкупно')}</th>
         </tr>
       </thead>
       <tbody>
@@ -97,18 +102,18 @@ function buildTotalsSection(order: Order): string {
         <td style="padding: 16px 20px;">
           <table width="100%" cellpadding="0" cellspacing="0">
             <tr>
-              <td style="padding: 4px 0; font-family: Georgia, serif; font-size: 14px; color: #666;">Subtotal</td>
+              <td style="padding: 4px 0; font-family: Georgia, serif; font-size: 14px; color: #666;">${tr('Subtotal', 'Меѓузбир')}</td>
               <td style="padding: 4px 0; text-align: right; font-family: Georgia, serif; font-size: 14px; color: #333;">${formatPrice(order.subtotal, order.currency)}</td>
             </tr>
             <tr>
-              <td style="padding: 4px 0; font-family: Georgia, serif; font-size: 14px; color: #666;">Shipping</td>
-              <td style="padding: 4px 0; text-align: right; font-family: Georgia, serif; font-size: 14px; color: #333;">${order.shipping_cost > 0 ? formatPrice(order.shipping_cost, order.currency) : 'TBD'}</td>
+              <td style="padding: 4px 0; font-family: Georgia, serif; font-size: 14px; color: #666;">${tr('Shipping', 'Достава')}</td>
+              <td style="padding: 4px 0; text-align: right; font-family: Georgia, serif; font-size: 14px; color: #333;">${order.shipping_cost > 0 ? formatPrice(order.shipping_cost, order.currency) : tr('TBD', 'Ќе се потврди')}</td>
             </tr>
             <tr>
               <td colspan="2" style="padding: 8px 0 0;"><hr style="border: none; border-top: 1px solid #ddd; margin: 0;"/></td>
             </tr>
             <tr>
-              <td style="padding: 8px 0 4px; font-family: Georgia, serif; font-size: 18px; font-weight: bold; color: #333;">Total</td>
+              <td style="padding: 8px 0 4px; font-family: Georgia, serif; font-size: 18px; font-weight: bold; color: #333;">${tr('Total', 'Вкупно')}</td>
               <td style="padding: 8px 0 4px; text-align: right; font-family: Georgia, serif; font-size: 18px; font-weight: bold; color: #B8860B;">${formatPrice(order.total_amount, order.currency)}</td>
             </tr>
           </table>
@@ -123,7 +128,7 @@ function buildAddressSection(order: Order): string {
     <table width="100%" cellpadding="0" cellspacing="0" style="margin: 20px 0;">
       <tr>
         <td style="padding: 16px 20px; background-color: #f9f9f9; border-radius: 4px;">
-          <p style="margin: 0 0 4px; font-family: Georgia, serif; font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Shipping Address</p>
+          <p style="margin: 0 0 4px; font-family: Georgia, serif; font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px;">${tr('Shipping Address', 'Адреса за достава')}</p>
           <p style="margin: 0; font-family: Georgia, serif; font-size: 14px; color: #333; line-height: 1.6;">
             ${escapeHtml(order.customer_name)}<br/>
             ${escapeHtml(addr.address)}<br/>
@@ -145,13 +150,13 @@ function buildEmailBody(
   switch (emailType) {
     case 'order_placed':
       return {
-        subject: `Order Received — ${orderNum}`,
+        subject: `${tr('Order Received', 'Нарачката е примена')} — ${orderNum}`,
         bodyContent: `
           <p style="font-family: Georgia, serif; font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 16px;">
-            Thank you for your order, ${escapeHtml(order.customer_name)}!
+            ${tr('Thank you for your order', 'Ви благодариме за нарачката')}, ${escapeHtml(order.customer_name)}!
           </p>
           <p style="font-family: Georgia, serif; font-size: 14px; color: #666; line-height: 1.6; margin: 0 0 24px;">
-            We've received your order and will begin processing it shortly. You'll receive another email when your order is confirmed.
+            ${tr("We've received your order and will begin processing it shortly. You'll receive another email when your order is confirmed.", 'Ја примивме вашата нарачка и наскоро ќе почнеме со обработка. Ќе добиете нова порака кога нарачката ќе биде потврдена.')}
           </p>
           ${buildItemsTable(order)}
           ${buildTotalsSection(order)}
@@ -161,13 +166,13 @@ function buildEmailBody(
 
     case 'order_confirmed':
       return {
-        subject: `Order Confirmed — ${orderNum}`,
+        subject: `${tr('Order Confirmed', 'Нарачката е потврдена')} — ${orderNum}`,
         bodyContent: `
           <p style="font-family: Georgia, serif; font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 16px;">
-            Great news, ${escapeHtml(order.customer_name)}!
+            ${tr('Great news', 'Одлични вести')}, ${escapeHtml(order.customer_name)}!
           </p>
           <p style="font-family: Georgia, serif; font-size: 14px; color: #666; line-height: 1.6; margin: 0 0 24px;">
-            Your order has been confirmed and is being prepared. We'll notify you once it ships.
+            ${tr("Your order has been confirmed and is being prepared. We'll notify you once it ships.", 'Вашата нарачка е потврдена и се подготвува. Ќе ве известиме кога ќе биде испратена.')}
           </p>
           ${buildItemsTable(order)}
           ${buildTotalsSection(order)}
@@ -176,13 +181,13 @@ function buildEmailBody(
 
     case 'order_shipped':
       return {
-        subject: `Order Shipped — ${orderNum}`,
+        subject: `${tr('Order Shipped', 'Нарачката е испратена')} — ${orderNum}`,
         bodyContent: `
           <p style="font-family: Georgia, serif; font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 16px;">
-            Your order is on its way, ${escapeHtml(order.customer_name)}!
+            ${tr('Your order is on its way', 'Вашата нарачка е на пат')}, ${escapeHtml(order.customer_name)}!
           </p>
           <p style="font-family: Georgia, serif; font-size: 14px; color: #666; line-height: 1.6; margin: 0 0 24px;">
-            Your order has been shipped and is heading to you.
+            ${tr('Your order has been shipped and is heading to you.', 'Нарачката е испратена и пристигнува кај вас.')}
           </p>
           ${
             trackingNumber
@@ -190,7 +195,7 @@ function buildEmailBody(
           <table width="100%" cellpadding="0" cellspacing="0" style="margin: 0 0 24px;">
             <tr>
               <td style="padding: 16px 20px; background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 4px;">
-                <p style="margin: 0 0 4px; font-family: Georgia, serif; font-size: 12px; color: #1e40af; text-transform: uppercase; letter-spacing: 1px;">Tracking Number</p>
+                <p style="margin: 0 0 4px; font-family: Georgia, serif; font-size: 12px; color: #1e40af; text-transform: uppercase; letter-spacing: 1px;">${tr('Tracking Number', 'Број за следење')}</p>
                 <p style="margin: 0; font-family: Georgia, serif; font-size: 16px; color: #1e40af; font-weight: bold;">${escapeHtml(trackingNumber || '')}</p>
               </td>
             </tr>
@@ -204,13 +209,13 @@ function buildEmailBody(
 
     case 'order_delivered':
       return {
-        subject: `Order Delivered — ${orderNum}`,
+        subject: `${tr('Order Delivered', 'Нарачката е доставена')} — ${orderNum}`,
         bodyContent: `
           <p style="font-family: Georgia, serif; font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 16px;">
-            Your order has been delivered, ${escapeHtml(order.customer_name)}!
+            ${tr('Your order has been delivered', 'Вашата нарачка е доставена')}, ${escapeHtml(order.customer_name)}!
           </p>
           <p style="font-family: Georgia, serif; font-size: 14px; color: #666; line-height: 1.6; margin: 0 0 24px;">
-            We hope you love your new artwork. If you have any questions, feel free to reach out to us.
+            ${tr('We hope you love your new artwork. If you have any questions, feel free to reach out to us.', 'Се надеваме дека ќе уживате во новото уметничко дело. За прашања слободно контактирајте нè.')}
           </p>
           ${buildItemsTable(order)}
         `,
@@ -218,13 +223,13 @@ function buildEmailBody(
 
     case 'order_cancelled':
       return {
-        subject: `Order Cancelled — ${orderNum}`,
+        subject: `${tr('Order Cancelled', 'Нарачката е откажана')} — ${orderNum}`,
         bodyContent: `
           <p style="font-family: Georgia, serif; font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 16px;">
-            Your order has been cancelled, ${escapeHtml(order.customer_name)}.
+            ${tr('Your order has been cancelled', 'Вашата нарачка е откажана')}, ${escapeHtml(order.customer_name)}.
           </p>
           <p style="font-family: Georgia, serif; font-size: 14px; color: #666; line-height: 1.6; margin: 0 0 24px;">
-            Order ${orderNum} has been cancelled. If you did not request this cancellation or have any questions, please contact us.
+            ${tr('Order', 'Нарачката')} ${orderNum} ${tr('has been cancelled. If you did not request this cancellation or have any questions, please contact us.', 'е откажана. Ако не сте го побарале тоа или имате прашања, контактирајте нè.')}
           </p>
           ${buildItemsTable(order)}
           ${buildTotalsSection(order)}
@@ -236,7 +241,7 @@ function buildEmailBody(
 function wrapInLayout(body: string, orderNumber: string): string {
   return `
 <!DOCTYPE html>
-<html>
+<html lang="${emailLang}">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -256,7 +261,7 @@ function wrapInLayout(body: string, orderNumber: string): string {
           <tr>
             <td style="background-color: #ffffff; padding: 30px 40px 0; text-align: center;">
               <span style="display: inline-block; padding: 6px 16px; background-color: #f0f0f0; border-radius: 4px; font-family: Georgia, serif; font-size: 13px; color: #B8860B; letter-spacing: 1px;">
-                ORDER ${orderNumber}
+                ${tr('ORDER', 'НАРАЧКА')} ${orderNumber}
               </span>
             </td>
           </tr>
@@ -270,10 +275,10 @@ function wrapInLayout(body: string, orderNumber: string): string {
           <tr>
             <td style="background-color: #f9f9f9; padding: 24px 40px; text-align: center; border-top: 1px solid #eee;">
               <p style="margin: 0 0 8px; font-family: Georgia, serif; font-size: 12px; color: #999;">
-                &copy; ${new Date().getFullYear()} DYSNOMIA Art Gallery. All rights reserved.
+                &copy; ${new Date().getFullYear()} DYSNOMIA Art Gallery. ${tr('All rights reserved.', 'Сите права се задржани.')}
               </p>
               <p style="margin: 0; font-family: Georgia, serif; font-size: 11px; color: #bbb;">
-                This email was sent regarding your order. Please do not reply to this email.
+                ${tr('This email was sent regarding your order. Please do not reply to this email.', 'Оваа порака е испратена во врска со вашата нарачка. Ве молиме не одговарајте на неа.')}
               </p>
             </td>
           </tr>
@@ -373,7 +378,7 @@ Deno.serve(async (req: Request) => {
     const orderId = typeof clientOrder.id === 'string' ? clientOrder.id : '';
     const { data: order } = await supabaseService
       .from('orders')
-      .select('id, order_number, customer_email, customer_name, shipping_address, items, subtotal, shipping_cost, total_amount, currency, created_at')
+      .select('*')
       .eq('id', orderId)
       .maybeSingle();
 
@@ -409,6 +414,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    emailLang = order.language === 'en' ? 'en' : 'mk';
     const { subject, html } = buildEmail(order, emailType, trackingNumber);
 
     const resendResponse = await fetch('https://api.resend.com/emails', {

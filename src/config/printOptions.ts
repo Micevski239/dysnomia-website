@@ -88,5 +88,5 @@ export function getOldPrice(printType: PrintType, sizeId: string): number {
 }
 
 export function formatPriceMKD(price: number): string {
-  return `${price.toLocaleString()} MKD`;
+  return `${price.toLocaleString('mk-MK')} MKD`;
 }

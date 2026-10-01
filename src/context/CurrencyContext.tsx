@@ -54,7 +54,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     const convertedPrice = currency === 'MKD' ? priceInMKD : Math.round((priceInMKD / MKD_TO_EUR_RATE) * 100) / 100;
 
     if (currency === 'MKD') {
-      return `${convertedPrice.toLocaleString()} MKD`;
+      return `${convertedPrice.toLocaleString('mk-MK')} MKD`;
     }
 
     return `€${convertedPrice.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;

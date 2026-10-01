@@ -1,25 +1,41 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type CSSProperties } from 'react';
+import { useLanguage } from '../../hooks/useLanguage';
+import { getConsent, setConsent } from '../../lib/consent';
 
 export default function CookieConsent() {
   const [isVisible, setIsVisible] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
-    const hasConsented = localStorage.getItem('cookieConsent');
-    if (!hasConsented) {
+    if (!getConsent()) {
       const timer = setTimeout(() => setIsVisible(true), 1000);
       return () => clearTimeout(timer);
     }
   }, []);
 
-  const handleAccept = () => {
-    localStorage.setItem('cookieConsent', 'true');
+  const handleChoice = (choice: 'accepted' | 'declined') => {
+    setConsent(choice);
     setIsVisible(false);
   };
 
   if (!isVisible) return null;
 
+  const buttonBase: CSSProperties = {
+    padding: '10px 24px',
+    fontSize: '11px',
+    fontWeight: 700,
+    letterSpacing: '1px',
+    textTransform: 'uppercase',
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+    transition: 'background-color 0.2s, color 0.2s'
+  };
+
   return (
     <div
+      role="dialog"
+      aria-live="polite"
+      aria-label={t('cookies.ariaLabel')}
       style={{
         position: 'fixed',
         bottom: 0,
@@ -39,7 +55,7 @@ export default function CookieConsent() {
           }
         `}
       </style>
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '16px 48px' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '16px clamp(16px, 4vw, 48px)' }}>
         <div
           style={{
             display: 'flex',
@@ -50,7 +66,7 @@ export default function CookieConsent() {
           }}
         >
           <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)' }}>
-            We use cookies to improve our website and your shopping experience.{' '}
+            {t('cookies.message')}{' '}
             <a
               href="/privacy"
               style={{
@@ -59,29 +75,37 @@ export default function CookieConsent() {
                 color: '#FBBE63'
               }}
             >
-              Find out more
+              {t('cookies.learnMore')}
             </a>
           </p>
-          <button
-            onClick={handleAccept}
-            style={{
-              padding: '10px 24px',
-              backgroundColor: '#FBBE63',
-              color: '#0A0A0A',
-              fontSize: '11px',
-              fontWeight: 700,
-              letterSpacing: '1px',
-              textTransform: 'uppercase',
-              border: 'none',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              transition: 'background-color 0.2s'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E5A84D'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FBBE63'}
-          >
-            Accept
-          </button>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => handleChoice('declined')}
+              style={{
+                ...buttonBase,
+                backgroundColor: 'transparent',
+                color: 'rgba(255,255,255,0.85)',
+                border: '1px solid rgba(255,255,255,0.35)'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#FFFFFF'}
+              onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.85)'}
+            >
+              {t('cookies.decline')}
+            </button>
+            <button
+              onClick={() => handleChoice('accepted')}
+              style={{
+                ...buttonBase,
+                backgroundColor: '#FBBE63',
+                color: '#0A0A0A',
+                border: 'none'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E5A84D'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FBBE63'}
+            >
+              {t('cookies.accept')}
+            </button>
+          </div>
         </div>
       </div>
     </div>

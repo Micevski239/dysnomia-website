@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useBlogPost } from '../hooks/useBlog';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { useLanguage } from '../hooks/useLanguage';
+import { useSlugRedirect } from '../hooks/useSlugRedirect';
 import { localize } from '../lib/localize';
 import SEO, { ArticleStructuredData, BreadcrumbStructuredData } from '../components/SEO';
 import type { BlogImage } from '../types';
@@ -78,8 +79,9 @@ export default function BlogPostPage() {
   const { post, loading, error } = useBlogPost(slug || '');
   const { language, t } = useLanguage();
   const { isMobile } = useBreakpoint();
+  const checkingRedirect = useSlugRedirect('blog', slug, !loading && (!!error || !post), '/blog/');
 
-  if (loading) {
+  if (loading || checkingRedirect) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#ffffff', padding: '48px 24px' }}>
         <div style={{ maxWidth: '960px', margin: '0 auto' }}>

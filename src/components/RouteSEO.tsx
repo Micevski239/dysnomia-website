@@ -28,14 +28,6 @@ const HOME_META: RouteMeta = {
 
 const ROUTE_META: Record<string, RouteMeta> = {
   '/': HOME_META,
-  // These routes currently render the same home page — canonical them to "/"
-  // so they don't compete with it in search results.
-  '/posters': { ...HOME_META, canonical: '/' },
-  '/frames': { ...HOME_META, canonical: '/' },
-  '/inspiration': { ...HOME_META, canonical: '/' },
-  '/business': { ...HOME_META, canonical: '/' },
-  '/artists': { ...HOME_META, canonical: '/' },
-  '/stories': { ...HOME_META, canonical: '/' },
   '/shop': {
     title: { en: 'Shop All Wall Art', mk: 'Продавница — сите слики' },
     description: {

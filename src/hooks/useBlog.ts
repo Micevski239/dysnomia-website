@@ -51,6 +51,7 @@ export function useBlogPost(slug: string) {
         .from('blog_posts')
         .select('*')
         .eq('slug', slug)
+        .eq('is_published', true)
         .abortSignal(abortController.signal)
         .single();
 

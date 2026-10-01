@@ -46,7 +46,7 @@ export default function CartSummary({ subtotal, itemCount }: CartSummaryProps) {
           }}
         >
           <span style={{ color: '#6b6b6b' }}>
-            {t('cart.subtotal')} ({itemCount} {itemCount === 1 ? 'item' : 'items'})
+            {t('cart.subtotal')} ({itemCount} {itemCount === 1 ? t('cart.item') : t('cart.items')})
           </span>
           <span style={{ color: '#1a1a1a', fontWeight: 500 }}>{formatPrice(subtotal)}</span>
         </div>

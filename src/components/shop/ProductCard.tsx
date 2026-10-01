@@ -5,6 +5,7 @@ import { useCurrency } from '../../hooks/useCurrency';
 import { useWishlist } from '../../hooks/useWishlist';
 import { useLanguage } from '../../hooks/useLanguage';
 import RoomMockup from './RoomMockup';
+import { useImageFallback } from '../../hooks/useImageFallback';
 import { priceMatrix, oldPriceMatrix } from '../../config/printOptions';
 
 export interface ProductCardProps {
@@ -43,6 +44,7 @@ const ProductCard = memo(function ProductCard({
   const { isInWishlist, toggle } = useWishlist();
   const { t, language } = useLanguage();
   const wishlisted = isInWishlist(id);
+  const { src: imageSrc, onError: handleImageError } = useImageFallback(image);
 
   // Get price from static price matrix using default size (50x70 canvas)
   const displayPrice = useMemo(() => {
@@ -67,12 +69,12 @@ const ProductCard = memo(function ProductCard({
 
   const formattedPrice = useMemo(() => {
     if (currency === 'EUR') return eurFormatter.format(displayPrice);
-    return `${Math.round(displayPrice).toLocaleString()} MKD`;
+    return `${Math.round(displayPrice).toLocaleString('mk-MK')} MKD`;
   }, [currency, displayPrice, eurFormatter]);
 
   const formattedOldPrice = useMemo(() => {
     if (currency === 'EUR') return eurFormatter.format(displayOldPrice);
-    return `${Math.round(displayOldPrice).toLocaleString()} MKD`;
+    return `${Math.round(displayOldPrice).toLocaleString('mk-MK')} MKD`;
   }, [currency, displayOldPrice, eurFormatter]);
 
   return (
@@ -124,11 +126,12 @@ const ProductCard = memo(function ProductCard({
           }}
         >
           <img
-            src={image}
+            src={imageSrc}
             alt={title}
             loading="lazy"
             decoding="async"
             onLoad={() => setImageLoaded(true)}
+            onError={handleImageError}
             style={{
               width: '100%',
               height: '100%',

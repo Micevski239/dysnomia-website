@@ -61,7 +61,12 @@ export default function SEO({
 
   const fullTitle = title ? `${title} | ${SITE_NAME}` : DEFAULT_TITLE;
   const canonicalPath = path ?? (typeof window !== 'undefined' ? window.location.pathname : '/');
-  const canonicalUrl = `${SITE_URL}${canonicalPath}`;
+  // English lives at the bare URL, Macedonian at ?lang=mk (LanguageContext reads
+  // that param on load). Each language version is canonical to itself so the
+  // hreflang alternates below are reciprocal and valid.
+  const enUrl = `${SITE_URL}${canonicalPath}`;
+  const mkUrl = `${enUrl}${enUrl.includes('?') ? '&' : '?'}lang=mk`;
+  const canonicalUrl = language === 'mk' ? mkUrl : enUrl;
   const imageUrl = image.startsWith('http') ? image : `${SITE_URL}${image}`;
 
   useEffect(() => {
@@ -77,10 +82,9 @@ export default function SEO({
         .querySelectorAll('link[rel="alternate"][data-seo-managed="true"]')
         .forEach((el) => el.remove());
     } else {
-      const mkUrl = `${canonicalUrl}${canonicalUrl.includes('?') ? '&' : '?'}lang=mk`;
-      setLinkTag('alternate', canonicalUrl, 'en');
+      setLinkTag('alternate', enUrl, 'en');
       setLinkTag('alternate', mkUrl, 'mk');
-      setLinkTag('alternate', canonicalUrl, 'x-default');
+      setLinkTag('alternate', enUrl, 'x-default');
     }
 
     // Open Graph tags
@@ -103,7 +107,7 @@ export default function SEO({
       document.title = DEFAULT_TITLE;
       removeManagedLinks();
     };
-  }, [fullTitle, description, imageUrl, canonicalUrl, type, noindex, language]);
+  }, [fullTitle, description, imageUrl, canonicalUrl, enUrl, mkUrl, type, noindex, language]);
 
   return null;
 }

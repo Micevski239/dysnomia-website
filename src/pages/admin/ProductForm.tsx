@@ -1,7 +1,7 @@
 import { useState, useEffect, type FormEvent, type ChangeEvent } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useProductById, useProductMutations } from '../../hooks/useProducts';
-import { useCollections } from '../../hooks/useCollections';
+import { useCollections, invalidateCollectionCache } from '../../hooks/useCollections';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 import { supabase } from '../../lib/supabase';
 import { generateSlug } from '../../lib/utils';
@@ -107,15 +107,16 @@ export default function ProductForm() {
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [selectedCollectionId, setSelectedCollectionId] = useState<string>('');
   const [fieldErrors, setFieldErrors] = useState<ProductFormErrors>({});
+  const [linkError, setLinkError] = useState<string | null>(null);
 
   useEffect(() => {
     if (product && isEditing) {
       setFormData({
         title: product.title,
-        title_mk: (product as any).title_mk || '',
+        title_mk: product.title_mk || '',
         slug: product.slug,
         description: product.description || '',
-        description_mk: (product as any).description_mk || '',
+        description_mk: product.description_mk || '',
         price: product.price.toString(),
         status: product.status,
         image: null,
@@ -124,7 +125,7 @@ export default function ProductForm() {
         image_framed: null,
         product_code: product.product_code || '',
         details: product.details || '',
-        details_mk: (product as any).details_mk || '',
+        details_mk: product.details_mk || '',
       });
       setImagePreview(product.image_url);
       setImagePreviews({
@@ -240,11 +241,17 @@ export default function ProductForm() {
           image_url_framed: null,
         };
 
+    setLinkError(null);
+
     let result;
     if (isEditing && id) {
       result = await updateProduct(id, formData, currentImages);
       if (!result.error) {
-        await syncCollectionLink(id);
+        const linkErr = await syncCollectionLink(id);
+        if (linkErr) {
+          setLinkError(`Product saved, but the collection link could not be updated: ${linkErr}`);
+          return;
+        }
         navigate('/admin/products');
       }
       return;
@@ -252,19 +259,26 @@ export default function ProductForm() {
 
     result = await createProduct(formData);
     if (!result.error && result.data?.id) {
-      await syncCollectionLink(result.data.id);
+      const linkErr = await syncCollectionLink(result.data.id);
+      if (linkErr) {
+        setLinkError(`Product created, but it could not be added to the collection: ${linkErr}`);
+        // Switch to edit mode so a retry updates this product instead of creating a duplicate
+        navigate(`/admin/products/${result.data.id}/edit`, { replace: true });
+        return;
+      }
       navigate('/admin/products');
     }
   };
 
-  const syncCollectionLink = async (productId: string) => {
-    await supabase.from('collection_products').delete().eq('product_id', productId);
-    if (selectedCollectionId) {
-      await supabase.from('collection_products').insert({
-        collection_id: selectedCollectionId,
-        product_id: productId,
-      });
-    }
+  /** Atomically sets the product's collection link. Returns an error message or null. */
+  const syncCollectionLink = async (productId: string): Promise<string | null> => {
+    const { error: rpcError } = await supabase.rpc('set_product_collection', {
+      p_product_id: productId,
+      p_collection_id: selectedCollectionId || null,
+    });
+    if (rpcError) return rpcError.message;
+    await invalidateCollectionCache();
+    return null;
   };
 
   if (productLoading && isEditing) {
@@ -328,7 +342,7 @@ export default function ProductForm() {
         </h1>
       </div>
 
-      {error && (
+      {(error || linkError) && (
         <div style={{
           backgroundColor: '#FEF2F2',
           border: '1px solid #FECACA',
@@ -338,7 +352,7 @@ export default function ProductForm() {
           fontSize: '14px',
           marginBottom: '32px',
         }}>
-          {error}
+          {error || linkError}
         </div>
       )}
 

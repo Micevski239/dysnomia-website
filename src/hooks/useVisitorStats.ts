@@ -1,5 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { fetchAllRows } from '../lib/fetchAllRows';
+
+/** Hard cap on raw page_views rows loaded for the charts. */
+export const VISITOR_ROWS_CAP = 50_000;
+
+interface PageViewRow {
+  page_path: string;
+  page_title: string | null;
+  referrer: string | null;
+  session_id: string;
+  screen_width: number | null;
+  created_at: string;
+}
 
 interface VisitorSummary {
   totalViews: number;
@@ -37,6 +50,10 @@ interface VisitorStats {
   popularPages: PageData[];
   deviceBreakdown: DeviceData[];
   topReferrers: ReferrerData[];
+  /** True when the raw rows hit VISITOR_ROWS_CAP; charts then cover only the most recent rows. */
+  truncated: boolean;
+  /** Number of raw rows the charts are based on. */
+  rowsLoaded: number;
 }
 
 function classifyDevice(width: number | null): string {
@@ -53,6 +70,8 @@ export function useVisitorStats(days: number = 30) {
     popularPages: [],
     deviceBreakdown: [],
     topReferrers: [],
+    truncated: false,
+    rowsLoaded: 0,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -65,15 +84,25 @@ export function useVisitorStats(days: number = 30) {
       const since = new Date();
       since.setDate(since.getDate() - days);
       const sinceISO = since.toISOString();
+      // Fixed upper bound so rows inserted while paging don't shift the offsets
+      const untilISO = new Date().toISOString();
 
-      // Fetch summary RPC + raw rows in parallel
+      // Fetch summary RPC + raw rows in parallel. Raw rows are paged (PostgREST
+      // returns max 1000 per request), newest first so a capped result keeps recent data.
       const [summaryResult, rowsResult] = await Promise.all([
         supabase.rpc('get_visitor_summary', { p_days: days }),
-        supabase
-          .from('page_views')
-          .select('page_path, page_title, referrer, session_id, screen_width, created_at')
-          .gte('created_at', sinceISO)
-          .order('created_at', { ascending: true }),
+        fetchAllRows<PageViewRow>(
+          (from, to) =>
+            supabase
+              .from('page_views')
+              .select('page_path, page_title, referrer, session_id, screen_width, created_at')
+              .gte('created_at', sinceISO)
+              .lte('created_at', untilISO)
+              .order('created_at', { ascending: false })
+              .order('id', { ascending: false })
+              .range(from, to),
+          { maxRows: VISITOR_ROWS_CAP }
+        ),
       ]);
 
       if (summaryResult.error) throw summaryResult.error;
@@ -87,7 +116,7 @@ export function useVisitorStats(days: number = 30) {
         todayVisitors: summaryData.today_visitors ?? 0,
       };
 
-      const rows = rowsResult.data || [];
+      const rows = rowsResult.data;
 
       // Group by date for viewsOverTime
       const dateMap = new Map<string, { views: number; sessions: Set<string> }>();
@@ -98,11 +127,13 @@ export function useVisitorStats(days: number = 30) {
         entry.sessions.add(row.session_id);
         dateMap.set(date, entry);
       }
-      const viewsOverTime: DailyData[] = Array.from(dateMap.entries()).map(([date, v]) => ({
-        date,
-        views: v.views,
-        visitors: v.sessions.size,
-      }));
+      const viewsOverTime: DailyData[] = Array.from(dateMap.entries())
+        .map(([date, v]) => ({
+          date,
+          views: v.views,
+          visitors: v.sessions.size,
+        }))
+        .sort((a, b) => a.date.localeCompare(b.date));
 
       // Group by page_path for popularPages
       const pageMap = new Map<string, { title: string; views: number; sessions: Set<string> }>();
@@ -139,7 +170,15 @@ export function useVisitorStats(days: number = 30) {
         .sort((a, b) => b.count - a.count)
         .slice(0, 10);
 
-      setStats({ summary, viewsOverTime, popularPages, deviceBreakdown, topReferrers });
+      setStats({
+        summary,
+        viewsOverTime,
+        popularPages,
+        deviceBreakdown,
+        topReferrers,
+        truncated: rowsResult.truncated,
+        rowsLoaded: rows.length,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch visitor stats');
     } finally {
