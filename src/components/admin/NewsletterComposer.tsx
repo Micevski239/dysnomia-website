@@ -18,9 +18,9 @@ const EMPTY_DRAFT: NewsletterDraft = {
 };
 
 const inputClass =
-  'w-full px-3.5 py-2.5 rounded-xl border border-[#E8E8E8] bg-white text-sm text-[#1a1a1a] outline-none transition-colors focus:border-[#1a1a1a] placeholder:text-[#bbb]';
-const labelClass = 'block text-[12px] font-semibold text-[#555] mb-1.5';
-const hintClass = 'mt-1 text-[12px] text-[#999]';
+  'w-full px-3.5! py-2.5! rounded-xl border border-[#E8E8E8] bg-white text-sm text-[#1a1a1a] outline-none transition-colors focus:border-[#1a1a1a] placeholder:text-[#bbb]';
+const labelClass = 'block text-[12px] font-semibold text-[#555] mb-1.5!';
+const hintClass = 'mt-1! text-[12px] text-[#999]';
 
 const STYLES: { value: NewsletterDraft['style']; label: string; hint: string; icon: typeof Mail }[] = [
   { value: 'simple', label: 'Simple letter', hint: 'Looks like a personal e-mail. Best chance to reach the main inbox.', icon: Mail },
@@ -110,9 +110,9 @@ export default function NewsletterComposer({ activeCount, englishCount }: Props)
       <AdminCard title="Send a newsletter" noPadding>
         <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]">
           {/* ---------------- Form ---------------- */}
-          <div className="flex flex-col gap-5 p-6 md:p-8">
+          <div className="flex flex-col gap-5 p-6! md:p-8!">
             {/* Language tabs */}
-            <div className="inline-flex self-start p-1 rounded-xl bg-[#F3F1EB]">
+            <div className="inline-flex self-start p-1! rounded-xl bg-[#F3F1EB]">
               {(['mk', 'en'] as Lang[]).map((l) => {
                 const filled = l === 'mk' ? Boolean(draft.subject_mk.trim() && draft.body_mk.trim()) : englishComplete;
                 return (
@@ -120,7 +120,7 @@ export default function NewsletterComposer({ activeCount, englishCount }: Props)
                     key={l}
                     type="button"
                     onClick={() => setLang(l)}
-                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-semibold transition-colors ${
+                    className={`inline-flex items-center gap-2 px-4! py-2! rounded-lg text-[13px] font-semibold transition-colors ${
                       lang === l ? 'bg-white text-[#1a1a1a] shadow-sm' : 'text-[#777] hover:text-[#1a1a1a]'
                     }`}
                   >
@@ -133,7 +133,7 @@ export default function NewsletterComposer({ activeCount, englishCount }: Props)
                 );
               })}
             </div>
-            <p className="-mt-3 text-[12px] text-[#999]">
+            <p className="-mt-3! text-[12px] text-[#999]">
               {lang === 'mk'
                 ? 'Required. Every subscriber gets this version unless an English one is written.'
                 : 'Optional. Leave empty and English subscribers get the Macedonian version.'}
@@ -205,7 +205,7 @@ export default function NewsletterComposer({ activeCount, englishCount }: Props)
                     type="button"
                     onClick={() => set({ style: value })}
                     aria-pressed={draft.style === value}
-                    className={`text-left p-4 rounded-xl border transition-colors ${
+                    className={`text-left p-4! rounded-xl border transition-colors ${
                       draft.style === value ? 'border-[#1a1a1a] bg-[#FAFAFA]' : 'border-[#E8E8E8] hover:border-[#bbb]'
                     }`}
                   >
@@ -213,7 +213,7 @@ export default function NewsletterComposer({ activeCount, englishCount }: Props)
                       <Icon className="w-4 h-4" />
                       {label}
                     </span>
-                    <span className="block mt-1 text-[12px] leading-snug text-[#777]">{hint}</span>
+                    <span className="block mt-1! text-[12px] leading-snug text-[#777]">{hint}</span>
                   </button>
                 ))}
               </div>
@@ -226,7 +226,7 @@ export default function NewsletterComposer({ activeCount, englishCount }: Props)
             {notice && (
               <p
                 role={notice.type === 'error' ? 'alert' : 'status'}
-                className={`px-4 py-3 rounded-xl text-[13px] ${
+                className={`px-4! py-3! rounded-xl text-[13px] ${
                   notice.type === 'ok' ? 'bg-[#E8F5E9] text-[#2E7D32]' : 'bg-red-50 text-red-700'
                 }`}
               >
@@ -234,11 +234,11 @@ export default function NewsletterComposer({ activeCount, englishCount }: Props)
               </p>
             )}
 
-            <div className="flex flex-wrap items-center gap-3 pt-5 border-t border-[#F0F0F0]">
+            <div className="flex flex-wrap items-center gap-3 pt-5! border-t border-[#F0F0F0]">
               <button
                 onClick={handleTest}
                 disabled={!ready || busy !== null}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[#1a1a1a] text-[#1a1a1a] text-[13px] font-semibold transition-opacity disabled:opacity-40"
+                className="inline-flex items-center gap-2 px-5! py-2.5! rounded-xl border border-[#1a1a1a] text-[#1a1a1a] text-[13px] font-semibold transition-opacity disabled:opacity-40"
               >
                 <FlaskConical className="w-4 h-4" />
                 {busy === 'test' ? 'Sending test…' : 'Send test to me'}
@@ -246,7 +246,7 @@ export default function NewsletterComposer({ activeCount, englishCount }: Props)
               <button
                 onClick={handleSend}
                 disabled={!ready || busy !== null || activeCount === 0}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1a1a1a] text-white text-[13px] font-semibold transition-opacity disabled:opacity-40"
+                className="inline-flex items-center gap-2 px-5! py-2.5! rounded-xl bg-[#1a1a1a] text-white text-[13px] font-semibold transition-opacity disabled:opacity-40"
               >
                 <Send className="w-4 h-4" />
                 {busy === 'send' ? 'Sending…' : `Send to ${activeCount} subscribers`}
@@ -255,46 +255,46 @@ export default function NewsletterComposer({ activeCount, englishCount }: Props)
           </div>
 
           {/* ---------------- Preview ---------------- */}
-          <div className="p-6 md:p-8 bg-[#F3F1EB] border-t lg:border-t-0 lg:border-l border-[#E8E8E8]">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-[#999] mb-3">
+          <div className="p-6! md:p-8! bg-[#F3F1EB] border-t lg:border-t-0 lg:border-l border-[#E8E8E8]">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-[#999] mb-3!">
               Preview · {previewEnglish ? 'English' : 'Macedonian'}
             </p>
             <div className="rounded-xl bg-white border border-[#E8E8E8] overflow-hidden">
-              <div className="px-4 py-3 border-b border-[#F0F0F0]">
+              <div className="px-4! py-3! border-b border-[#F0F0F0]">
                 <p className="text-[13px] font-semibold text-[#1a1a1a] truncate">{previewSubject || 'Subject'}</p>
                 <p className="text-[12px] text-[#999]">Dysnomia Gallery</p>
               </div>
 
               {draft.style === 'designed' && (
-                <div className="bg-[#0A0A0A] py-5 text-center font-serif text-[20px] tracking-[4px] text-[#FBBE63]">DYSNOMIA</div>
+                <div className="bg-[#0A0A0A] py-5! text-center font-serif text-[20px] tracking-[4px] text-[#FBBE63]">DYSNOMIA</div>
               )}
               {draft.image_url.trim() && (
                 <img src={draft.image_url.trim()} alt="" className="block w-full h-auto" />
               )}
 
-              <div className={`p-5 text-[13px] leading-relaxed text-[#333] ${draft.style === 'designed' ? 'font-serif' : ''}`}>
+              <div className={`p-5! text-[13px] leading-relaxed text-[#333] ${draft.style === 'designed' ? 'font-serif' : ''}`}>
                 {draft.style === 'designed' && previewSubject && (
-                  <p className="text-[18px] text-[#0A0A0A] mb-3">{previewSubject}</p>
+                  <p className="text-[18px] text-[#0A0A0A] mb-3!">{previewSubject}</p>
                 )}
                 {previewBody.length === 0 ? (
                   <p className="text-[#bbb]">The text of the newsletter appears here.</p>
                 ) : (
                   previewBody.map((p, i) => (
-                    <p key={i} className="mb-3 whitespace-pre-line break-words">
+                    <p key={i} className="mb-3! whitespace-pre-line break-words">
                       {p}
                     </p>
                   ))
                 )}
                 {draft.button_url.trim() &&
                   (draft.style === 'designed' ? (
-                    <span className="inline-block mt-1 px-5 py-2.5 bg-[#0A0A0A] text-white font-sans text-[11px] tracking-[1.5px] uppercase">
+                    <span className="inline-block mt-1! px-5! py-2.5! bg-[#0A0A0A] text-white font-sans text-[11px] tracking-[1.5px] uppercase">
                       {previewButton}
                     </span>
                   ) : (
-                    <p className="mb-3 underline text-[#0A0A0A]">{previewButton}</p>
+                    <p className="mb-3! underline text-[#0A0A0A]">{previewButton}</p>
                   ))}
                 {draft.style === 'simple' && (
-                  <p className="mt-3">
+                  <p className="mt-3!">
                     Dysnomia Gallery
                     <br />
                     <span className="underline">dysnomiagallery.com</span>
@@ -302,11 +302,11 @@ export default function NewsletterComposer({ activeCount, englishCount }: Props)
                 )}
               </div>
 
-              <div className="px-5 py-4 border-t border-[#F0F0F0] text-[11px] leading-relaxed text-[#999]">
+              <div className="px-5! py-4! border-t border-[#F0F0F0] text-[11px] leading-relaxed text-[#999]">
                 {previewFooter} <span className="underline">{previewUnsubscribe}</span>
               </div>
             </div>
-            <p className="mt-3 text-[12px] leading-snug text-[#999]">
+            <p className="mt-3! text-[12px] leading-snug text-[#999]">
               Every e-mail has its own unsubscribe link, and Gmail shows its own “Unsubscribe” button next to the sender.
             </p>
           </div>
@@ -315,35 +315,35 @@ export default function NewsletterComposer({ activeCount, englishCount }: Props)
 
       <AdminCard title="Sent newsletters">
         {historyError ? (
-          <p className="p-5 text-center text-sm text-red-600">
+          <p className="p-5! text-center text-sm text-red-600">
             {historyError}. Make sure migration 011_newsletter_campaigns.sql has been applied.
           </p>
         ) : loading ? (
-          <p className="p-5 text-center text-sm text-[#999]">Loading...</p>
+          <p className="p-5! text-center text-sm text-[#999]">Loading...</p>
         ) : campaigns.length === 0 ? (
-          <p className="p-5 text-center text-sm text-[#999]">Nothing sent yet.</p>
+          <p className="p-5! text-center text-sm text-[#999]">Nothing sent yet.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-[11px] uppercase tracking-wider text-[#999] border-b border-[#E8E8E8]">
-                  <th className="py-2 pr-4">Subject</th>
-                  <th className="py-2 pr-4">Date</th>
-                  <th className="py-2 pr-4">Sent</th>
-                  <th className="py-2">Status</th>
+                  <th className="py-2! pr-4!">Subject</th>
+                  <th className="py-2! pr-4!">Date</th>
+                  <th className="py-2! pr-4!">Sent</th>
+                  <th className="py-2!">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {campaigns.map((c) => (
                   <tr key={c.id} className="border-b border-[#F2F2F2]">
-                    <td className="py-2.5 pr-4 text-[#1a1a1a]">{c.subject_mk}</td>
-                    <td className="py-2.5 pr-4 text-[#666]">{new Date(c.created_at).toLocaleString()}</td>
-                    <td className="py-2.5 pr-4 text-[#666]">
+                    <td className="py-2.5! pr-4! text-[#1a1a1a]">{c.subject_mk}</td>
+                    <td className="py-2.5! pr-4! text-[#666]">{new Date(c.created_at).toLocaleString()}</td>
+                    <td className="py-2.5! pr-4! text-[#666]">
                       {c.sent_count} / {c.recipients}
                     </td>
-                    <td className="py-2.5">
+                    <td className="py-2.5!">
                       <span
-                        className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${
+                        className={`text-[11px] font-semibold px-2.5! py-1! rounded-full ${
                           c.status === 'sent' && c.failed_count === 0
                             ? 'bg-[#E8F5E9] text-[#2E7D32]'
                             : c.status === 'sending'
