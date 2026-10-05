@@ -15,14 +15,14 @@ export default function Hero() {
         overflow: 'hidden'
       }}
     >
-      {/* Logo as full background */}
+      {/* Lion canvas in a living room as full background; on phones keep the lion (right of centre) in view */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundImage: 'url(/logo.webp)',
+          backgroundImage: 'url(/hero-lion.webp)',
           backgroundSize: 'cover',
-          backgroundPosition: 'center 0%',
+          backgroundPosition: isMobile ? '62% center' : 'center center',
           backgroundRepeat: 'no-repeat'
         }}
       />
