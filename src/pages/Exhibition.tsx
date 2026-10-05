@@ -149,6 +149,7 @@ export default function Exhibition() {
   const location = exhibition.city === 'other' ? venue : `${venue}, ${city}`;
   const quotedTitle = language === 'mk' ? `„${title}“` : `“${title}”`;
   const aboutParagraphs = content.length > 0 ? content : summary ? [summary] : [];
+  const hasText = aboutParagraphs.length > 0 || bio.length > 0;
 
   const sectionTitle: React.CSSProperties = {
     fontSize: '13px',
@@ -225,7 +226,7 @@ export default function Exhibition() {
             {t(STATUS_KEY[status])}
           </span>
           <span>{dates}</span>
-          <span style={{ color: '#BBBBBB' }}>·</span>
+          {!isMobile && <span style={{ color: '#BBBBBB' }}>·</span>}
           <span>{location}</span>
         </div>
       </section>
@@ -264,6 +265,8 @@ export default function Exhibition() {
           alignItems: 'flex-start',
         }}
       >
+        {/* No text yet: the info box stands alone instead of beside an empty column */}
+        {hasText && (
         <article style={{ flex: '999 1 520px', minWidth: 0 }}>
           {aboutParagraphs.length > 0 && (
             <>
@@ -286,11 +289,13 @@ export default function Exhibition() {
             </>
           )}
         </article>
+        )}
 
         <aside
           style={{
             flex: '1 1 300px',
             minWidth: 0,
+            maxWidth: hasText ? undefined : '560px',
             backgroundColor: '#f6f3ed',
             borderRadius: '28px',
             padding: '32px',
