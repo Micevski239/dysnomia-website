@@ -195,6 +195,50 @@ export interface BlogPost {
   updated_at: string;
 }
 
+/** АРТ Сцена exhibition (migration 012). Macedonian fields are required, English ones optional. */
+export interface Exhibition {
+  id: string;
+  slug: string;
+  title_mk: string;
+  title: string | null;
+  artist_mk: string;
+  artist: string | null;
+  exhibition_type: 'solo' | 'group';
+  /** YYYY-MM-DD */
+  start_date: string;
+  end_date: string | null;
+  city: ExhibitionCity;
+  venue_mk: string;
+  venue: string | null;
+  organizer_mk: string | null;
+  organizer: string | null;
+  official_url: string | null;
+  cover_image: string | null;
+  cover_alt_mk: string | null;
+  cover_alt: string | null;
+  photo_credit: string | null;
+  summary_mk: string | null;
+  summary: string | null;
+  content_mk: string | null;
+  content: string | null;
+  artist_bio_mk: string | null;
+  artist_bio: string | null;
+  opening_hours_mk: string | null;
+  opening_hours: string | null;
+  admission_mk: string | null;
+  admission: string | null;
+  seo_title_mk: string | null;
+  seo_title: string | null;
+  seo_description_mk: string | null;
+  seo_description: string | null;
+  is_published: boolean;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type ExhibitionCity = 'skopje' | 'bitola' | 'ohrid' | 'prilep' | 'kavadarci' | 'shtip' | 'other';
+
 export interface BlogImage {
   url: string;
   caption?: string | null;

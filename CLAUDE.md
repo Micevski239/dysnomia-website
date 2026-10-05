@@ -72,6 +72,10 @@ Supabase Edge Functions live in `supabase/functions/`:
 
 Newsletter sign-up forms (footer, home, blog, first-visit popup) share `useNewsletterForm(source)`.
 
+### АРТ Сцена (exhibitions)
+
+`/art-scena` lists exhibitions from the `exhibitions` table (migration 012); `/art-scena/:slug` is one exhibition; admins edit them at `/admin/art-scena`. Macedonian fields are required and English ones optional — use `pickText()` from `src/config/artScene.ts` (falls back both ways), not `localize()`. The status (current / upcoming / ended) is never stored: `exhibitionStatus()` computes it from the dates in Europe/Skopje time. Google title/description come from `exhibitionSeoTitle()` / `exhibitionSeoDescription()` unless the admin fills the `seo_*` overrides; `api/prerender.js` repeats that logic for bots, keep them in sync.
+
 ### Pre-build checks
 
 `npm run build` runs `scripts/check-site.mjs` first (also `npm run check:site`). It fails the build if the kids collection would be empty, an old social handle reappears, or the DB `print_prices` differ from `priceMatrix` in `printOptions.ts`. Keep `PRICE_RANGE_MKD` in `api/prerender.js` and the kids slug list in `src/lib/kidsCollection.ts` / migrations in sync. Social links live only in `src/config/social.ts`.

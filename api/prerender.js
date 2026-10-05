@@ -3,7 +3,7 @@
  * crawlers and social scrapers, which never execute the SPA's JavaScript.
  *
  * Routed via vercel.json: bot user-agents requesting /artwork/:slug,
- * /collections/:slug or /blog/:slug land here; regular visitors keep getting
+ * /collections/:slug, /blog/:slug or /art-scena/:slug land here; regular visitors keep getting
  * the plain SPA rewrite.
  */
 const SITE_URL = 'https://dysnomiagallery.com';
@@ -50,8 +50,22 @@ async function fetchRow(table, query) {
 
 const pick = (en, mk, lang) => (lang === 'mk' && mk ? mk : en);
 
+// АРТ Сцена content is Macedonian-first: each language falls back to the other.
+const pickBoth = (en, mk, lang) => (lang === 'mk' ? mk || en : en || mk) || '';
+
+// Keep in sync with src/config/artScene.ts
+const EXHIBITION_CITIES = {
+  skopje: { en: 'Skopje', mk: 'Скопје' },
+  bitola: { en: 'Bitola', mk: 'Битола' },
+  ohrid: { en: 'Ohrid', mk: 'Охрид' },
+  prilep: { en: 'Prilep', mk: 'Прилеп' },
+  kavadarci: { en: 'Kavadarci', mk: 'Кавадарци' },
+  shtip: { en: 'Shtip', mk: 'Штип' },
+  other: { en: 'North Macedonia', mk: 'Македонија' },
+};
+
 async function findRedirect(type, slug) {
-  const entity = { artwork: 'product', collection: 'collection', blog: 'blog' }[type];
+  const entity = { artwork: 'product', collection: 'collection', blog: 'blog', exhibition: 'exhibition' }[type];
   if (!entity) return null;
   try {
     const row = await fetchRow(
@@ -153,6 +167,55 @@ async function buildMeta(type, slug, lang) {
     };
   }
 
+  if (type === 'exhibition') {
+    const ex = await fetchRow('exhibitions', `select=*&slug=eq.${encodeURIComponent(slug)}&is_published=eq.true`);
+    if (!ex) return null;
+    const title = pickBoth(ex.title, ex.title_mk, lang);
+    const artist = pickBoth(ex.artist, ex.artist_mk, lang);
+    const venue = pickBoth(ex.venue, ex.venue_mk, lang);
+    const place = (EXHIBITION_CITIES[ex.city] || EXHIBITION_CITIES.other)[lang];
+    const solo = ex.exhibition_type === 'solo';
+    const seoTitle =
+      pickBoth(ex.seo_title, ex.seo_title_mk, lang) ||
+      (lang === 'mk' ? `${artist} – „${title}“ | Изложба во ${place}` : `${artist} – “${title}” | Art Exhibition in ${place}`);
+    const description = truncate(
+      pickBoth(ex.seo_description, ex.seo_description_mk, lang) ||
+        (lang === 'mk'
+          ? `„${title}“ на ${artist} – ${solo ? 'самостојна' : 'групна'} изложба во ${venue}, ${place}. Погледнете период, локација и информации за изложбата.`
+          : `“${title}” by ${artist} – ${solo ? 'a solo' : 'a group'} exhibition at ${venue}, ${place}. See dates, location and visitor information.`)
+    );
+    const organizer = pickBoth(ex.organizer, ex.organizer_mk, lang);
+    const url = `${SITE_URL}/art-scena/${ex.slug}`;
+    return {
+      title: `${seoTitle} | ${SITE_NAME}`,
+      description,
+      image: ex.cover_image || `${SITE_URL}/og-image.jpg`,
+      url,
+      ogType: 'article',
+      jsonLd: {
+        '@context': 'https://schema.org',
+        '@type': 'ExhibitionEvent',
+        name: `${artist} – ${title}`,
+        description,
+        ...(ex.cover_image && { image: [ex.cover_image] }),
+        startDate: ex.start_date,
+        ...(ex.end_date && { endDate: ex.end_date }),
+        eventStatus: 'https://schema.org/EventScheduled',
+        eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+        location: {
+          '@type': 'Place',
+          name: venue,
+          address: { '@type': 'PostalAddress', addressLocality: place, addressCountry: 'MK' },
+        },
+        performer: { '@type': 'Person', name: artist },
+        ...(organizer && {
+          organizer: { '@type': 'Organization', name: organizer, ...(ex.official_url && { url: ex.official_url }) },
+        }),
+        url,
+      },
+    };
+  }
+
   return null;
 }
 
@@ -243,7 +306,7 @@ export default async function handler(req, res) {
       // Renamed slug — permanent redirect keeps links and rankings
       const newSlug = type && slug ? await findRedirect(type, slug) : null;
       if (newSlug) {
-        const base = { artwork: '/artwork/', collection: '/collections/', blog: '/blog/' }[type];
+        const base = { artwork: '/artwork/', collection: '/collections/', blog: '/blog/', exhibition: '/art-scena/' }[type];
         res.statusCode = 301;
         res.setHeader('Location', `${base}${encodeURIComponent(newSlug)}${lang === 'mk' ? '?lang=mk' : ''}`);
         res.setHeader('Cache-Control', 's-maxage=3600');

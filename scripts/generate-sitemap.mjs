@@ -39,6 +39,7 @@ const STATIC_ROUTES = [
   { path: '/top-sellers', priority: '0.8', changefreq: 'weekly' },
   { path: '/kids-pictures', priority: '0.7', changefreq: 'weekly' },
   { path: '/blog', priority: '0.6', changefreq: 'weekly' },
+  { path: '/art-scena', priority: '0.7', changefreq: 'daily' },
   { path: '/about', priority: '0.5', changefreq: 'monthly' },
   { path: '/contact', priority: '0.5', changefreq: 'monthly' },
   { path: '/shipping', priority: '0.5', changefreq: 'monthly' },
@@ -123,8 +124,21 @@ async function main() {
       );
     }
 
+    // Separate so a missing exhibitions table (migration 012 not applied) never drops the rest
+    let exhibitions = [];
+    try {
+      exhibitions = await fetchRows('exhibitions', 'select=slug,updated_at&is_published=eq.true');
+    } catch (err) {
+      console.warn(`sitemap: exhibitions skipped (${err.message})`);
+    }
+    for (const e of exhibitions) {
+      entries.push(
+        urlEntry({ path: `/art-scena/${e.slug}`, lastmod: e.updated_at, priority: '0.6', changefreq: 'weekly' })
+      );
+    }
+
     console.log(
-      `sitemap: ${STATIC_ROUTES.length} static, ${products.length} products, ${collections.length} collections, ${posts.length} blog posts`
+      `sitemap: ${STATIC_ROUTES.length} static, ${products.length} products, ${collections.length} collections, ${posts.length} blog posts, ${exhibitions.length} exhibitions`
     );
   } catch (err) {
     console.warn(`sitemap: Supabase fetch failed (${err.message}) — keeping the existing public/sitemap.xml`);
