@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 
-export type SlugRedirectEntity = 'product' | 'collection' | 'blog';
+export type SlugRedirectEntity = 'product' | 'collection' | 'blog' | 'exhibition';
 
 const MAX_HOPS = 3;
 

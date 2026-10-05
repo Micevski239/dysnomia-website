@@ -191,6 +191,87 @@ export function BreadcrumbStructuredData({
   return null;
 }
 
+/** schema.org ExhibitionEvent for one АРТ Сцена page. */
+export function ExhibitionStructuredData({
+  name,
+  description,
+  image,
+  artist,
+  startDate,
+  endDate,
+  venue,
+  city,
+  organizer,
+  officialUrl,
+  slug,
+}: {
+  name: string;
+  description: string;
+  image?: string | null;
+  artist: string;
+  startDate: string;
+  endDate?: string | null;
+  venue: string;
+  city: string;
+  organizer?: string | null;
+  officialUrl?: string | null;
+  slug: string;
+}) {
+  useJsonLd('exhibition-structured-data', {
+    '@context': 'https://schema.org',
+    '@type': 'ExhibitionEvent',
+    name,
+    description,
+    ...(image && { image: [image] }),
+    startDate,
+    ...(endDate && { endDate }),
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    location: {
+      '@type': 'Place',
+      name: venue,
+      address: { '@type': 'PostalAddress', addressLocality: city, addressCountry: 'MK' },
+    },
+    performer: { '@type': 'Person', name: artist },
+    ...(organizer && {
+      organizer: { '@type': 'Organization', name: organizer, ...(officialUrl && { url: officialUrl }) },
+    }),
+    url: `${SITE_URL}/art-scena/${slug}`,
+  });
+
+  return null;
+}
+
+/** schema.org CollectionPage + ItemList for the /art-scena listing. */
+export function ExhibitionListStructuredData({
+  name,
+  description,
+  items,
+}: {
+  name: string;
+  description: string;
+  items: { name: string; slug: string }[];
+}) {
+  useJsonLd('exhibition-list-structured-data', {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name,
+    description,
+    url: `${SITE_URL}/art-scena`,
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: items.map((item, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: item.name,
+        url: `${SITE_URL}/art-scena/${item.slug}`,
+      })),
+    },
+  });
+
+  return null;
+}
+
 export function ArticleStructuredData({
   headline,
   description,

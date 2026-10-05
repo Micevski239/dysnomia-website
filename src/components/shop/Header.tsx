@@ -29,6 +29,7 @@ export default memo(function Header({ cartCount = 0, wishlistCount = 0 }: Header
     { label: t('common.kidsPictures'), href: '/kids-pictures' },
     { label: t('common.topSellers'), href: '/top-sellers' },
     { label: t('common.blog'), href: '/blog' },
+    { label: t('common.artScene'), href: '/art-scena' },
     { label: t('common.aboutUs'), href: '/about' },
   ], [t]);
 
@@ -110,7 +111,8 @@ export default memo(function Header({ cartCount = 0, wishlistCount = 0 }: Header
             className="desktop-only"
             style={{
               alignItems: 'center',
-              gap: '28px'
+              // Nine items: tighter spacing below ~1700px keeps them on one line at 1280px
+              gap: 'clamp(14px, 1.3vw, 28px)'
             }}
           >
             {navItems.map((item) => (

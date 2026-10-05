@@ -48,6 +48,17 @@
       ],
       "destination": "/api/prerender?type=blog&slug=:slug"
     },
+    {
+      "source": "/art-scena/:slug",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(bot|crawl|spider|slurp|facebookexternalhit|whatsapp|telegram|twitterbot|linkedin|pinterest|discord|embedly|quora|vkshare|skypeuripreview|snapchat|viber).*"
+        }
+      ],
+      "destination": "/api/prerender?type=exhibition&slug=:slug"
+    },
     { "source": "/((?!api/|assets/).*)", "destination": "/index.html" }
   ]
 }

@@ -105,6 +105,16 @@ const ROUTE_META: Record<string, RouteMeta> = {
       mk: 'Како Dysnomia Art Gallery ги собира, користи и заштитува вашите лични податоци.',
     },
   },
+  '/art-scena': {
+    title: {
+      en: 'Art Scene Macedonia – Current Art Exhibitions & Events',
+      mk: 'Арт Сцена Македонија – Тековни изложби и уметнички настани',
+    },
+    description: {
+      en: 'Discover current and upcoming art exhibitions by Macedonian artists in Skopje and across North Macedonia.',
+      mk: 'Откријте ги тековните и претстојните изложби на македонски уметници и уметнички настани во Скопје и низ Македонија.',
+    },
+  },
   // Transactional / private pages — kept out of search results.
   '/unsubscribe': {
     title: { en: 'Unsubscribe', mk: 'Одјава' },
@@ -154,7 +164,7 @@ const ROUTE_META: Record<string, RouteMeta> = {
 };
 
 // Routes whose pages render their own <SEO> with fetched data.
-const DYNAMIC_ROUTE_PATTERN = /^\/(artwork|collections|blog)\/./;
+const DYNAMIC_ROUTE_PATTERN = /^\/(artwork|collections|blog|art-scena)\/./;
 
 export default function RouteSEO() {
   const { pathname } = useLocation();

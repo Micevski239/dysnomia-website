@@ -55,6 +55,9 @@ const Announcements = lazyWithReload(() => import('./pages/admin/Announcements')
 const Blog = lazyWithReload(() => import('./pages/Blog'));
 const BlogPostPage = lazyWithReload(() => import('./pages/BlogPost'));
 const BlogAdmin = lazyWithReload(() => import('./pages/admin/BlogAdmin'));
+const ArtScena = lazyWithReload(() => import('./pages/ArtScena'));
+const Exhibition = lazyWithReload(() => import('./pages/Exhibition'));
+const ArtScenaAdmin = lazyWithReload(() => import('./pages/admin/ArtScenaAdmin'));
 const ImageOptimizer = lazyWithReload(() => import('./pages/admin/ImageOptimizer'));
 const Statistics = lazyWithReload(() => import('./pages/admin/Statistics'));
 
@@ -126,6 +129,8 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPostPage />} />
+              <Route path="/art-scena" element={<ArtScena />} />
+              <Route path="/art-scena/:slug" element={<Exhibition />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/shipping" element={<Shipping />} />
               <Route path="/faq" element={<FAQ />} />
@@ -188,6 +193,7 @@ function App() {
               <Route path="/admin/featured" element={<FeaturedManager />} />
               <Route path="/admin/announcements" element={<Announcements />} />
               <Route path="/admin/blog" element={<BlogAdmin />} />
+              <Route path="/admin/art-scena" element={<ArtScenaAdmin />} />
               <Route path="/admin/images" element={<ImageOptimizer />} />
               <Route path="/admin/statistics" element={<Statistics />} />
               <Route path="/admin/newsletter" element={<NewsletterSubscribers />} />

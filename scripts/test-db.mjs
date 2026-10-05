@@ -70,6 +70,10 @@ const campaigns = readFileSync(R + 'supabase/migrations/011_newsletter_campaigns
 await run('011 newsletter campaigns (1st run)', campaigns);
 await run('011 newsletter campaigns (2nd run, idempotent)', campaigns);
 
+const artScena = readFileSync(R + 'supabase/migrations/012_art_scena.sql', 'utf8');
+await run('012 art scena (1st run)', artScena);
+await run('012 art scena (2nd run, idempotent)', artScena);
+
 const ADMIN = '11111111-1111-1111-1111-111111111111';
 const CUST = '22222222-2222-2222-2222-222222222222';
 const P1 = 'aaaaaaaa-0000-0000-0000-000000000001';
@@ -159,5 +163,17 @@ await db.exec(asRole('authenticated', ADMIN, 'admin@x.mk'));
 console.log('     admin sees campaigns:', (await q('SELECT count(*)::int c FROM newsletter_campaigns'))[0].c, '(must be 1)');
 await db.exec(reset);
 await expectFail('customer writes a campaign', asRole('authenticated', CUST, 'cust@x.mk') + `INSERT INTO newsletter_campaigns (subject_mk, body_mk) VALUES ('x', 'x');`);
+const exhibition = (slug, published, extra = '') =>
+  `INSERT INTO exhibitions (slug, title_mk, artist_mk, venue_mk, start_date, is_published${extra ? ', end_date' : ''}) VALUES ('${slug}', 'Пресек', 'Ирена Паскали', 'Чифте Амам', '2026-09-18', ${published}${extra ? `, '${extra}'` : ''});`;
+await run('admin adds exhibitions', asRole('authenticated', ADMIN, 'admin@x.mk') + exhibition('pub-ex', true, '2026-10-22') + exhibition('draft-ex', false) + reset);
+await db.exec(asRole('anon'));
+console.log('     anon sees exhibitions:', (await q('SELECT slug FROM exhibitions ORDER BY slug')).map((r) => r.slug).join(','), '(must be pub-ex only)');
+await db.exec(reset);
+await expectFail('customer adds an exhibition', asRole('authenticated', CUST, 'cust@x.mk') + exhibition('hack-ex', true));
+await expectFail('anon adds an exhibition', asRole('anon') + exhibition('anon-ex', true));
+await expectFail('end date before start date', exhibition('bad-dates', true, '2026-01-01'));
+await expectFail('slug with spaces', exhibition('Bad Slug', true));
+await run('admin renames exhibition slug', asRole('authenticated', ADMIN, 'admin@x.mk') + `UPDATE exhibitions SET slug='pub-ex-new' WHERE slug='pub-ex';` + reset);
+console.log('     exhibition redirect:', JSON.stringify(await q(`SELECT old_slug, new_slug FROM slug_redirects WHERE entity='exhibition'`)), '(expect pub-ex -> pub-ex-new)');
 await expectFail('3 gallery images on a blog post', `UPDATE blog_posts SET gallery_images='[{},{},{}]'::jsonb;`);
 console.log('\nDONE');
