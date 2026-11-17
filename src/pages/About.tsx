@@ -80,15 +80,29 @@ export default function About() {
             >
               {t('about.heroTitle')}
             </h1>
+            {(['heroP1', 'heroP2', 'heroP3', 'heroP4'] as const).map((key) => (
+              <p
+                key={key}
+                style={{
+                  fontSize: '18px',
+                  color: '#666666',
+                  lineHeight: 1.8,
+                  marginBottom: '20px',
+                }}
+              >
+                {t(`about.${key}`)}
+              </p>
+            ))}
             <p
               style={{
                 fontSize: '18px',
-                color: '#666666',
-                lineHeight: 1.8,
+                color: '#0A0A0A',
+                fontWeight: 600,
+                lineHeight: 1.6,
                 marginBottom: '40px',
               }}
             >
-              {t('about.heroP1')}
+              {t('about.heroClosing')}
             </p>
             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
               <Link
@@ -338,8 +352,8 @@ export default function About() {
         >
           <div style={{ order: isMobile ? 2 : 1 }}>
             <img
-              src="/women.webp"
-              alt="Dysnomia team"
+              src="/gallery-night.webp"
+              alt="Dysnomia Gallery"
               style={{
                 width: '100%',
                 height: isMobile ? '280px' : '400px',
@@ -370,26 +384,19 @@ export default function About() {
             >
               {t('about.fromPassion')}
             </h2>
-            <p
-              style={{
-                fontSize: '16px',
-                color: '#666666',
-                lineHeight: 1.8,
-                marginBottom: '20px',
-              }}
-            >
-              {t('about.storyP1')}
-            </p>
-            <p
-              style={{
-                fontSize: '16px',
-                color: '#666666',
-                lineHeight: 1.8,
-                marginBottom: '32px',
-              }}
-            >
-              {t('about.storyP2')}
-            </p>
+            {(['storyP1', 'storyP2', 'storyP3', 'storyP4'] as const).map((key, i, all) => (
+              <p
+                key={key}
+                style={{
+                  fontSize: '16px',
+                  color: '#666666',
+                  lineHeight: 1.8,
+                  marginBottom: i === all.length - 1 ? '32px' : '20px',
+                }}
+              >
+                {t(`about.${key}`)}
+              </p>
+            ))}
             <Link
               to="/collections"
               style={{

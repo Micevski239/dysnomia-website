@@ -2,6 +2,13 @@ import { Link } from 'react-router-dom';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 import { useLanguage } from '../../hooks/useLanguage';
 
+// Hero background. 'right' = model on the right edge (text sits on the pink side)
+const HERO_BG = {
+  image: '/hero-art-right.jpg',
+  desktopPosition: '75% center',
+  mobilePosition: '82% center',
+};
+
 export default function Hero() {
   const { isMobile } = useBreakpoint();
   const { t } = useLanguage();
@@ -15,14 +22,14 @@ export default function Hero() {
         overflow: 'hidden'
       }}
     >
-      {/* Lion canvas in a living room as full background; on phones keep the lion (right of centre) in view */}
+      {/* Full-width hero background; on phones keep the model in view */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundImage: 'url(/hero-lion.webp)',
+          backgroundImage: `url(${HERO_BG.image})`,
           backgroundSize: 'cover',
-          backgroundPosition: isMobile ? '62% center' : 'center center',
+          backgroundPosition: isMobile ? HERO_BG.mobilePosition : HERO_BG.desktopPosition,
           backgroundRepeat: 'no-repeat'
         }}
       />
@@ -32,7 +39,7 @@ export default function Hero() {
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(to top, rgba(10, 10, 10, 0.85) 0%, rgba(10, 10, 10, 0.5) 40%, rgba(10, 10, 10, 0.3) 70%, rgba(10, 10, 10, 0.4) 100%)'
+          background: 'linear-gradient(to top, rgba(10, 10, 10, 0.6) 0%, rgba(10, 10, 10, 0.3) 40%, rgba(10, 10, 10, 0.08) 75%, rgba(10, 10, 10, 0.12) 100%)'
         }}
       />
 
