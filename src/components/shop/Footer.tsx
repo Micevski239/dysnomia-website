@@ -19,7 +19,7 @@ const footerLinks = {
   ],
   support: [
     { labelKey: 'about.contactUs', href: '/contact' },
-    { labelKey: 'footer.shippingPolicy', href: '/shipping' },
+    { labelKey: 'footer.shippingPolicy', href: '/shipping#shipping' },
     { labelKey: 'footer.returnPolicy', href: '/shipping#returns' },
     { labelKey: 'footer.faq', href: '/faq' },
     { labelKey: 'footer.privacyPolicy', href: '/privacy' }

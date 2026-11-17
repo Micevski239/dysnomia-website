@@ -21,6 +21,7 @@ import { type PrintType } from '../config/printOptions';
 import { type Product } from '../types';
 import { supabase } from '../lib/supabase';
 import { isKidsCollection as isKidsCollectionCheck } from '../lib/kidsCollection';
+import FramedArtwork from '../components/shop/FramedArtwork';
 
 // Adjust these per frame color to position the artwork on each livingroom photo
 const FRAME_DIMENSIONS: Record<string, { top: string; left: string; width: string; height: string }> = {
@@ -440,11 +441,7 @@ export default function ProductDetail() {
                           overflow: 'hidden',
                         }}
                       >
-                        <img
-                          src={currentImage}
-                          alt={`${product.title} - framed`}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                        />
+                        <FramedArtwork src={currentImage} alt={`${product.title} - framed`} />
                       </div>
                       {/* Loading overlay */}
                       {imageLoading && (

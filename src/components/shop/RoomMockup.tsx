@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { useLanguage } from '../../hooks/useLanguage';
+import FramedArtwork from './FramedArtwork';
 
 // Room templates for the product detail page
 export const ROOM_TEMPLATES = [
@@ -79,17 +80,7 @@ const RoomMockup = memo(function RoomMockup({ artworkImage, artworkTitle, isKids
           overflow: 'hidden'
         }}
       >
-        <img
-          src={artworkImage}
-          alt={`${artworkTitle} in room`}
-          loading="lazy"
-          decoding="async"
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover'
-          }}
-        />
+        <FramedArtwork src={artworkImage} alt={`${artworkTitle} in room`} loading="lazy" />
       </div>
 
       {/* Room Preview Label */}
