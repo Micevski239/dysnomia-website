@@ -41,7 +41,7 @@ const VALUE_KEYS: Array<{ title: string; desc: string }> = [
 
 export default function About() {
   const { isMobile, isMobileOrTablet } = useBreakpoint();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   return (
     <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', paddingTop: isMobileOrTablet ? '100px' : '120px' }}>
@@ -158,7 +158,7 @@ export default function About() {
             }}
           >
             <img
-              src="/logo.webp"
+              src="/about-hero.webp"
               alt="Dysnomia Art Gallery"
               style={{
                 width: '100%',
@@ -166,6 +166,8 @@ export default function About() {
                 objectFit: 'cover',
               }}
             />
+            {/* The Macedonian quote is part of the photo itself; English keeps the card (it also covers the baked-in text) */}
+            {language === 'en' && (
             <div
               style={{
                 position: 'absolute',
@@ -234,6 +236,7 @@ export default function About() {
                 {t('about.missionQuote')}
               </p>
             </div>
+            )}
           </div>
         </div>
       </section>
